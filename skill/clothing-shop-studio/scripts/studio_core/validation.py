@@ -186,6 +186,13 @@ def register_file(project_dir: Path, payload: dict, now: str | None = None) -> d
                     field=key,
                     recovery="Send the measurement as a number, for example 300.",
                 )
+            if key != "offset_mm" and value == 0:
+                # A zero offset is a real placement; a zero print size is not printable.
+                raise ValidationError(
+                    f"`{key}` must be greater than zero.",
+                    field=key,
+                    recovery="Send the artwork's printed size in millimetres, for example 300.",
+                )
         for key in MASTER_METADATA_KEYS:
             if payload.get(key) is not None:
                 entry[key] = payload[key]

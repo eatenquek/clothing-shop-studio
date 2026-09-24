@@ -112,6 +112,26 @@ class ValidationTests(unittest.TestCase):
         )
         self.assertEqual(validate_project(self.project, master_ids=[entry["id"]])["errors"], [])
 
+    def test_master_print_size_must_be_positive(self):
+        master = self.project / "production/masters/back_MASTER.svg"
+        master.parent.mkdir(parents=True, exist_ok=True)
+        master.write_bytes(b"<svg/>")
+        for key in ("print_width_mm", "print_height_mm"):
+            with self.subTest(key=key), self.assertRaises(ValidationError):
+                api_register_file(
+                    self.project,
+                    {"origin": "production_master", "path": "production/masters/back_MASTER.svg",
+                     "construction": "vector_construction", key: 0},
+                    FIXED_NOW,
+                )
+        entry = api_register_file(
+            self.project,
+            {"origin": "production_master", "path": "production/masters/back_MASTER.svg",
+             "construction": "vector_construction", "offset_mm": 0, "print_width_mm": 300},
+            FIXED_NOW,
+        )
+        self.assertEqual(entry["offset_mm"], 0)
+
     def test_mockup_in_master_slot_is_rejected(self):
         mockup = register_file(
             self.project, "production/masters/back_MOCKUP.svg", b"<svg/>", origin="production_master"
