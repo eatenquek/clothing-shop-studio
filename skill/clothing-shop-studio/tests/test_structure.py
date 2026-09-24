@@ -81,5 +81,14 @@ class StructureTests(unittest.TestCase):
         self.assertIn("even if the user asks for a shorter treatment", safety)
         self.assertIn("Do not bake this notice into the artwork", safety)
 
+    def test_missing_project_rule_asks_instead_of_searching(self):
+        text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("ask the user for `project_dir`", text)
+        self.assertIn("do not search the user's home directory or unrelated folders", text)
+        self.assertLess(len(text.splitlines()), 45)
+        reference = (ROOT / "references/presentation.md").read_text(encoding="utf-8")
+        self.assertIn("`reference_images_supported: false`", reference)
+        self.assertIn("description_only", reference)
+
 if __name__ == "__main__":
     unittest.main()

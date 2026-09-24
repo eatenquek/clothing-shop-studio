@@ -23,7 +23,7 @@ Take a garment from brief or reference image to approved visuals and a validated
 
 ## Start, resume, and flow
 
-New design: `create_project` with a `name`; if it needs a root, ask once where to keep projects and retry with `root` and `"remember_root": true`. Existing design: `resume_project` with `project_dir`. Then `record_answer` → `generate_options` → `approve_design` (only on clear user approval) → `register_file` for masters → `validate` → `export_production_pack`.
+New design: `create_project` with a `name`; if it needs a root, ask once where to keep projects and retry with `root` and `"remember_root": true`. Existing design: `resume_project` with `project_dir`. If the project is not in the current workspace or the remembered project root, ask the user for `project_dir`; do not search the user's home directory or unrelated folders. Then `record_answer` → `generate_options` → `approve_design` (only on clear user approval) → `register_file` for masters → `validate` → `export_production_pack`.
 
 ## Read when needed
 

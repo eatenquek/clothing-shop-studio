@@ -1,69 +1,76 @@
-# Codex handoff — presentation commands complete
+# Release record — clothing-shop-studio presentation commands
 
-This handoff records the final state of the `feature/presentation-commands` branch. The implementation is complete through Task 9. Do not redo Tasks 1–9.
+The `feature/presentation-commands` branch is complete. Tasks 1–9, the independent task reviews, the final whole-branch audit, and the audit's final polish are all finished. Nothing is pending.
 
 ## Repository state
 
-- **Repo:** this repository
-- **Branch:** `feature/presentation-commands`
-- **Feature HEAD before this handoff refresh:** `78f79bd`
-- **Base / unchanged `main`:** `ac191fc`
-- **Remote state:** nothing from this workstream has been pushed or merged.
-- **Installation state:** the branch has not been installed into the user's Codex skills directory. Install only when the user explicitly asks.
+- **Branch:** `feature/presentation-commands`, based on `main` at `ac191fc`. `main` is unchanged.
+- **Not pushed, merged, or installed.** Do any of these only when the user explicitly asks.
+- **Local records (git-ignored):** task reports, the progress ledger, review packages, and eval transcripts are in `.superpowers/sdd/2026-09-25-presentation-commands/` on this machine.
 
-## Completed work
+## What the branch adds
 
-| Task | Result | Commits |
-|---|---|---|
-| 1 Presentation foundation and lineage | complete, independently reviewed | `fcdcfa7`, `01bc4ef` |
-| 2 Standard-library PNG colour reader | complete, independently reviewed | `d21cbd9` |
-| 3 Garment extraction and catalogue | complete, independently reviewed | `fffbd4a`, `2837af3` |
-| 4 Fictional AI-model library and pinning | complete, independently reviewed | `d20c5e9`, `00c2486` |
-| 5 AI-model try-on planning and registration | complete, independently reviewed | `f374da8` |
-| 6 Listing-concept generation | complete, independently reviewed | `0262ef5`, `b60710e` |
-| 7 CLI and schema wiring | complete, independently reviewed | `e2314c7` |
-| 8 Router, documentation, safety notice and evals | complete, independently reviewed | `985b7ab`, `78f79bd` |
-| 9 Release verification and live evals | complete | no code commit |
+| Area | Commits |
+|---|---|
+| Design spec and implementation plan | `9d57b9e`, `0eec6ab` |
+| Presentation foundation: lazy state, image checks, rights lineage, decisions | `fcdcfa7`, `01bc4ef` |
+| Standard-library PNG colour reader | `d21cbd9` |
+| `extract`: garment inventory, confirmation, consent, square ≥1200 px white-background cut-outs, catalogue page | `fffbd4a`, `2837af3` |
+| `create_models`: fictional AI-model library, four defaults, project-scoped candidate ids, pinning | `d20c5e9`, `00c2486` |
+| `try_on`: front / three-quarter / back jobs on pinned models | `f374da8` |
+| `create_listing`: Taobao-style listing concept with no prices or claims | `0262ef5`, `b60710e` |
+| CLI commands and schema | `e2314c7` |
+| Skill router, trigger wording, presentation docs, evals, full seller notice rule | `985b7ab`, `78f79bd` |
+| Handoff refresh after Task 9 | `65224be` |
+| Final polish (see below) | this commit |
 
-The branch adds `extract`, `create_models`, `try_on`, and `create_listing`. Presentation outputs remain non-production, preserve provenance, refuse unowned or unconfirmed source lineage, use fictional AI models only, omit price/size/fabric claims, and require the full Singapore seller notice word for word after every generated visual and before the single closing question.
+**Guarantees:**
+- **Nothing presentational reaches production.** Presentation images are never production-eligible and never become production masters.
+- **Only your own images get used.** Outputs keep their provenance. Third-party, online, and unconfirmed sources are refused for try-on and listings, and listing cut-outs must descend from the listed approved version.
+- **Models are fictional.** Real people and lookalikes are refused.
+- **Listings carry no claims.** Listing concepts show only the recorded project name, grey placeholder bars, and the tag "Concept — not a live listing".
+- **Seller notice.** The full Singapore seller notice is reproduced word for word after every generated visual, before the single closing question.
 
-## Verification evidence
+## Final polish from the audit
 
-At feature HEAD `78f79bd`:
+1. **Missing-project rule.** SKILL.md now tells the agent to ask the user for `project_dir` when a project is not in the workspace or the remembered project root, and not to search the home directory or unrelated folders.
+2. **`try_on` reference images option.** `try_on plan` accepts an optional `reference_images_supported` (strict boolean, default `true`).
+   - With `true`, the plan reports `identity_lock: "reference_image"` and sends the pinned model and garment images as inputs.
+   - With `false`, it reports `"description_only"`, sends no images, and keeps the written identity anchors in the prompt.
+   - A value that is not a boolean is refused before anything is written.
+   - `references/presentation.md` tells the caller to pass `false` when the image tool cannot take reference images, and to warn the user that the model may drift between shots.
+   - The change is backward-compatible: omitting the option behaves exactly as before.
 
-- Source suite: **197/197 passed** on Python 3.14.5 and Python 3.9.6.
-- Tools suite: **5/5 passed** on both Python versions, including public-path hygiene.
-- Skill validator: **Skill is valid!**
-- `git diff --check main...HEAD`: clean.
-- Legacy-project compatibility: a project created with the old `0eaf353` scripts validates and accepts `extract` inventory mode.
-- Example project: validation is clean; `validate --for_export` reports only `no_current_production_master`.
-- Live near-miss eval: the skill did not trigger for a mug-background request and created no project.
-- Supplemental approved-project listing eval: produced the listing SVG without inventing images and verified **visual → full seller notice → exactly one question**.
-- Caches were removed and the tracked tree was clean before this handoff-only edit.
+## Verification (final commit)
 
-Task reports, the progress ledger, review package, and eval transcripts are under the git-ignored `.superpowers/sdd/2026-09-25-presentation-commands/` directory on this machine.
+- **Source suite:** 207/207 passed on Python 3.14.5 and on Python 3.9.6.
+- **Tools suite:** 5/5 passed on both versions, including the public-path hygiene check.
+- **Skill validator:** "Skill is valid!".
+- **Whitespace:** `git diff --check` and `git diff --check main...HEAD` are clean.
+- **Task 9 release checks (at `78f79bd`; the final polish does not affect them):**
+  - A project made with the old `0eaf353` scripts validates clean and accepts `extract` inventory.
+  - The example project's `validate --for_export` reports only `no_current_production_master`.
+  - The live near-miss eval (mug background) did not trigger the skill and created no project.
+  - A live listing build on a scratch approved project produced the concept without inventing images, and replied in the order visual → full seller notice → exactly one question.
+- **Caches:** removed, and the tracked tree is clean.
 
-## Final independent audit
+## Remaining non-blocking limitations
 
-A fresh whole-branch Claude audit found no Critical code findings. Its only Important finding was that the old version of this file still described Tasks 5–9 as unfinished; this refresh resolves that publication blocker. The auditor otherwise found the production boundary, rights lineage, consent, duplicate-registration protection, backward compatibility, listing-copy restrictions, seller-notice rule, CLI/schema/docs alignment, and scope controls consistent.
+- **The `presentation-listing` eval has no approved-project fixture.** It cannot reach a visual; the approved-project run was supplemental.
+- **Image-based steps are tested only offline.** Extraction, model, and try-on ordering is covered by tests and docs, but no live headless run could exercise them, because that session has no image tool.
+- **Possible hardening:**
+  - PNG checksum checks;
+  - colour-bucket precision;
+  - richer cut-out metadata and error text;
+  - linking photos of physical samples to a design;
+  - a read-only `try_on plan`;
+  - stricter matching of `register_tryon` garments to the plan;
+  - a policy for mixed-garment try-ons.
 
-## Non-blocking follow-ups
+## Install (only if the user asks)
 
-These were explicitly triaged as Minor or deferred, not release blockers:
+```bash
+rsync -a --delete --exclude '__pycache__/' --exclude '*.pyc' skill/clothing-shop-studio/ ~/.codex/skills/clothing-shop-studio/
+```
 
-- The checked-in `presentation-listing` eval starts without an approved-project fixture; the successful approved-project run is supplemental.
-- Image-tool-dependent extraction, model, and try-on ordering is covered by tests and docs but was not exercised in the headless live eval.
-- If a project is missing, the skill docs could state more explicitly that the agent must ask for `project_dir` instead of probing unrelated folders.
-- `try_on plan` always reports `identity_lock: reference_image`; a later backward-compatible option could report `description_only` when the host image tool cannot accept reference images.
-- PNG CRC checking, colour-bucket precision, richer cut-out metadata/error text, sample-photo-to-design linking, and stricter malformed-payload diagnostics remain possible hardening work.
-- Listing selection is conservative for indirect try-on lineage; mixed-garment try-ons deserve a future explicit policy.
-
-## Resume or install
-
-No implementation work is required to publish this branch. After the five-hour usage window resets, perform a quick docs-only review of this refreshed handoff, run `git diff --check`, and commit it if it is not already committed.
-
-Only if the user explicitly asks to install, copy `skill/clothing-shop-studio/` to `~/.codex/skills/clothing-shop-studio/` while excluding `__pycache__/` and `*.pyc`. Do not push, merge, or install without that request.
-
-## Usage stop
-
-Work stopped because the Codex five-hour window reached **97% used**, above the user's explicit 90% stop threshold. The weekly window was **44% used**. No reset credit was consumed.
+For Claude Code, use `~/.claude/skills/clothing-shop-studio/` as the destination. Start a new agent session afterwards so the updated skill loads.

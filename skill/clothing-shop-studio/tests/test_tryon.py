@@ -135,5 +135,31 @@ class TryOnTests(unittest.TestCase):
             register_tryon(self.project, {"round": plan["round"], "model_id": "m-aria",
                                           "garment_ids": [self.design], "results": results}, FIXED_NOW)
 
+    def test_reference_images_supported_defaults_to_reference_lock(self):
+        plan = plan_tryon(self.project, {"design_id": self.design, "model_id": "m-aria", "poses": ["front"],
+                                         "reference_images_supported": True}, FIXED_NOW)
+        self.assertEqual(plan["identity_lock"], "reference_image")
+        self.assertIn("presentation/models/pinned/m-aria-front.png", plan["jobs"][0]["inputs"])
+
+    def test_description_only_lock_keeps_anchors_and_sends_no_images(self):
+        plan = plan_tryon(self.project, {"design_id": self.design, "model_id": "m-aria",
+                                         "poses": ["front", "back"], "reference_images_supported": False}, FIXED_NOW)
+        self.assertEqual(plan["identity_lock"], "description_only")
+        for job in plan["jobs"]:
+            self.assertEqual(job["inputs"], [])
+            self.assertIn("shoulder-length straight dark brown hair", job["prompt"])
+            self.assertNotIn("reference image", job["prompt"])
+            self.assertNotIn("presentation/", job["prompt"])
+        self.assertEqual(plan["jobs"][0]["destination"], "presentation/tryon/r01/m-aria-front.png")
+
+    def test_reference_images_supported_must_be_a_boolean(self):
+        for bad in ("false", 0, 1, None, "true"):
+            with self.subTest(value=bad), self.assertRaises(ValidationError) as caught:
+                plan_tryon(self.project, {"design_id": self.design, "model_id": "m-aria", "poses": ["front"],
+                                          "reference_images_supported": bad}, FIXED_NOW)
+            self.assertEqual(caught.exception.field, "reference_images_supported")
+        pinned = [item for item in load_state(self.project)["files"] if item["id"] == "pin-m-aria"]
+        self.assertEqual(pinned, [], "an invalid option must be refused before the model is pinned")
+
 if __name__ == "__main__":
     unittest.main()

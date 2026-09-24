@@ -43,10 +43,10 @@ Cut-outs from a third-party or unconfirmed reference are inspiration only. They 
 
 ## Try-on
 
-`plan` with `design_id` or `garment_ids`, `model_id`, and `poses` (`front`, `three_quarter`, `back`).
+`plan` with `design_id` or `garment_ids`, `model_id`, `poses` (`front`, `three_quarter`, `back`), and optionally `reference_images_supported` (true or false, default true).
 
-- Send every `inputs` image to the image tool together with the job's prompt.
-- If the tool cannot take reference images, tell the user identity is held by description only and may drift between shots.
+- When the host image tool accepts reference images, send every `inputs` image to it together with the job's prompt. The plan reports `identity_lock: reference_image`.
+- When it cannot, pass `reference_images_supported: false`. The plan reports `identity_lock: description_only`, each job's `inputs` is empty, and the prompt carries the written identity anchors instead. Tell the user identity is held by description only and may drift between shots.
 - `register` (`round`, `model_id`, the same garment ids, `results` with `pose` and `path`). Show each try-on beside its garment and name any visible mismatch. Add the seller notice, ask one question, then `decide`.
 
 ## Listing concept

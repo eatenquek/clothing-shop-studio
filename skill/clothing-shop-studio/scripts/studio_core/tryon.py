@@ -53,6 +53,11 @@ def plan_tryon(project: Path, payload: dict, now: str | None = None) -> dict:
             or len(set(poses)) != len(poses):
         raise ValidationError(f"Poses must be distinct values from: {', '.join(POSES)}.", field="poses",
                               recovery="Choose front, three_quarter, and/or back.")
+    reference_images = payload.get("reference_images_supported", True)
+    if not isinstance(reference_images, bool):
+        raise ValidationError("`reference_images_supported` must be true or false.",
+                              field="reference_images_supported",
+                              recovery="Send false when the host image tool cannot accept reference images.")
     garments = _garments(load_state(project), payload)
     model = pin_model(project, payload.get("model_id"), now)
     identity = model["identity"]
@@ -62,17 +67,27 @@ def plan_tryon(project: Path, payload: dict, now: str | None = None) -> dict:
         "gender_presentation", "age_range", "build", "skin_tone", "hair", "face_description", "lighting", "camera",
         "background"))
     garment_text = ", ".join(entry.get("name") or Path(entry["path"]).stem for entry in garments)
+    if reference_images:
+        inputs = [model["path"], *(entry["path"] for entry in garments)]
+        subject = f"the same person as the model reference image ({anchors})"
+        garment_rule = "Reproduce the garment exactly as shown"
+    else:
+        # Without reference images the written anchors are the only identity lock,
+        # so the model may drift between shots; the caller must warn the user.
+        inputs = []
+        subject = f"this fictional person, described exactly: {anchors}"
+        garment_rule = "Reproduce the approved garment as closely as described"
     jobs = [{
         "pose": pose,
-        "inputs": [model["path"], *(entry["path"] for entry in garments)],
-        "prompt": (f"Show the same person as the model reference image ({anchors}) wearing {garment_text}, "
-                   f"{POSE_TEXT[pose]}, full length. Keep every identity anchor unchanged. Reproduce the garment "
-                   "exactly as shown: same colour, print, placement, and scale; no invented logos, pockets, "
-                   "or trims. Fictional AI-generated model; not any real person."),
+        "inputs": list(inputs),
+        "prompt": (f"Show {subject}, wearing {garment_text}, {POSE_TEXT[pose]}, full length. Keep every identity "
+                   f"anchor unchanged. {garment_rule}: same colour, print, placement, and scale; no invented "
+                   "logos, pockets, or trims. Fictional AI-generated model; not any real person."),
         "destination": f"{FOLDER}r{round_number:02d}/{identity['id']}-{pose}.png",
         "aspect": "3:4",
     } for pose in poses]
-    return {"round": round_number, "model": model["id"], "identity_lock": "reference_image", "jobs": jobs}
+    identity_lock = "reference_image" if reference_images else "description_only"
+    return {"round": round_number, "model": model["id"], "identity_lock": identity_lock, "jobs": jobs}
 
 
 def register_tryon(project: Path, payload: dict, now: str | None = None) -> list[dict]:
