@@ -16,11 +16,17 @@ Send each fact as one `record_answer` payload: `project_dir`, `field`, `value`, 
 
 Free-text answers for branching fields become canonical tokens: `T-Shirt` is stored as `tee`, `Singapore` as `humid_tropical`, `260 gsm` as `260`. A weight described as "heavyweight" still triggers the climate check. Record a field's value as the user phrased it when no canonical token fits.
 
+## Context
+
+Intended use, audience, and climate shape every later choice. Ask what the garment is for (everyday wear, training, uniform, event merchandise, a retail drop), who wears it (age range, unisex or gendered sizing), and where (climate, indoor or outdoor, activity level). A running club in Singapore and a winter streetwear drop need different fabric, fit, and decoration answers even for the same tee.
+
 ## Safe inference
 
 Infer only reversible, low-risk details supported by clear evidence. Record the source, evidence, confirmation state, and criticality. Never silently infer garment category, intended use, exact artwork wording, placement, decoration method, quantity, rights clearance, Japanese text, or production-master suitability.
 
-Group pending low-risk assumptions into one confirmation question once enough is known to create the next visual. A critical inferred value remains a production blocker until confirmed.
+## Assumptions
+
+Every inferred or default value enters the assumptions register with `confirmed: false`. When `next_question.id` is `confirm_assumptions`, list the pending values in one question and let the user confirm or correct them together. Record corrections as normal answers; record agreement with `record_answer` on `confirm_assumptions`. A critical inferred value remains a production blocker until confirmed, and export lists every low-risk assumption that is still open.
 
 ## Enough to generate
 
