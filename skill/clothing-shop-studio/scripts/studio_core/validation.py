@@ -14,7 +14,7 @@ from pathlib import Path
 from .approval import APPROVED_DIR
 from .config import resolve_inside
 from .errors import StudioError, ValidationError
-from .interview import is_critical
+from .interview import CRITICAL_FIELDS, is_critical
 from .store import (
     _load_events,
     _utc_now,
@@ -38,6 +38,17 @@ ID_PREFIXES = {"user_reference": "ref-user", "online_reference": "ref-online", "
 RASTER_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".tif", ".tiff", ".psd", ".heic"}
 MASTER_CONSTRUCTIONS = ("user_supplied", "typeset", "vector_construction")
 MASTER_TOKEN, MOCKUP_TOKEN = "MASTER", "MOCKUP"
+MEASUREMENT_KEYS = ("offset_mm", "print_width_mm", "print_height_mm")
+MASTER_METADATA_KEYS = (
+    "approved_version",
+    "placement",
+    "reference_point",
+    *MEASUREMENT_KEYS,
+    "colours",
+    "decoration_method",
+    "notes",
+)
+PACK_PATTERN = re.compile(r"^pack-v\d{3,}$")
 URL_PATTERN = re.compile(r"^https://\S+$")
 
 
@@ -167,7 +178,15 @@ def register_file(project_dir: Path, payload: dict, now: str | None = None) -> d
                 field="approved_version",
                 recovery="Approve the design first, then register its master.",
             )
-        for key in ("approved_version", "placement", "print_width_mm", "print_height_mm", "colours", "decoration_method", "notes"):
+        for key in MEASUREMENT_KEYS:
+            value = payload.get(key)
+            if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0):
+                raise ValidationError(
+                    f"`{key}` must be a non-negative number of millimetres.",
+                    field=key,
+                    recovery="Send the measurement as a number, for example 300.",
+                )
+        for key in MASTER_METADATA_KEYS:
             if payload.get(key) is not None:
                 entry[key] = payload[key]
         problems = master_problems(entry, files)
@@ -261,11 +280,34 @@ def validate_project(project_dir: Path, master_ids: list[str] | None = None, for
             continue
         errors.extend(master_problems(entry, files))
 
-    # 6. Assumptions: criticality is recomputed because production scope may have changed.
+    # 6. Exported packs are immutable: recorded, hashed, and free of extra files.
+    recorded_packs = {pack["version"]: pack for pack in state.get("production", {}).get("packs", [])}
+    production_root = project / "production"
+    if production_root.is_dir():
+        for path in sorted(production_root.iterdir()):
+            if PACK_PATTERN.match(path.name) and path.name not in recorded_packs:
+                error("unrecorded_pack", f"production/{path.name} was not created by export_production_pack.", path=f"production/{path.name}")
+    for version, pack in recorded_packs.items():
+        folder = project / pack["path"]
+        expected = {item["path"]: item["sha256"] for item in pack.get("files", [])}
+        manifest = folder / "manifest.json"
+        if not manifest.is_file() or _sha256(manifest) != pack.get("manifest_sha256"):
+            error("pack_hash_mismatch", f"{version}/manifest.json changed or is missing.", path=f"{pack['path']}/manifest.json")
+        for relative, digest in expected.items():
+            path = folder / relative
+            if not path.is_file() or _sha256(path) != digest:
+                error("pack_hash_mismatch", f"{version}/{relative} changed or is missing.", path=f"{pack['path']}/{relative}")
+        present = {path.relative_to(folder).as_posix() for path in folder.rglob("*") if path.is_file()} if folder.is_dir() else set()
+        extra = sorted(present - set(expected) - {"manifest.json"})
+        if extra:
+            error("pack_hash_mismatch", f"{version} contains unrecorded files: {', '.join(extra)}.", path=pack["path"])
+
+    # 7. Assumptions: an export treats every critical field as critical; otherwise
+    # criticality is recomputed because production scope may have changed.
     for item in state.get("assumptions", []):
         if item.get("confirmed"):
             continue
-        if for_export and is_critical(item["field"], state):
+        if for_export and (item["field"] in CRITICAL_FIELDS or is_critical(item["field"], state)):
             error(
                 "unconfirmed_critical_assumption",
                 f"`{item['field']}` = {item['value']!r} is unconfirmed and blocks production.",

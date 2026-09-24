@@ -254,6 +254,9 @@ def _apply_event(state: dict, event: dict) -> dict:
         _add_files(next_state, event.get("entries") or [])
         next_state.setdefault("approvals", []).append(event["approval"])
         next_state["phase"] = "approved"
+    elif event_type == "production_exported":
+        next_state.setdefault("production", {}).setdefault("packs", []).append(event["pack"])
+        next_state["phase"] = "production_exported"
     elif event_type == "phase_changed":
         next_state["phase"] = event.get("phase", next_state.get("phase"))
     elif event_type == "assumption":

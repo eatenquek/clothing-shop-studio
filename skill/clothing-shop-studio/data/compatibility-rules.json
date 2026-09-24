@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "note": "Conservative production heuristics, not guarantees. Decoration aliases and rules are both checked in order; the first match wins. Every outcome still needs the producer's confirmation.",
+  "decorations": {
+    "water_based_screen_print": {"all": ["screen"], "any": ["water_based", "waterbased", "discharge"]},
+    "screen_print": {"any": ["screen_print", "screenprint", "screen_printing", "plastisol", "silkscreen"]},
+    "dtg": {"any": ["dtg", "direct_to_garment"]},
+    "sublimation": {"any": ["sublimation", "sublimated"]},
+    "embroidery_patch": {"all": ["patch"]},
+    "embroidery": {"any": ["embroidery", "embroidered"]},
+    "high_heat_transfer": {"any": ["high_heat", "dtf", "direct_to_film"]},
+    "low_temp_transfer": {"any": ["low_temp", "low_temperature"]},
+    "heat_transfer": {"any": ["heat_transfer", "htv", "vinyl", "transfer"]}
+  },
+  "fabric_groups": {
+    "coated_nylon": {"all": ["nylon"], "any": ["coated", "coating", "dwr", "pu", "waterproof", "water_repellent"]},
+    "heat_sensitive_synthetic": {"any": ["nylon", "polypropylene", "acrylic", "spandex", "elastane", "lycra"]},
+    "cotton_or_blend": {"any": ["cotton", "cvc", "triblend", "tri_blend"]},
+    "untreated_cotton": {"all": ["cotton"], "none": ["polyester", "poly", "coated", "dwr", "nylon"]},
+    "light_polyester": {"all": ["polyester"], "none": ["cotton"]},
+    "stable_woven_or_heavy_knit": {"any": ["twill", "canvas", "denim", "duck", "fleece", "french_terry", "pique", "heavyweight", "woven", "sweatshirt"]},
+    "light_or_stretch_knit": {"any": ["jersey", "rib", "spandex", "elastane", "lightweight", "mesh"]}
+  },
+  "rules": [
+    {
+      "id": "water_based_screen_print_coated_nylon",
+      "decorations": ["water_based_screen_print"],
+      "fabric_group": "coated_nylon",
+      "result": "incompatible",
+      "alternatives": ["heat_transfer", "embroidery_patch"],
+      "notes": "Water-based inks need an absorbent fibre; coated or DWR-finished nylon repels them and the print will not bond or survive washing.",
+      "confirm": "Ask the producer which bonding method they use for this shell fabric."
+    },
+    {
+      "id": "high_heat_transfer_heat_sensitive_synthetic",
+      "decorations": ["high_heat_transfer"],
+      "fabric_group": "heat_sensitive_synthetic",
+      "result": "incompatible",
+      "alternatives": ["low_temp_transfer", "embroidery"],
+      "notes": "High curing temperatures can glaze, scorch, or shrink heat-sensitive synthetics and stretch fibres.",
+      "confirm": "Ask the producer for their press temperature limit on this fabric."
+    },
+    {
+      "id": "sublimation_cotton_or_blend",
+      "decorations": ["sublimation"],
+      "fabric_group": "cotton_or_blend",
+      "result": "incompatible",
+      "alternatives": ["screen_print", "dtg", "high_heat_transfer"],
+      "notes": "Sublimation dye only bonds with polyester and shows only on light grounds; it fades or fails on cotton.",
+      "confirm": "Confirm the fibre content with the producer before choosing sublimation."
+    },
+    {
+      "id": "sublimation_dark_fabric",
+      "decorations": ["sublimation"],
+      "conditions": {"fabric_tone": "dark"},
+      "result": "incompatible",
+      "alternatives": ["screen_print", "high_heat_transfer"],
+      "notes": "Sublimation is a transparent dye; it cannot print light colours onto a dark garment.",
+      "confirm": "Confirm the base colour and method with the producer."
+    },
+    {
+      "id": "screen_print_coated_nylon",
+      "decorations": ["screen_print"],
+      "fabric_group": "coated_nylon",
+      "result": "conditionally_compatible",
+      "alternatives": ["heat_transfer", "embroidery_patch"],
+      "notes": "Plastisol on coated nylon needs a nylon bonding additive and a test print; adhesion varies by coating.",
+      "confirm": "Ask the producer for a wash-tested sample on the exact shell fabric."
+    },
+    {
+      "id": "heat_transfer_heat_sensitive_synthetic",
+      "decorations": ["heat_transfer"],
+      "fabric_group": "heat_sensitive_synthetic",
+      "result": "conditionally_compatible",
+      "alternatives": ["low_temp_transfer", "embroidery"],
+      "notes": "Use a low-temperature transfer rated for the fibre; standard transfers can scorch synthetics.",
+      "confirm": "Ask the producer which transfer film and temperature they will use."
+    },
+    {
+      "id": "screen_print_cotton_spot_colours",
+      "decorations": ["screen_print"],
+      "fabric_group": "cotton_or_blend",
+      "conditions": {"spot_colors": {"min": 1, "max": 6}},
+      "result": "compatible",
+      "alternatives": [],
+      "notes": "Limited spot-colour screen printing suits cotton and cotton blends. Each colour needs its own screen; dark garments need a white underbase for light inks.",
+      "confirm": "Confirm the producer's colour-count limit and whether an underbase is required."
+    },
+    {
+      "id": "screen_print_cotton_many_colours",
+      "decorations": ["screen_print"],
+      "fabric_group": "cotton_or_blend",
+      "result": "conditionally_compatible",
+      "alternatives": ["dtg", "high_heat_transfer"],
+      "notes": "More than six spot colours usually needs simulated process separations or a different method.",
+      "confirm": "Ask the producer how many screens their press supports and review a strike-off."
+    },
+    {
+      "id": "dtg_untreated_cotton",
+      "decorations": ["dtg"],
+      "fabric_group": "untreated_cotton",
+      "result": "conditionally_compatible",
+      "alternatives": ["screen_print", "high_heat_transfer"],
+      "notes": "DTG suits detailed raster artwork on untreated cotton; dark garments need pretreatment and colours print less saturated than screen print.",
+      "confirm": "Ask the producer for a sample print on the chosen garment colour."
+    },
+    {
+      "id": "sublimation_light_polyester",
+      "decorations": ["sublimation"],
+      "fabric_group": "light_polyester",
+      "result": "compatible",
+      "alternatives": [],
+      "notes": "Full-colour sublimation suits white or light polyester; seams and folds can leave unprinted creases on finished garments.",
+      "confirm": "Confirm with the producer whether they print cut panels or finished garments."
+    },
+    {
+      "id": "embroidery_stable_fabric",
+      "decorations": ["embroidery", "embroidery_patch"],
+      "fabric_group": "stable_woven_or_heavy_knit",
+      "result": "compatible",
+      "alternatives": [],
+      "notes": "Embroidery suits stable wovens and heavy knits. Keep text at least about 5 mm tall and satin columns at least about 1 mm wide.",
+      "confirm": "Send the artwork to the producer's digitiser and approve a sew-out."
+    },
+    {
+      "id": "embroidery_light_or_stretch_knit",
+      "decorations": ["embroidery"],
+      "fabric_group": "light_or_stretch_knit",
+      "result": "conditionally_compatible",
+      "alternatives": ["embroidery_patch", "screen_print"],
+      "notes": "Light or stretchy knits pucker under dense stitching; use a stabiliser and lighter fill, or a patch.",
+      "confirm": "Ask the producer for a sew-out on the exact fabric."
+    }
+  ]
+}

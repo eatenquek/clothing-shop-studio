@@ -7,6 +7,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # discoverable from any cwd
+
+from tests.helpers import ready_project
+
 
 class CliTests(unittest.TestCase):
     def setUp(self):
@@ -211,6 +215,18 @@ class CliTests(unittest.TestCase):
         _, state = self.run_cli("status", {"project_dir": str(project)})
         self.assertEqual(state["data"]["approved_versions"], ["v001"])
         self.assertEqual(state["data"]["blockers"], [])
+
+    def test_export_production_pack_reports_pack_or_blockers(self):
+        blocked_project = ready_project(self.root / "blocked", assumptions={"quantity": {"confirmed": False}})
+        completed, blocked = self.run_cli("export_production_pack", {"project_dir": str(blocked_project)})
+        self.assertEqual(completed.returncode, 2)
+        self.assertIn("unconfirmed_critical_assumption", [item["code"] for item in blocked["error"]["details"]])
+
+        project = ready_project(self.root / "ready")
+        completed, response = self.run_cli("export_production_pack", {"project_dir": str(project)})
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(response["data"]["pack_version"], "pack-v001")
+        self.assertTrue(Path(response["data"]["path"], "production-spec.md").is_file())
 
     def test_generate_options_rejects_unknown_mode(self):
         project = self.create()

@@ -11,6 +11,7 @@ from studio_core import SCHEMA_VERSION
 from studio_core.config import resolve_storage_root, save_storage_root
 from studio_core.errors import StudioError, ValidationError
 from studio_core.approval import approve_design
+from studio_core.export import export_production_pack
 from studio_core.interview import load_graph, next_question
 from studio_core.options import merge_concept, next_round, plan_options, register_options
 from studio_core.store import append_event, create_project, load_state, status
@@ -115,6 +116,13 @@ def command_register_file(payload: dict) -> dict:
     return register_file(Path(_required(payload, "project_dir")), payload, payload.get("now"))
 
 
+def command_export_production_pack(payload: dict) -> dict:
+    project = Path(_required(payload, "project_dir"))
+    target = export_production_pack(project, payload.get("now"))
+    pack = next(item for item in load_state(project)["production"]["packs"] if item["version"] == target.name)
+    return {"pack_version": target.name, "path": str(target), "pack": pack}
+
+
 def command_validate(payload: dict) -> dict:
     return validate_project(
         Path(_required(payload, "project_dir")),
@@ -141,6 +149,7 @@ COMMANDS = {
     "record_answer": command_record_answer,
     "generate_options": command_generate_options,
     "approve_design": command_approve_design,
+    "export_production_pack": command_export_production_pack,
     "register_file": command_register_file,
     "validate": command_validate,
     "status": command_status,

@@ -11,7 +11,7 @@ def make_project(root: Path, name: str = "Test project") -> Path:
     from scripts.studio_core.store import create_project
 
     skill_dir = root / "installed-skill"
-    skill_dir.mkdir(exist_ok=True)
+    skill_dir.mkdir(parents=True, exist_ok=True)
     state = create_project(root / "projects", name, skill_dir, FIXED_NOW)
     return root / "projects" / state["project_slug"]
 
@@ -177,19 +177,60 @@ def hash_tree(root: Path) -> dict[str, str]:
     }
 
 
-def ready_project(root: Path) -> Path:
-    project = make_project(root)
-    state_path = project / "metadata" / "state.json"
-    state = json.loads(state_path.read_text("utf-8"))
-    state["phase"] = "production"
-    state["answers"].update(
-        {
-            "garment_type": "t-shirt",
-            "material": "cotton jersey",
-            "decoration_method": "screen_print",
-            "quantity": 100,
-            "size_range": "XS-XXL",
-        }
-    )
-    state_path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+READY_ANSWERS = {
+    "reference_image": None,
+    "garment_category": "long_sleeve",
+    "intended_use": "everyday streetwear",
+    "audience": "unisex young adult",
+    "climate": "humid_tropical",
+    "fit": "oversized relaxed",
+    "fiber_blend": "100% combed cotton",
+    "fabric_structure": "single jersey",
+    "gsm": 220,
+    "base_color": "black",
+    "size_range": "S-XXL",
+    "grading_strategy": "two print sizes: S-M at 280 mm, L-XXL at 320 mm wide",
+    "artwork_content": "KIKI KAKA wordmark",
+    "placement": "upper_back",
+    "decoration_method": "plastisol screen print",
+    "quantity": 100,
+    "deliverables": "production_pack",
+}
+
+MASTER_SPEC = {
+    "placement": "upper_back",
+    "reference_point": "centre back, below the back neck seam",
+    "offset_mm": 80,
+    "print_width_mm": 300,
+    "print_height_mm": 120,
+    "colours": ["Off-white plastisol (match to approved strike-off)"],
+    "decoration_method": "plastisol screen print",
+}
+
+
+def ready_project(
+    root: Path,
+    name: str = "Test project",
+    assumptions: dict | None = None,
+    answers: dict | None = None,
+    master: dict | None = None,
+) -> Path:
+    """Build an export-ready project entirely through the public API.
+
+    `assumptions` maps a field to overrides such as {"confirmed": False}; the field is
+    then recorded as an unconfirmed inference instead of a user answer.
+    """
+    from scripts.studio_core.approval import approve_design
+    from scripts.studio_core.store import append_event
+
+    project = make_project(root, name)
+    for field, value in {**READY_ANSWERS, **(answers or {})}.items():
+        event = {"type": "answer", "field": field, "value": value}
+        override = (assumptions or {}).get(field)
+        if override is not None and not override.get("confirmed", True):
+            event.update({"source": "inferred", "confirmed": False, "evidence": "test fixture"})
+        append_event(project, event, FIXED_NOW)
+    concepts = register_concepts(project)
+    approve_design(project, [concepts["A"]["id"]], "Approve A", now=FIXED_NOW)
+    register_vector_master(project, approved_version="v001", **{**MASTER_SPEC, **(master or {})})
     return project
