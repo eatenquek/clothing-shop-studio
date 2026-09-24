@@ -23,6 +23,20 @@ FOLDER = PRESENTATION_FOLDERS["listing_concept"]
 TAG = "Concept — not a live listing"
 
 
+def _descends_from(entry: dict, files: dict[str, dict], targets: set[str]) -> bool:
+    """True when the entry's parent graph reaches one of the target file ids."""
+    stack, seen = list(entry.get("parents") or []), set()
+    while stack:
+        parent_id = stack.pop()
+        if parent_id in targets:
+            return True
+        if parent_id in seen or parent_id not in files:
+            continue
+        seen.add(parent_id)
+        stack.extend(files[parent_id].get("parents") or [])
+    return False
+
+
 def _pick(state: dict, version: str) -> dict:
     files = file_index(state)
     approved = [item for item in state.get("files", []) if item.get("origin") == "approved_design"
@@ -35,7 +49,8 @@ def _pick(state: dict, version: str) -> dict:
             continue
         if entry["origin"] == "tryon_image" and design_ids & set(entry["parents"]) and slots[entry["pose"]] is None:
             slots[entry["pose"]] = entry["id"]
-        if entry["origin"] == "extracted_garment" and slots["white_background"] is None:
+        if (entry["origin"] == "extracted_garment" and slots["white_background"] is None
+                and _descends_from(entry, files, design_ids)):
             slots["white_background"] = entry["id"]
     slots["hero"] = slots["front"] or slots["three_quarter"]
     return slots
@@ -47,12 +62,19 @@ def build_listing(project: Path, payload: dict, now: str | None = None) -> dict:
     if version not in {item["version"] for item in state.get("approvals", [])}:
         raise ValidationError("Build a listing concept from a recorded approved version.", field="version",
                               recovery="Send an approved version such as v001.")
+    requested_name = payload.get("design_name")
+    if requested_name is not None and requested_name != state["project_name"]:
+        # The project name is the only display name the user has confirmed; anything
+        # else could carry an unconfirmed claim such as a material or quality.
+        raise ValidationError("The listing name must be the project's recorded name.", field="design_name",
+                              recovery="Omit `design_name` to use the project name, or create the project "
+                                       "under the name the user confirmed.")
     files = file_index(state)
     slots = _pick(state, version)
     number = 1 + len(state.get("presentation", {}).get("listings", []))
     folder = f"{FOLDER}v{number:03d}"
     out = project / folder
-    name = html.escape(str(payload.get("design_name") or state["project_name"]), quote=True)
+    name = html.escape(state["project_name"], quote=True)
 
     def src(slot: str) -> str | None:
         entry = files.get(slots[slot]) if slots[slot] else None

@@ -54,9 +54,7 @@ class ListingTests(TryOnTests):
 
     def test_design_name_is_escaped_and_versions_increment(self):
         self.kept_tryon("front")
-        first = build_listing(self.project, {"version": "v001", "design_name": "<img src=x onerror=1>"}, FIXED_NOW)
-        page = (self.project / first["files"]["html"]).read_text("utf-8")
-        self.assertNotIn("<img src=x", page)
+        first = build_listing(self.project, {"version": "v001"}, FIXED_NOW)
         second = build_listing(self.project, {"version": "v001"}, FIXED_NOW)
         self.assertEqual(second["version"], "listing-v002")
         with self.assertRaises(ValidationError):
@@ -101,6 +99,46 @@ class ListingTests(TryOnTests):
         self.assertIn("xg-own", listing_entry["parents"])
         self.assertFalse(listing_entry["production_eligible"])
         self.assertEqual(validate_project(self.project)["errors"], [])
+
+    def test_invented_design_name_is_refused_and_project_name_is_escaped(self):
+        invented = "Silk Luxe Premium Cashmere Blend"
+        with self.assertRaises(ValidationError) as caught:
+            build_listing(self.project, {"version": "v001", "design_name": invented}, FIXED_NOW)
+        self.assertEqual(caught.exception.field, "design_name")
+        listing_root = self.project / "presentation/listing"
+        written = [path.read_text("utf-8") for path in listing_root.rglob("*") if path.is_file()] \
+            if listing_root.exists() else []
+        self.assertFalse(any(invented in text for text in written))
+        same = build_listing(self.project, {"version": "v001", "design_name": "Test project"}, FIXED_NOW)
+        self.assertIn("Test project", (self.project / same["files"]["html"]).read_text("utf-8"))
+
+        from tests.helpers import ready_project
+        hostile = ready_project(Path(self.temp.name) / "hostile", name="<img src=x onerror=1> tee")
+        result = build_listing(hostile, {"version": "v001"}, FIXED_NOW)
+        for kind in ("html", "svg"):
+            text = (hostile / result["files"][kind]).read_text("utf-8")
+            self.assertNotIn("<img src=x", text)
+            self.assertIn("&lt;img src=x onerror=1&gt; tee", text)
+
+    def test_cutouts_cannot_cross_fill_another_versions_listing(self):
+        from scripts.studio_core.approval import approve_design
+        from scripts.studio_core.extract import decide_garments
+
+        concept_b = next(item["id"] for item in load_state(self.project)["files"]
+                         if item["origin"] == "generated_concept" and item.get("label") == "B")
+        approve_design(self.project, [concept_b], "Approve B", now=FIXED_NOW)
+        design_v2 = next(item["id"] for item in load_state(self.project)["files"]
+                         if item["origin"] == "approved_design" and item.get("version") == "v002"
+                         and item.get("role") != "review_evidence")
+        self.register_cutout("xg-v2", design_v2, 91)
+        decide_garments(self.project, {"ids": ["xg-v2"], "decision": "keep", "user_quote": "Yes keep it"}, FIXED_NOW)
+        self.assertIsNone(build_listing(self.project, {"version": "v001"}, FIXED_NOW)["slots"]["white_background"])
+        self.register_cutout("xg-v1", self.design, 92)
+        decide_garments(self.project, {"ids": ["xg-v1"], "decision": "keep", "user_quote": "Yes keep it"}, FIXED_NOW)
+        self.assertEqual(build_listing(self.project, {"version": "v001"}, FIXED_NOW)["slots"]["white_background"],
+                         "xg-v1")
+        self.assertEqual(build_listing(self.project, {"version": "v002"}, FIXED_NOW)["slots"]["white_background"],
+                         "xg-v2")
 
 if __name__ == "__main__":
     unittest.main()
