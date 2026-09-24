@@ -17,6 +17,7 @@ from .approval import APPROVED_DIR
 from .config import resolve_inside
 from .errors import StudioError, ValidationError
 from .interview import CRITICAL_FIELDS, is_critical, pending_assumptions
+from .presentation import PRESENTATION_FOLDERS
 from .store import (
     _load_events,
     _utc_now,
@@ -34,6 +35,8 @@ ORIGIN_FOLDERS = {
     "approved_design": "designs/approved/",
     "production_master": "production/masters/",
 }
+ORIGIN_FOLDERS.update(PRESENTATION_FOLDERS)
+GENERATED_ORIGINS = {"generated_concept", *PRESENTATION_FOLDERS}
 # Concepts enter through generate_options and approvals through approve_design.
 REGISTRABLE_ORIGINS = ("user_reference", "online_reference", "production_master")
 ID_PREFIXES = {"user_reference": "ref-user", "online_reference": "ref-online", "production_master": "master"}
@@ -126,7 +129,7 @@ def _generated_ancestors(entry: dict, files: dict[str, dict]) -> list[dict]:
         if current["id"] in seen:
             continue
         seen.add(current["id"])
-        if current.get("origin") == "generated_concept":
+        if current.get("origin") in GENERATED_ORIGINS:
             found.append(current)
         stack.extend(files[parent] for parent in current.get("parents") or [] if parent in files)
     return found

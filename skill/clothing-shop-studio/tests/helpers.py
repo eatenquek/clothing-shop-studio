@@ -177,6 +177,47 @@ def hash_tree(root: Path) -> dict[str, str]:
     }
 
 
+def make_png(width: int, height: int, rows: list[list[tuple]], colour_type: int = 6, filter_type: int = 0,
+             palette: list[tuple] | None = None) -> bytes:
+    """Encode an 8-bit PNG with one filter type on every row (stdlib only)."""
+    import struct
+    import zlib
+
+    channels = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}[colour_type]
+
+    def chunk(kind: bytes, body: bytes) -> bytes:
+        return struct.pack(">I", len(body)) + kind + body + struct.pack(">I", zlib.crc32(kind + body) & 0xFFFFFFFF)
+
+    raw = bytearray()
+    previous = bytes(width * channels)
+    for row in rows:
+        current = bytes(value for pixel in row for value in (pixel if isinstance(pixel, tuple) else (pixel,)))
+        out = bytearray()
+        for index, value in enumerate(current):
+            left = current[index - channels] if index >= channels else 0
+            up = previous[index]
+            corner = previous[index - channels] if index >= channels else 0
+            if filter_type == 1:
+                value = (value - left) % 256
+            elif filter_type == 2:
+                value = (value - up) % 256
+            elif filter_type == 3:
+                value = (value - (left + up) // 2) % 256
+            elif filter_type == 4:
+                p = left + up - corner
+                pa, pb, pc = abs(p - left), abs(p - up), abs(p - corner)
+                predictor = left if pa <= pb and pa <= pc else up if pb <= pc else corner
+                value = (value - predictor) % 256
+            out.append(value)
+        raw += bytes([filter_type]) + out
+        previous = current
+    body = chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, colour_type, 0, 0, 0))
+    if colour_type == 3:
+        body += chunk(b"PLTE", bytes(value for rgb in palette for value in rgb))
+    body += chunk(b"IDAT", zlib.compress(bytes(raw)))
+    return b"\x89PNG\r\n\x1a\n" + body + chunk(b"IEND", b"")
+
+
 READY_ANSWERS = {
     "reference_image": None,
     "garment_category": "long_sleeve",

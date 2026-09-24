@@ -180,6 +180,13 @@ class ApprovalTests(unittest.TestCase):
         self.assertEqual(list(approval["review_evidence_hashes"].values()), [approval["contact_sheet_sha256"]])
         self.assertTrue((version / "review-contact-sheet.png").is_file())
 
+    def test_refusal_details_follow_the_error_schema(self):
+        with self.assertRaises(ValidationError) as caught:
+            approve_design(self.project, [self.concepts["A"]["id"]], "Yes, but change the sleeve", now=FIXED_NOW)
+        detail = caught.exception.details[0]
+        self.assertEqual(detail["code"], "revision")
+        self.assertIn("message", detail)
+
 
 if __name__ == "__main__":
     unittest.main()

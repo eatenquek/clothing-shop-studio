@@ -58,7 +58,7 @@ def approve_design(project_dir: Path, concept_ids: list[str], statement: str, no
         raise ValidationError(
             "A question, condition, refusal, hesitation, or change request cannot be recorded as design approval.",
             field="statement",
-            details=[{"reason": problem}],
+            details=[{"code": problem, "message": f"The statement contains a {problem} and cannot approve."}],
             recovery="Resolve the request or revise the design, then ask the user for a clear approval statement.",
         )
     if not isinstance(concept_ids, list) or not concept_ids or len(set(concept_ids)) != len(concept_ids):

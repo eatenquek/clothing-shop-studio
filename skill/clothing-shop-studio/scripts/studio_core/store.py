@@ -13,6 +13,7 @@ from pathlib import Path
 from .config import ensure_external
 from .errors import StorageError, ValidationError
 from .interview import pending_assumptions, record_answer
+from .presentation_state import PRESENTATION_EVENTS, apply_presentation_event
 from .views import render_decisions_md, render_manifest, render_project_yaml
 
 SCHEMA_VERSION = 1
@@ -269,6 +270,8 @@ def _apply_event(
         next_state["phase"] = event.get("phase", next_state.get("phase"))
     elif event_type == "assumption":
         next_state.setdefault("assumptions", []).append(event.get("assumption", {}))
+    elif event_type in PRESENTATION_EVENTS:
+        next_state = apply_presentation_event(next_state, event)
     next_state["updated_at"] = event["timestamp"]
     next_state["events_count"] = int(state.get("events_count", 0)) + 1
     next_state["last_event_hash"] = event.get("event_hash")
