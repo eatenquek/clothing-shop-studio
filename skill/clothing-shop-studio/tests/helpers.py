@@ -98,19 +98,75 @@ def four_complete_briefs() -> list[dict]:
     ]
 
 
-def register_file(project: Path, relative: str, content: bytes = b"file") -> dict:
+def register_file(
+    project: Path,
+    relative: str,
+    content: bytes = b"file",
+    origin: str | None = None,
+    parent: str | None = None,
+    **extra,
+) -> dict:
+    """Write a file and, when `origin` is given, record it directly in the event log.
+
+    This deliberately bypasses the public registration checks, simulating a record
+    that was mislabelled or renamed, so validation must catch the problem on its own.
+    """
+    from scripts.studio_core.store import append_event
+
     path = project / relative
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(content)
-    return {
-        "path": relative,
-        "sha256": hashlib.sha256(content).hexdigest(),
-    }
+    entry = {"path": relative, "sha256": hashlib.sha256(content).hexdigest()}
+    if origin is None:
+        return entry
+    entry.update(
+        {
+            "id": f"raw-{Path(relative).stem}",
+            "origin": origin,
+            "parents": [parent] if parent else [],
+            "registered_at": FIXED_NOW,
+            "production_eligible": origin == "production_master",
+            **extra,
+        }
+    )
+    append_event(project, {"type": "files_registered", "entries": [entry]}, FIXED_NOW)
+    return entry
 
 
 def register_reference_text(project: Path, text: str = "reference") -> dict:
-    record = register_file(project, "references/user/reference.txt", text.encode("utf-8"))
-    return {**record, "origin": "user_reference"}
+    """Register reference text through the public API, as the agent would."""
+    from scripts.studio_core.validation import register_file as api_register_file
+
+    path = project / "references/user/reference.txt"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return api_register_file(
+        project,
+        {"origin": "user_reference", "path": "references/user/reference.txt", "extracted_text": text},
+        FIXED_NOW,
+    )
+
+
+def register_concepts(project: Path) -> dict[str, dict]:
+    """Register one A/B/C/W round and return the entries keyed by label."""
+    from scripts.studio_core.options import register_options
+
+    return {entry["label"]: entry for entry in register_options(project, four_results(project), FIXED_NOW)}
+
+
+def register_vector_master(project: Path, name: str = "back-typography_MASTER.svg", **extra) -> dict:
+    """Write a typeset SVG master and register it through the public API."""
+    from scripts.studio_core.validation import register_file as api_register_file
+
+    relative = f"production/masters/{name}"
+    path = project / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="300mm" height="120mm"><text>KIKI KAKA</text></svg>',
+        encoding="utf-8",
+    )
+    payload = {"origin": "production_master", "path": relative, "construction": "typeset", **extra}
+    return api_register_file(project, payload, FIXED_NOW)
 
 
 def hash_tree(root: Path) -> dict[str, str]:

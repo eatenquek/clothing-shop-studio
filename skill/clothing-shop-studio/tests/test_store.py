@@ -72,6 +72,18 @@ class StoreTests(unittest.TestCase):
         events = [json.loads(line) for line in (project / "metadata/decisions.jsonl").read_text("utf-8").splitlines()]
         self.assertEqual(events[-1]["field"], "fit")
 
+    def test_append_refuses_to_build_on_hand_edited_state(self):
+        project = make_project(self.root)
+        state_path = project / "metadata/state.json"
+        state = json.loads(state_path.read_text("utf-8"))
+        state["phase"] = "approved"
+        state_path.write_text(json.dumps(state), "utf-8")
+        tampered = state_path.read_bytes()
+        with self.assertRaises(StorageError):
+            append_event(project, {"type": "answer", "field": "fit", "value": "boxy"}, FIXED_NOW)
+        self.assertEqual(state_path.read_bytes(), tampered)
+        self.assertEqual(len((project / "metadata/decisions.jsonl").read_text("utf-8").splitlines()), 1)
+
     def test_answer_event_matches_interview_assumption_register(self):
         project = make_project(self.root)
         append_event(project, {"type": "answer", "field": "reference_image", "value": None}, FIXED_NOW)

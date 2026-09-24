@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import fcntl
+import hashlib
 import json
 import os
 import re
@@ -15,6 +16,7 @@ from .interview import record_answer
 from .views import render_decisions_md, render_manifest, render_project_yaml
 
 SCHEMA_VERSION = 1
+GENESIS_HASH = "0" * 64
 PROJECT_DIRS = (
     "metadata",
     "references/user",
@@ -82,7 +84,51 @@ def _state_template(name: str, slug: str, now: str) -> dict:
         "files": [],
         "production": {},
         "events_count": 1,
+        "last_event_hash": None,
     }
+
+
+def canonical_json(value) -> str:
+    """Stable serialisation used for hashing: sorted keys, no insignificant whitespace."""
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def event_hash(event: dict, previous_hash: str) -> str:
+    body = {key: value for key, value in event.items() if key != "event_hash"}
+    return hashlib.sha256((previous_hash + canonical_json(body)).encode("utf-8")).hexdigest()
+
+
+def _seal(event: dict, previous_hash: str) -> dict:
+    """Link an event to its predecessor so any later edit to the log breaks the chain."""
+    sealed = dict(event)
+    sealed["previous_hash"] = previous_hash
+    sealed["event_hash"] = event_hash(sealed, previous_hash)
+    return sealed
+
+
+def broken_links(events: list[dict]) -> list[int]:
+    """Return the 1-based positions of events whose hash link does not verify."""
+    broken, previous = [], GENESIS_HASH
+    for position, event in enumerate(events, start=1):
+        if event.get("previous_hash") != previous or event.get("event_hash") != event_hash(event, previous):
+            broken.append(position)
+        previous = event.get("event_hash") or ""
+    return broken
+
+
+def replay_state(events: list[dict]) -> dict:
+    """Rebuild canonical state from the decision log alone."""
+    if not events or events[0].get("type") != "project_created":
+        raise ValidationError(
+            "The decision log does not start with project creation.",
+            recovery="Restore metadata/decisions.jsonl from backup.",
+        )
+    first = events[0]
+    state = _state_template(first["name"], first.get("slug") or _slugify(first["name"]), first["timestamp"])
+    state["last_event_hash"] = first.get("event_hash")
+    for event in events[1:]:
+        state = _apply_event(state, event)
+    return state
 
 
 def create_project(root: Path, name: str, skill_dir: Path, now: str) -> dict:
@@ -112,8 +158,9 @@ def create_project(root: Path, name: str, skill_dir: Path, now: str) -> dict:
             recovery="Choose a writable project root and retry.",
         ) from exc
 
-    event = {"type": "project_created", "name": name.strip(), "timestamp": now}
+    event = _seal({"type": "project_created", "name": name.strip(), "slug": slug, "timestamp": now}, GENESIS_HASH)
     state = _state_template(name.strip(), slug, now)
+    state["last_event_hash"] = event["event_hash"]
     try:
         write_atomic(
             project / "metadata/decisions.jsonl",
@@ -201,12 +248,19 @@ def _apply_event(state: dict, event: dict) -> dict:
         )
     elif event_type == "concept_merged":
         _add_files(next_state, [event["entry"]])
+    elif event_type == "files_registered":
+        _add_files(next_state, event.get("entries") or [])
+    elif event_type == "design_approved":
+        _add_files(next_state, event.get("entries") or [])
+        next_state.setdefault("approvals", []).append(event["approval"])
+        next_state["phase"] = "approved"
     elif event_type == "phase_changed":
         next_state["phase"] = event.get("phase", next_state.get("phase"))
     elif event_type == "assumption":
         next_state.setdefault("assumptions", []).append(event.get("assumption", {}))
     next_state["updated_at"] = event["timestamp"]
     next_state["events_count"] = int(state.get("events_count", 0)) + 1
+    next_state["last_event_hash"] = event.get("event_hash")
     return next_state
 
 
@@ -224,12 +278,22 @@ def append_event(project_dir: Path, event: dict, now: str | None = None) -> dict
         fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
         state = load_state(project)
         events = _load_events(project)
+        if broken_links(events) or replay_state(events) != state:
+            # Never build new decisions on a hand-edited state or log.
+            raise StorageError(
+                "Project state no longer matches its decision log.",
+                path=str(project / "metadata"),
+                recovery="Run `validate` to locate the change, then restore the edited file from backup.",
+            )
         enriched = dict(event)
+        enriched.pop("previous_hash", None)
+        enriched.pop("event_hash", None)
         enriched["timestamp"] = enriched.get("timestamp") or now or _utc_now()
         if enriched["type"] == "answer":
             # Store defaults explicitly so the log is self-describing on replay.
             enriched.setdefault("source", "user")
             enriched.setdefault("confirmed", True)
+        enriched = _seal(enriched, events[-1]["event_hash"] if events else GENESIS_HASH)
         next_state = _apply_event(state, enriched)
         next_events = events + [enriched]
         targets = {
@@ -275,5 +339,9 @@ def status(project_dir: Path) -> dict:
         "updated_at": state["updated_at"],
         "answered_fields": sorted(state.get("answers", {})),
         "assumption_count": len(state.get("assumptions", [])),
+        "unconfirmed_assumptions": sorted(
+            item["field"] for item in state.get("assumptions", []) if not item.get("confirmed")
+        ),
         "approval_count": len(state.get("approvals", [])),
+        "approved_versions": [item["version"] for item in state.get("approvals", [])],
     }

@@ -8,7 +8,8 @@ import re
 import textwrap
 from pathlib import Path
 
-from .errors import UnsafePathError, ValidationError
+from .config import resolve_inside
+from .errors import ValidationError
 from .store import _utc_now, append_event, load_state, write_atomic
 
 LABELS = ("A", "B", "C", "W")
@@ -94,30 +95,7 @@ def next_round(state: dict, decision_id: str) -> int:
 
 
 def _resolve_generated(project: Path, relative, field: str = "path") -> tuple[Path, str]:
-    if not isinstance(relative, str) or not relative or Path(relative).is_absolute():
-        raise ValidationError(
-            "Preview paths must be relative to the project directory.",
-            field=field,
-            recovery="Save previews under concepts/generated/ and send the relative path.",
-        )
-    root = (project / GENERATED_DIR).resolve()
-    candidate = (project / relative).resolve()
-    try:
-        candidate.relative_to(root)
-    except ValueError as exc:
-        raise UnsafePathError(
-            "Generated previews must stay inside concepts/generated/.",
-            field=field,
-            path=relative,
-            recovery="Move the preview into concepts/generated/ and retry.",
-        ) from exc
-    if not candidate.is_file():
-        raise ValidationError(
-            "The preview file does not exist.",
-            field=field,
-            path=relative,
-            recovery="Render the preview before registering it.",
-        )
+    candidate, normalised = resolve_inside(project, relative, f"{GENERATED_DIR.as_posix()}/", field)
     if candidate.suffix.lower() not in PREVIEW_SUFFIXES:
         raise ValidationError(
             "Unsupported preview format.",
@@ -125,7 +103,7 @@ def _resolve_generated(project: Path, relative, field: str = "path") -> tuple[Pa
             path=relative,
             recovery=f"Use one of: {', '.join(sorted(PREVIEW_SUFFIXES))}.",
         )
-    return candidate, candidate.relative_to(project.resolve()).as_posix()
+    return candidate, normalised
 
 
 def _sha256(path: Path) -> str:

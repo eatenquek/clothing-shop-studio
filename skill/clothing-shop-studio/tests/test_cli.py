@@ -168,6 +168,50 @@ class CliTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertEqual(len(registered["data"]["entries"]), 4)
 
+    def test_approve_register_master_and_validate(self):
+        project = self.create()
+        concept_dir = project / "concepts/generated/back_typography/r01"
+        concept_dir.mkdir(parents=True)
+        results = []
+        for label, axis in zip("ABCW", ("density", "alignment", "distress", "scale")):
+            (concept_dir / f"option-{label}.svg").write_text(f"<svg><text>{label}</text></svg>", "utf-8")
+            results.append({"label": label, "axis": axis, "renderer": "svg-fallback",
+                            "path": f"concepts/generated/back_typography/r01/option-{label}.svg",
+                            "convention_broken": "Crosses the seam" if label == "W" else None})
+        _, registered = self.run_cli(
+            "generate_options",
+            {"project_dir": str(project), "mode": "register", "decision_id": "back_typography", "results": results},
+        )
+        concept_a = registered["data"]["entries"][0]["id"]
+
+        completed, approved = self.run_cli(
+            "approve_design",
+            {"project_dir": str(project), "concept_ids": [concept_a], "statement": "Approve option A"},
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(approved["data"]["version"], "v001")
+
+        master = project / "production/masters/back_MASTER.svg"
+        master.parent.mkdir(parents=True)
+        master.write_text("<svg><text>KIKI KAKA</text></svg>", "utf-8")
+        completed, registered_master = self.run_cli(
+            "register_file",
+            {"project_dir": str(project), "origin": "production_master",
+             "path": "production/masters/back_MASTER.svg", "construction": "typeset",
+             "approved_version": "v001"},
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+
+        completed, report = self.run_cli(
+            "validate", {"project_dir": str(project), "master_ids": [registered_master["data"]["id"]]}
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(report["data"]["errors"], [])
+
+        _, state = self.run_cli("status", {"project_dir": str(project)})
+        self.assertEqual(state["data"]["approved_versions"], ["v001"])
+        self.assertEqual(state["data"]["blockers"], [])
+
     def test_generate_options_rejects_unknown_mode(self):
         project = self.create()
         completed, response = self.run_cli(

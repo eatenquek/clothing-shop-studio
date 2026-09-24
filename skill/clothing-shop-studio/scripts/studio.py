@@ -10,9 +10,11 @@ from pathlib import Path
 from studio_core import SCHEMA_VERSION
 from studio_core.config import resolve_storage_root, save_storage_root
 from studio_core.errors import StudioError, ValidationError
+from studio_core.approval import approve_design
 from studio_core.interview import load_graph, next_question
 from studio_core.options import merge_concept, next_round, plan_options, register_options
 from studio_core.store import append_event, create_project, load_state, status
+from studio_core.validation import register_file, validate_project
 
 BUNDLE_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = Path.home() / ".config/clothing-shop-studio/config.json"
@@ -102,8 +104,35 @@ def command_generate_options(payload: dict) -> dict:
     )
 
 
+def command_approve_design(payload: dict) -> dict:
+    project = Path(_required(payload, "project_dir"))
+    target = approve_design(project, payload.get("concept_ids"), payload.get("statement"), payload.get("now"))
+    record = next(item for item in load_state(project)["approvals"] if item["version"] == target.name)
+    return {"version": target.name, "path": str(target), "approval": record}
+
+
+def command_register_file(payload: dict) -> dict:
+    return register_file(Path(_required(payload, "project_dir")), payload, payload.get("now"))
+
+
+def command_validate(payload: dict) -> dict:
+    return validate_project(
+        Path(_required(payload, "project_dir")),
+        master_ids=payload.get("master_ids"),
+        for_export=bool(payload.get("for_export", False)),
+    )
+
+
 def command_status(payload: dict) -> dict:
-    return status(Path(_required(payload, "project_dir")))
+    project = Path(_required(payload, "project_dir"))
+    summary = status(project)
+    report = validate_project(project)
+    return {
+        **summary,
+        "next_question": _next_question(load_state(project)),
+        "blockers": report["errors"],
+        "warnings": report["warnings"],
+    }
 
 
 COMMANDS = {
@@ -111,6 +140,9 @@ COMMANDS = {
     "resume_project": command_resume_project,
     "record_answer": command_record_answer,
     "generate_options": command_generate_options,
+    "approve_design": command_approve_design,
+    "register_file": command_register_file,
+    "validate": command_validate,
     "status": command_status,
 }
 

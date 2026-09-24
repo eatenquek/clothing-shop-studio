@@ -23,7 +23,7 @@ def render_decisions_md(events: list[dict]) -> str:
         timestamp = event.get("timestamp", "unknown time")
         lines.extend([f"## {index}. {event_type}", "", f"- Time: `{timestamp}`"])
         for key in sorted(event):
-            if key in {"type", "timestamp"}:
+            if key in {"type", "timestamp", "previous_hash", "event_hash"}:
                 continue
             value = json.dumps(event[key], ensure_ascii=False, sort_keys=True)
             lines.append(f"- {key.replace('_', ' ').title()}: `{value}`")

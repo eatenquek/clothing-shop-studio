@@ -30,6 +30,38 @@ def ensure_external(path: Path, skill_dir: Path) -> Path:
     return resolved
 
 
+def resolve_inside(project: Path, relative, folder: str, field: str = "path") -> tuple[Path, str]:
+    """Resolve a project-relative file and require it to exist inside `folder`.
+
+    Returns the absolute path and the normalised POSIX path relative to the project.
+    Symlinks and `..` segments are resolved first, so they cannot escape the folder.
+    """
+    if not isinstance(relative, str) or not relative or Path(relative).is_absolute():
+        raise ValidationError(
+            "File paths must be relative to the project directory.",
+            field=field,
+            recovery=f"Save the file under {folder} and send its relative path.",
+        )
+    project = Path(project).resolve()
+    root = (project / folder).resolve()
+    candidate = (project / relative).resolve()
+    if not _is_within(candidate, root):
+        raise UnsafePathError(
+            f"This file must stay inside {folder}.",
+            field=field,
+            path=relative,
+            recovery=f"Move the file into {folder} and retry.",
+        )
+    if not candidate.is_file():
+        raise ValidationError(
+            "The file does not exist.",
+            field=field,
+            path=relative,
+            recovery="Create or copy the file before registering it.",
+        )
+    return candidate, candidate.relative_to(project).as_posix()
+
+
 def resolve_storage_root(
     requested: Path | None,
     skill_dir: Path,
