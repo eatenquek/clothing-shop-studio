@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.clothing-shop-studio/project.schema.json",
+  "title": "Clothing Shop Studio project state",
+  "type": "object",
+  "required": ["schema_version", "project_name", "project_slug", "phase", "answers"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "project_name": {"type": "string", "minLength": 1},
+    "project_slug": {"type": "string", "minLength": 1},
+    "phase": {"type": "string"},
+    "answers": {"type": "object"},
+    "assumptions": {"type": "array"},
+    "references": {"type": "array"},
+    "concepts": {"type": "array"},
+    "approvals": {"type": "array"},
+    "production": {"type": "object"}
+  },
+  "additionalProperties": true
+}

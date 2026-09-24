@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.clothing-shop-studio/command-io.schema.json",
+  "title": "Clothing Shop Studio command response",
+  "type": "object",
+  "required": ["ok", "command", "schema_version"],
+  "properties": {
+    "ok": {"type": "boolean"},
+    "command": {"type": "string"},
+    "schema_version": {"const": 1},
+    "data": {"type": "object"},
+    "error": {
+      "type": "object",
+      "required": ["code", "message", "recovery"]
+    }
+  }
+}
