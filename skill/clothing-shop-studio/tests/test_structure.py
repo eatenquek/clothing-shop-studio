@@ -72,5 +72,14 @@ class StructureTests(unittest.TestCase):
         self.assertIn("before that single closing question", safety_text)
 
 
+    def test_seller_notice_is_always_reproduced_in_full(self):
+        safety = (ROOT / "references" / "safety-scope.md").read_text(encoding="utf-8")
+        self.assertNotIn("shorter treatment, keep every topic", safety)
+        self.assertNotIn("compress the prose", safety)
+        self.assertIn("Always reproduce the full quoted notice word for word", safety)
+        self.assertIn("including presentation visuals", safety)
+        self.assertIn("even if the user asks for a shorter treatment", safety)
+        self.assertIn("Do not bake this notice into the artwork", safety)
+
 if __name__ == "__main__":
     unittest.main()
