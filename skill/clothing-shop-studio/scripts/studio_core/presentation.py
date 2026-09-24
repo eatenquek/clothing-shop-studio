@@ -35,6 +35,50 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+SOF_MARKERS = {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}
+STANDALONE_MARKERS = {0x01, 0xD8, 0xD9} | set(range(0xD0, 0xD8))
+
+
+def image_size(path: Path) -> tuple[int, int] | None:
+    """Return (width, height) from a PNG or JPEG header only, or None if unreadable."""
+    try:
+        data = Path(path).read_bytes()
+    except OSError:
+        return None
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        if len(data) < 24:
+            return None
+        width, height = int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+        return (width, height) if width and height else None
+    if data.startswith(b"\xff\xd8"):
+        offset = 2
+        while offset + 1 < len(data):
+            if data[offset] != 0xFF:
+                offset += 1
+                continue
+            marker = data[offset + 1]
+            if marker == 0xFF:
+                offset += 1
+                continue
+            if marker in STANDALONE_MARKERS:
+                offset += 2
+                continue
+            if offset + 4 > len(data):
+                return None
+            length = int.from_bytes(data[offset + 2:offset + 4], "big")
+            if marker in SOF_MARKERS:
+                segment = data[offset + 4:offset + 4 + length - 2]
+                if len(segment) < 5:
+                    return None
+                height, width = int.from_bytes(segment[1:3], "big"), int.from_bytes(segment[3:5], "big")
+                return (width, height) if width and height else None
+            if length < 2:
+                return None
+            offset += 2 + length
+        return None
+    return None
+
+
 def check_image(project: Path, relative: str, folder: str, field: str = "path") -> tuple[Path, str]:
     """Require a non-empty PNG or JPEG inside `folder` whose bytes match its extension."""
     absolute, normalised = resolve_inside(project, relative, folder, field)

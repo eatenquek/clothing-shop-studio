@@ -17,6 +17,7 @@ from .presentation import (
     PRESENTATION_FOLDERS,
     check_image,
     file_index,
+    image_size,
     listing_eligible,
     next_round,
     presentation_error,
@@ -27,6 +28,7 @@ from .store import _utc_now, append_event, load_state, write_atomic
 
 CATEGORIES = ("tops", "jackets", "bottoms", "accessories", "shoes")
 GRAPHIC_POLICIES = ("exact", "mark-only", "omit")
+MIN_EXTRACT_SIZE = 1200
 SLUG = re.compile(r"^[a-z0-9][a-z0-9-]{0,62}$")
 HEX = re.compile(r"^#[0-9A-Fa-f]{6}$")
 SOURCE_ORIGINS = {"user_reference", "approved_design"}
@@ -167,7 +169,7 @@ def plan_extraction(project: Path, payload: dict) -> dict:
         "jobs": [
             {"slug": item["slug"], "prompt": _prompt(item), "inputs": [source["path"]], "crop": item["bbox"],
              "crop_padding": 0.12, "destination": f"{base}/{item['slug']}.png", "background": "#FFFFFF",
-             "min_size": 1200, "aspect": "1:1"}
+             "min_size": MIN_EXTRACT_SIZE, "aspect": "1:1"}
             for item in inventory["items"]
         ],
     }
@@ -200,6 +202,13 @@ def register_extraction(project: Path, payload: dict, now: str | None = None) ->
             raise ValidationError("Register the file at its planned destination.", field="path", path=path,
                                   recovery=f"Save the image as {stem}.png.")
         absolute, relative = check_image(project, path, FOLDER)
+        size = image_size(absolute)
+        if size is None or size[0] != size[1] or size[0] < MIN_EXTRACT_SIZE:
+            raise ValidationError(
+                "The rendered image must be a square at least "
+                f"{MIN_EXTRACT_SIZE}px on a side.", field="path", path=relative,
+                recovery=f"Re-render as a square image at least {MIN_EXTRACT_SIZE}px on #FFFFFF and register again.",
+            )
         digest = sha256(absolute)
         if digest in seen_hashes:
             raise ValidationError("Two results are byte-identical.", field="path", path=relative,

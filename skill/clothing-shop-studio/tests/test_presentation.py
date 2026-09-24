@@ -11,6 +11,7 @@ from scripts.studio_core.errors import UnsafePathError, ValidationError
 from scripts.studio_core.presentation import (
     PRESENTATION_FOLDERS,
     check_image,
+    image_size,
     kept_ids,
     library_root,
     listing_eligible,
@@ -97,6 +98,22 @@ class PresentationCoreTests(unittest.TestCase):
 
     def test_library_root_is_beside_projects(self):
         self.assertEqual(library_root(self.project), self.project.parent / "_models")
+
+    def test_image_size_reads_png_jpeg_and_headers(self):
+        png_path = self.project / "sample.png"
+        png_path.write_bytes(make_png(4, 3, [[(0, 0, 0, 255)] * 4] * 3))
+        self.assertEqual(image_size(png_path), (4, 3))
+
+        # A minimal, real baseline JPEG: SOI, an SOF0 segment declaring a 4x4
+        # grayscale image, then EOI, built by hand from real marker bytes.
+        jpeg_path = self.project / "sample.jpg"
+        jpeg_path.write_bytes(bytes.fromhex("ffd8" "ffc0" "000b" "08" "0004" "0004" "01" "011100" "ffd9"))
+        self.assertEqual(image_size(jpeg_path), (4, 4))
+
+        garbage_path = self.project / "sample.bin"
+        garbage_path.write_bytes(b"not an image")
+        self.assertIsNone(image_size(garbage_path))
+        self.assertIsNone(image_size(self.project / "missing.png"))
 
 
 if __name__ == "__main__":

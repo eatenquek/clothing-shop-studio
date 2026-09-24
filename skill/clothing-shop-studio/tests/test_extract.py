@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # discoverable from any cwd
 
@@ -21,8 +22,16 @@ from tests.helpers import FIXED_NOW, make_png, make_project
 
 NAVY, WHITE = (20, 30, 90, 255), (255, 255, 255, 255)
 GARMENT = make_png(4, 4, [[WHITE, NAVY, NAVY, WHITE]] * 4)
+# A minimal, real (not placeholder) baseline JPEG: SOI, an SOF0 segment declaring a 4x4
+# grayscale image, then EOI. Built by hand so `image_size` can read real headers from it.
+JPEG_4X4 = bytes.fromhex("ffd8" "ffc0" "000b" "08" "0004" "0004" "01" "011100" "ffd9")
 ITEM = {"slug": "navy-tee", "name": "Navy tee", "category": "tops", "details": ["casual"],
         "observed": ["crew neck"], "bbox": [0.1, 0.1, 0.8, 0.9], "graphic_policy": "omit", "unknowns": []}
+
+
+def small_extract():
+    """Patch the extraction module's minimum size down to fit the 4x4 test fixtures."""
+    return patch("scripts.studio_core.extract.MIN_EXTRACT_SIZE", 4)
 
 
 def code(error: ValidationError) -> str:
@@ -80,6 +89,7 @@ class ExtractTests(unittest.TestCase):
         for phrase in ("Reconstruct ONLY the complete empty", "Prefer omission over invention", "Omit any"):
             self.assertIn(phrase, job["prompt"])
 
+    @small_extract()
     def test_register_records_lineage_colour_and_catalogue(self):
         inventory = self.ready()
         destination = plan_extraction(self.project, {"inventory_id": inventory["id"]})["jobs"][0]["destination"]
@@ -108,13 +118,14 @@ class ExtractTests(unittest.TestCase):
                                                "results": [{"slug": "navy-tee", "path": "presentation/extracted/elsewhere.png",
                                                             "renderer": "r", "prompt": "p"}]}, FIXED_NOW)
 
+    @small_extract()
     def test_catalogue_escapes_names_and_rejects_bad_colours(self):
         inventory = self.inventory([{**ITEM, "name": "<script>alert(1)</script>", "details": ["<b>x</b>"]}])
         confirm_inventory(self.project, {"inventory_id": inventory["id"], "user_quote": "Yes"}, FIXED_NOW)
         record_consent(self.project, {"file_id": self.ref["id"], "user_quote": "Yes"}, FIXED_NOW)
         destination = plan_extraction(self.project, {"inventory_id": inventory["id"]})["jobs"][0]["destination"]
         (self.project / destination).parent.mkdir(parents=True, exist_ok=True)
-        (self.project / destination).write_bytes(b"\xff\xd8\xff" + b"jpeg-bytes")
+        (self.project / destination).write_bytes(JPEG_4X4)
         jpg = destination[:-4] + ".jpg"
         (self.project / destination).rename(self.project / jpg)
         with self.assertRaises(ValidationError):
@@ -129,6 +140,7 @@ class ExtractTests(unittest.TestCase):
         self.assertIn("&lt;script&gt;", page)
         self.assertEqual(result["entries"][0]["colour_source"], "estimated")
 
+    @small_extract()
     def test_third_party_source_is_inspiration_only(self):
         photo = self.project / "references/user/shop.png"
         photo.write_bytes(GARMENT)
@@ -143,6 +155,30 @@ class ExtractTests(unittest.TestCase):
         entry = register_extraction(self.project, {"inventory_id": inventory["id"], "round": 1, "results": [
             {"slug": "navy-tee", "path": destination, "renderer": "r", "prompt": "p"}]}, FIXED_NOW)["entries"][0]
         self.assertFalse(entry["listing_eligible"])
+
+    def test_register_refuses_undersized_images_at_the_default_minimum(self):
+        # No MIN_EXTRACT_SIZE patch here: a 4x4 render must be refused against the
+        # real 1200px default, proving the size gate is actually wired in.
+        inventory = self.ready()
+        destination = plan_extraction(self.project, {"inventory_id": inventory["id"]})["jobs"][0]["destination"]
+        (self.project / destination).parent.mkdir(parents=True, exist_ok=True)
+        (self.project / destination).write_bytes(GARMENT)
+        with self.assertRaises(ValidationError):
+            register_extraction(self.project, {"inventory_id": inventory["id"], "round": 1,
+                                               "results": [{"slug": "navy-tee", "path": destination,
+                                                            "renderer": "r", "prompt": "p"}]}, FIXED_NOW)
+
+    @patch("scripts.studio_core.extract.MIN_EXTRACT_SIZE", 1)
+    def test_register_refuses_non_square_images(self):
+        inventory = self.ready()
+        destination = plan_extraction(self.project, {"inventory_id": inventory["id"]})["jobs"][0]["destination"]
+        (self.project / destination).parent.mkdir(parents=True, exist_ok=True)
+        wide = make_png(4, 2, [[WHITE, NAVY, NAVY, WHITE]] * 2)
+        (self.project / destination).write_bytes(wide)
+        with self.assertRaises(ValidationError):
+            register_extraction(self.project, {"inventory_id": inventory["id"], "round": 1,
+                                               "results": [{"slug": "navy-tee", "path": destination,
+                                                            "renderer": "r", "prompt": "p"}]}, FIXED_NOW)
 
 
 if __name__ == "__main__":
