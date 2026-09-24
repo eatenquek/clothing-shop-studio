@@ -98,7 +98,7 @@ def main(argv=None) -> int:
     for number, prompt in enumerate(prompts, start=1):
         turn = run_turn(prompt, workspace, skill_dir, session, env)
         session = turn["session"]
-        lines += [f"## Turn {number}", "", "**User:**", "", *[f"> {row}" for row in prompt.splitlines()], "",
+        lines += [f"## Turn {number}", "", "**User:**", "", *[f"> {row}".rstrip() for row in prompt.splitlines()], "",
                   "**Tool calls:**", ""]
         lines += [f"- `{describe_tool(tool)}`" for tool in turn["tools"]] or ["- none"]
         lines += ["", "**Assistant (verbatim):**", "", *[f"> {row}" if row else ">" for row in turn["text"].splitlines()], ""]
@@ -115,7 +115,7 @@ def main(argv=None) -> int:
                              if path.is_file() and not (args.bundle / path.relative_to(skill_dir)).exists())
     lines += [f"- Files added inside the installed skill: {skill_mutations or 'none'}", ""]
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text("\n".join(lines) + "\n", "utf-8")
+    args.out.write_text("\n".join(lines).rstrip() + "\n", "utf-8")
     print(f"wrote {args.out}")
     return 0
 
