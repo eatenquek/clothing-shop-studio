@@ -12,7 +12,7 @@ from pathlib import Path
 from .config import ensure_external
 from .errors import StorageError, ValidationError
 from .interview import record_answer
-from .views import render_decisions_md, render_project_yaml
+from .views import render_decisions_md, render_manifest, render_project_yaml
 
 SCHEMA_VERSION = 1
 PROJECT_DIRS = (
@@ -79,6 +79,7 @@ def _state_template(name: str, slug: str, now: str) -> dict:
         "references": [],
         "concepts": [],
         "approvals": [],
+        "files": [],
         "production": {},
         "events_count": 1,
     }
@@ -122,7 +123,7 @@ def create_project(root: Path, name: str, skill_dir: Path, now: str) -> dict:
             project / "metadata/state.json",
             (json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8"),
         )
-        write_atomic(project / "metadata/manifest.json", b'{"files": [], "schema_version": 1}\n')
+        write_atomic(project / "metadata/manifest.json", render_manifest(state).encode("utf-8"))
         write_atomic(project / "project.yaml", render_project_yaml(state).encode("utf-8"))
         write_atomic(project / "decisions.md", render_decisions_md([event]).encode("utf-8"))
     except StorageError:
@@ -161,6 +162,19 @@ def _load_events(project_dir: Path) -> list[dict]:
         ) from exc
 
 
+def _add_files(state: dict, entries: list[dict]) -> None:
+    """Append file records, rejecting ids already present (checked under the project lock)."""
+    existing = {item.get("id") for item in state.get("files", [])}
+    clashes = sorted(entry["id"] for entry in entries if entry["id"] in existing)
+    if clashes:
+        raise ValidationError(
+            f"File id already registered: {', '.join(clashes)}.",
+            field="id",
+            recovery="Resume the project and register the next round.",
+        )
+    state.setdefault("files", []).extend(entries)
+
+
 def _apply_event(state: dict, event: dict) -> dict:
     next_state = json.loads(json.dumps(state, ensure_ascii=False))
     event_type = event.get("type")
@@ -174,6 +188,19 @@ def _apply_event(state: dict, event: dict) -> dict:
             evidence=event.get("evidence"),
             confirmed=event["confirmed"],
         )
+    elif event_type == "options_registered":
+        entries = event.get("entries") or []
+        _add_files(next_state, entries)
+        next_state.setdefault("concepts", []).append(
+            {
+                "decision_id": event.get("decision_id"),
+                "round": event.get("round"),
+                "ids": [entry["id"] for entry in entries],
+                "contact_sheet": event.get("contact_sheet"),
+            }
+        )
+    elif event_type == "concept_merged":
+        _add_files(next_state, [event["entry"]])
     elif event_type == "phase_changed":
         next_state["phase"] = event.get("phase", next_state.get("phase"))
     elif event_type == "assumption":
@@ -213,6 +240,7 @@ def append_event(project_dir: Path, event: dict, now: str | None = None) -> dict
             project / "metadata/state.json": (
                 json.dumps(next_state, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
             ).encode("utf-8"),
+            project / "metadata/manifest.json": render_manifest(next_state).encode("utf-8"),
             project / "project.yaml": render_project_yaml(next_state).encode("utf-8"),
             project / "decisions.md": render_decisions_md(next_events).encode("utf-8"),
         }

@@ -8,6 +8,12 @@ def render_project_yaml(state: dict) -> str:
     return json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
+def render_manifest(state: dict) -> str:
+    """Render metadata/manifest.json from the canonical file records in state."""
+    payload = {"schema_version": state.get("schema_version", 1), "files": state.get("files", [])}
+    return json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+
+
 def render_decisions_md(events: list[dict]) -> str:
     lines = ["# Project decisions", ""]
     if not events:

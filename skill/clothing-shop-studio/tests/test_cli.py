@@ -118,6 +118,64 @@ class CliTests(unittest.TestCase):
         events = (project / "metadata/decisions.jsonl").read_text("utf-8").splitlines()
         self.assertEqual(len(events), 1)
 
+    def test_generate_options_plan_render_and_register(self):
+        project = self.create()
+        _, planned = self.run_cli(
+            "generate_options",
+            {
+                "project_dir": str(project),
+                "mode": "plan",
+                "decision_id": "back_typography",
+                "axes": ["density", "alignment", "distress", "scale"],
+                "constraints": {"colors": 1},
+            },
+        )
+        slots = planned["data"]["slots"]
+        self.assertEqual([slot["label"] for slot in slots], ["A", "B", "C", "W"])
+
+        briefs = [
+            {"label": slot["label"], "axis": slot["axis"], "title": f"Option {slot['label']}",
+             "brief": "Condensed distressed type", "garment": "long_sleeve",
+             "placement": "upper_back", "colors": ["#111111", "#EEEEEE"]}
+            for slot in slots
+        ]
+        out_dir = project / "concepts/generated/back_typography/r01"
+        brief_file = self.root / "briefs.json"
+        brief_file.write_text(json.dumps({"output_dir": str(out_dir), "briefs": briefs}), "utf-8")
+        rendered = subprocess.run(
+            [sys.executable, str(self.bundle / "scripts/render-options.py"), "--input", str(brief_file)],
+            text=True, capture_output=True, check=False, cwd=self.root,
+        )
+        self.assertEqual(rendered.returncode, 0, rendered.stderr)
+        cards = json.loads(rendered.stdout)["data"]["cards"]
+        self.assertTrue(Path(json.loads(rendered.stdout)["data"]["contact_sheet"]).is_file())
+
+        completed, registered = self.run_cli(
+            "generate_options",
+            {
+                "project_dir": str(project),
+                "mode": "register",
+                "decision_id": "back_typography",
+                "results": [
+                    {"label": slot["label"], "axis": slot["axis"],
+                     "path": str(Path(cards[slot["label"]]).relative_to(project)),
+                     "renderer": "svg-fallback", "prompt": "Condensed distressed type",
+                     "convention_broken": "Type crosses the shoulder seam" if slot["wildcard"] else None}
+                    for slot in slots
+                ],
+            },
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(len(registered["data"]["entries"]), 4)
+
+    def test_generate_options_rejects_unknown_mode(self):
+        project = self.create()
+        completed, response = self.run_cli(
+            "generate_options", {"project_dir": str(project), "mode": "describe"}
+        )
+        self.assertEqual(completed.returncode, 2)
+        self.assertEqual(response["error"]["field"], "mode")
+
     def test_structured_validation_error(self):
         completed, response = self.run_cli("create_project", {"name": "Missing root"})
         self.assertEqual(completed.returncode, 2)

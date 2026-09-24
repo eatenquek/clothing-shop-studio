@@ -54,21 +54,47 @@ def collect_question_ids(state: dict, graph: list[dict], limit: int = 10) -> lis
     return seen
 
 
-def four_results(project: Path) -> list[dict]:
-    output = project / "concepts" / "generated"
+DEFAULT_AXES = ("density", "alignment", "distress", "scale")
+
+
+def four_results(
+    project: Path,
+    axes=DEFAULT_AXES,
+    decision_id: str = "back_typography",
+    labels=("A", "B", "C", "W"),
+) -> dict:
+    """Write four labelled preview files and return a `register` payload for them."""
+    output = project / "concepts" / "generated" / decision_id / "r01"
     output.mkdir(parents=True, exist_ok=True)
     results = []
-    for label in ("A", "B", "C", "W"):
+    for label, axis in zip(labels, axes):
         path = output / f"option-{label}.svg"
         path.write_text(f"<svg><text>{label}</text></svg>", encoding="utf-8")
-        results.append({"label": label, "path": str(path.relative_to(project))})
-    return results
+        result = {
+            "label": label,
+            "axis": axis,
+            "path": str(path.relative_to(project)),
+            "renderer": "test-renderer",
+            "prompt": f"Direction {label} varying {axis}",
+        }
+        if label == "W":
+            result["convention_broken"] = "Type breaks the shoulder line"
+        results.append(result)
+    return {"decision_id": decision_id, "results": results}
 
 
 def four_complete_briefs() -> list[dict]:
     return [
-        {"label": label, "axis": f"axis-{label}", "brief": f"Direction {label}"}
-        for label in ("A", "B", "C", "W")
+        {
+            "label": label,
+            "axis": axis,
+            "title": f"Direction {label}",
+            "brief": f"Vary the {axis}",
+            "garment": "long_sleeve",
+            "placement": "upper_back",
+            "colors": ["#111111", "#F2F0EA"],
+        }
+        for label, axis in zip(("A", "B", "C", "W"), DEFAULT_AXES)
     ]
 
 

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.clothing-shop-studio/manifest.schema.json",
+  "title": "Clothing Shop Studio file manifest",
+  "description": "Generated view of metadata/state.json `files`. Every file records where it came from; folder and origin must agree.",
+  "type": "object",
+  "required": ["schema_version", "files"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "files": {"type": "array", "items": {"$ref": "#/$defs/file"}}
+  },
+  "$defs": {
+    "file": {
+      "type": "object",
+      "required": ["id", "origin", "path", "sha256", "registered_at", "production_eligible"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "origin": {
+          "enum": ["user_reference", "online_reference", "generated_concept", "approved_design", "production_master"],
+          "description": "user_reference: references/user/; online_reference: references/online/; generated_concept: concepts/generated/; approved_design: designs/approved/vNNN/; production_master: production/."
+        },
+        "path": {"type": "string", "description": "POSIX path relative to the project directory."},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "registered_at": {"type": "string", "format": "date-time"},
+        "production_eligible": {"type": "boolean"},
+        "decision_id": {"type": "string"},
+        "round": {"type": "integer", "minimum": 1},
+        "label": {"enum": ["A", "B", "C", "W", "M"]},
+        "axis": {"type": ["string", "null"]},
+        "wildcard": {"type": "boolean"},
+        "convention_broken": {"type": "string"},
+        "renderer": {"type": "string"},
+        "prompt": {"type": ["string", "null"]},
+        "description": {"type": ["string", "null"]},
+        "parents": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    }
+  }
+}

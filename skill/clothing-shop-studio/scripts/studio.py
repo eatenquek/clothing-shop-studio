@@ -11,6 +11,7 @@ from studio_core import SCHEMA_VERSION
 from studio_core.config import resolve_storage_root, save_storage_root
 from studio_core.errors import StudioError, ValidationError
 from studio_core.interview import load_graph, next_question
+from studio_core.options import merge_concept, next_round, plan_options, register_options
 from studio_core.store import append_event, create_project, load_state, status
 
 BUNDLE_DIR = Path(__file__).resolve().parents[1]
@@ -76,6 +77,31 @@ def command_record_answer(payload: dict) -> dict:
     return {"state": state, "next_question": _next_question(state)}
 
 
+def command_generate_options(payload: dict) -> dict:
+    """`plan` returns A/B/C/W slots; `register` records four renders; `merge` records a combination."""
+    project = Path(_required(payload, "project_dir"))
+    mode = payload.get("mode")
+    if mode == "plan":
+        state = load_state(project)
+        decision_id = _required(payload, "decision_id")
+        return plan_options(
+            decision_id,
+            payload.get("axes"),
+            payload.get("constraints") or {},
+            briefs=payload.get("briefs"),
+            round_number=next_round(state, decision_id),
+        )
+    if mode == "register":
+        return {"entries": register_options(project, payload, payload.get("now"))}
+    if mode == "merge":
+        return {"entry": merge_concept(project, payload, payload.get("now"))}
+    raise ValidationError(
+        "Mode must be `plan`, `register`, or `merge`.",
+        field="mode",
+        recovery="Plan the four options first, render them, then register the files.",
+    )
+
+
 def command_status(payload: dict) -> dict:
     return status(Path(_required(payload, "project_dir")))
 
@@ -84,6 +110,7 @@ COMMANDS = {
     "create_project": command_create_project,
     "resume_project": command_resume_project,
     "record_answer": command_record_answer,
+    "generate_options": command_generate_options,
     "status": command_status,
 }
 
