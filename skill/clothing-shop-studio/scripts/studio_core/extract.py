@@ -21,6 +21,7 @@ from .presentation import (
     listing_eligible,
     next_round,
     presentation_error,
+    record_decision,
     register_entries,
     sha256,
 )
@@ -277,3 +278,12 @@ def render_catalogue(project: Path) -> Path:
     target = project / FOLDER / "catalogue.html"
     write_atomic(target, page.encode("utf-8"))
     return target
+
+
+def decide_garments(project: Path, payload: dict, now: str | None = None) -> dict:
+    files = file_index(load_state(project))
+    ids = payload.get("ids") or []
+    if not ids or any(files.get(item, {}).get("origin") != "extracted_garment" for item in ids):
+        raise ValidationError("Decide on registered cut-outs only.", field="ids",
+                              recovery="Use ids returned by `extract` register.")
+    return record_decision(project, "garment", ids, payload.get("decision"), payload.get("user_quote"), now)

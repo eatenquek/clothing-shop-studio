@@ -180,6 +180,10 @@ class ExtractTests(unittest.TestCase):
                                                "results": [{"slug": "navy-tee", "path": destination,
                                                             "renderer": "r", "prompt": "p"}]}, FIXED_NOW)
 
+    def test_garment_keep_decision(self):
+        from scripts.studio_core.extract import decide_garments
+        with self.assertRaises(ValidationError):
+            decide_garments(self.project, {"ids": ["nope"], "decision": "keep", "user_quote": "Yes"}, FIXED_NOW)
 
 if __name__ == "__main__":
     unittest.main()
