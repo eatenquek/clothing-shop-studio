@@ -25,6 +25,7 @@ from .presentation import (
     presentation_error,
     record_decision,
     register_entries,
+    require_round,
     sha256,
 )
 from .store import _utc_now, load_state, write_atomic
@@ -157,14 +158,6 @@ def plan_reference(project: Path, payload: dict) -> dict:
                       "destination": f"{FOLDER}references/{model['id']}-front.png", "aspect": "3:4"}]}
 
 
-def _round(value) -> int:
-    """Planned round numbers are positive integers; anything else is a caller error."""
-    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
-        raise ValidationError("Send the planned round number as an integer of at least 1.", field="round",
-                              recovery="Use `round` from the `create_models` plan.")
-    return value
-
-
 def register_models(project: Path, payload: dict, now: str | None = None) -> list[dict]:
     kind = payload.get("kind")
     timestamp = now or _utc_now()
@@ -174,7 +167,7 @@ def register_models(project: Path, payload: dict, now: str | None = None) -> lis
     entries = []
     if kind == "candidates":
         identities = payload.get("identities") or {}
-        round_number = _round(payload.get("round"))
+        round_number = require_round(payload.get("round"), "Use `round` from the `create_models` plan.")
         state = load_state(project)
         for result in results:
             label = result.get("label")

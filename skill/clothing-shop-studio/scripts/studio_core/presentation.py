@@ -159,6 +159,14 @@ def register_entries(project: Path, entries: list[dict], now: str | None) -> Non
     append_event(project, {"type": "files_registered", "entries": entries}, now)
 
 
+def require_round(value, recovery: str) -> int:
+    """Planned round numbers are positive integers; anything else is a caller error."""
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        raise ValidationError("Send the planned round number as an integer of at least 1.", field="round",
+                              recovery=recovery)
+    return value
+
+
 def library_root(project: Path) -> Path:
     return Path(project).parent / MODELS_DIRNAME
 
