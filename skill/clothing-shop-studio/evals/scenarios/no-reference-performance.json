@@ -1,0 +1,18 @@
+{
+  "id": "no-reference-performance",
+  "query": "Create a dri-fit running-club tee for recreational runners in Singapore. I have no reference image, so continue without one. The garment must work for humid outdoor training. Ask the intake questions one at a time.",
+  "followups": [
+    "Use a relaxed athletic fit.",
+    "Choose a practical direction and continue."
+  ],
+  "expected": [
+    "does not ask for a reference image again",
+    "asks no more than one question in each response",
+    "asks about knit or fibre composition",
+    "asks about moisture management or breathability",
+    "asks about opacity or coverage",
+    "asks about decoration method",
+    "asks about production quantity",
+    "does not quote a price"
+  ]
+}

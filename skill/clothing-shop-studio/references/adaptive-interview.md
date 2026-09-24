@@ -20,6 +20,20 @@ Free-text answers for branching fields become canonical tokens: `T-Shirt` is sto
 
 Intended use, audience, and climate shape every later choice. Ask what the garment is for (everyday wear, training, uniform, event merchandise, a retail drop), who wears it (age range, unisex or gendered sizing), and where (climate, indoor or outdoor, activity level). A running club in Singapore and a winter streetwear drop need different fabric, fit, and decoration answers even for the same tee.
 
+## Parsing the brief
+
+Record every stated fact before the first question, one `record_answer` per field, so it is never asked again. Descriptive phrases are canonicalised: "dri-fit running-club tee" becomes `performance_top`, "oversized long-sleeve" becomes `long_sleeve`, and "humid outdoor training in Singapore" becomes `humid_tropical`. If the user attached a reference, register it with `register_file` and record `reference_image` with its id; do not ask the reference question.
+
+## Delegated choices
+
+When the user delegates ("choose a practical direction", "you decide", "continue"), pick a sensible option for the question just asked from [garments-materials.md](garments-materials.md), record it with `"source": "default"`, `"confirmed": false`, and a short `evidence` reason, then ask the next question. Delegation covers that one question only; do not fill later questions silently.
+
+For a critical field (garment category, intended use, artwork wording, placement, decoration method, size range, quantity), do not default. Propose one concrete value and ask the user to accept or change it. If they accept, for example "use your recommendation" in reply to that proposal, record it with `"source": "user"` and their words in `evidence`, then move on; do not ask the same question again.
+
+## Confirmations
+
+`confirm_heat_weight_tradeoff`, `confirm_japanese_text_and_motif`, and `confirm_assumptions` exist to be shown to the user. Ask them as their own turn, wait, and record the reply with `"source": "user"` and the user's words in `user_quote`; the command refuses a confirmation without them. For Japanese text and the yokai or motif, show the exact characters, meaning, reading, and motif, and accept only a reply that confirms or corrects them; a hand-off is refused. Never invent critical facts this way: garment category, intended use, artwork wording, placement, decoration method, size range, and quantity still need the user's answer.
+
 ## Safe inference
 
 Infer only reversible, low-risk details supported by clear evidence. Record the source, evidence, confirmation state, and criticality. Never silently infer garment category, intended use, exact artwork wording, placement, decoration method, quantity, rights clearance, Japanese text, or production-master suitability.

@@ -46,9 +46,48 @@ CANONICAL_VALUES = {
         "cold": ("winter", "cold_weather"),
     },
 }
+# Fallback for descriptive phrases ("dri-fit running-club tee"), checked in order after
+# exact aliases. Specific garment nouns come first so "running shorts" is bottoms.
+KEYWORD_RULES = {
+    "garment_category": (
+        ("headwear", {"any": {"cap", "hat", "beanie", "bucket", "snapback", "trucker", "visor", "headwear"}}),
+        ("bag", {"any": {"bag", "tote", "backpack", "duffel", "pouch"}}),
+        ("bottoms", {"any": {"pants", "trousers", "shorts", "joggers", "sweatpants", "leggings", "bottoms", "jeans"}}),
+        ("jacket", {"any": {"jacket", "coat", "windbreaker", "anorak", "bomber", "parka", "puffer", "outerwear"}}),
+        ("hoodie", {"any": {"hoodie", "hoody", "hooded"}}),
+        ("sweatshirt", {"any": {"sweatshirt", "crewneck", "sweater", "jumper"}}),
+        ("polo", {"any": {"polo"}}),
+        ("tank", {"any": {"tank", "singlet", "sleeveless"}}),
+        ("performance_top", {"any": {"dri", "drifit", "performance", "running", "training", "athletic", "activewear", "wicking"}}),
+        ("long_sleeve", {"all": {"long", "sleeve"}}),
+        ("long_sleeve", {"any": {"longsleeve"}}),
+        ("tee", {"any": {"tee", "tees", "tshirt"}}),
+        ("tee", {"all": {"t", "shirt"}}),
+    ),
+    "climate": (
+        ("humid_tropical", {"any": {"singapore", "tropical", "tropics", "humid", "humidity", "equatorial"}}),
+        ("hot_dry", {"any": {"desert", "arid"}}),
+        ("cold", {"any": {"winter", "cold", "snow", "freezing"}}),
+        ("temperate", {"any": {"temperate", "mild"}}),
+    ),
+}
 HEAT_TRAPPING_CATEGORIES = {"long_sleeve", "hoodie", "sweatshirt"}
+CJK_PATTERN = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uff66-\uff9f]")
+THEME_FIELDS = ("artwork_content", "artwork_style", "typography")
+JAPANESE_KEYWORDS = ("japanese", "japan", "yokai", "yōkai", "kanji", "hiragana", "katakana")
 HEAVY_GSM_THRESHOLD = 240
 GSM_PATTERN = re.compile(r"^\s*(\d{2,3}(?:\.\d+)?)\s*(?:gsm|g/m2|g/m²|g)?\s*$", re.IGNORECASE)
+
+# Confirmation questions exist to be put to the user, so they need the user's own words.
+CONFIRMATION_FIELDS = {"confirm_heat_weight_tradeoff", "confirm_japanese_text_and_motif", "confirm_assumptions"}
+# Culturally sensitive text cannot be confirmed by a hand-off such as "you decide".
+STRICT_CONFIRMATIONS = {"confirm_japanese_text_and_motif"}
+DELEGATION_PATTERN = re.compile(
+    r"^\s*(continue|go on|proceed|next|carry on|keep going|up to you|your call|whatever( you think)?"
+    r"|you (decide|choose|pick)|use your (recommendation|judgement|judgment|best judgement)( and continue)?)"
+    r"\s*[.!]*\s*$",
+    re.IGNORECASE,
+)
 
 CRITICAL_FIELDS = {
     "garment_category",
@@ -90,6 +129,11 @@ def load_graph(bundle_dir: Path) -> list[dict]:
             )
         seen.add(node["id"])
     return questions
+
+
+def is_delegation(text) -> bool:
+    """True for a reply that hands the decision back rather than stating one."""
+    return isinstance(text, str) and bool(DELEGATION_PATTERN.match(text))
 
 
 def _condition_matches(actual, condition) -> bool:
@@ -138,6 +182,10 @@ def canonical_value(field: str, value):
     for canonical, aliases in vocabulary.items():
         if key == canonical or key in aliases:
             return canonical
+    words = set(key.split("_"))
+    for canonical, rule in KEYWORD_RULES.get(field, ()):
+        if words & rule.get("any", words) and rule.get("all", set()) <= words:
+            return canonical
     return value
 
 
@@ -149,55 +197,69 @@ def _is_heavy(gsm) -> bool:
     return isinstance(gsm, str) and "heavy" in gsm.lower()
 
 
-def detect_conflicts(state: dict) -> list[dict]:
+def _mentions_japanese(answers: dict) -> bool:
+    """Japanese characters anywhere, or a Japanese theme named in the artwork answers."""
+    if any(isinstance(value, str) and CJK_PATTERN.search(value) for value in answers.values()):
+        return True
+    theme = " ".join(str(answers.get(field, "")) for field in THEME_FIELDS).lower()
+    return any(keyword in theme for keyword in JAPANESE_KEYWORDS)
+
+
+def triggered_confirmations(state: dict) -> list[str]:
+    """Ids of confirmation questions the current answers require, most urgent first.
+
+    Code decides when a confirmation is needed; the graph supplies its wording.
+    """
     answers = state.get("answers", {})
-    conflicts = []
+    triggered = []
     if (
         answers.get("climate") == "humid_tropical"
         and answers.get("garment_category") in HEAT_TRAPPING_CATEGORIES
         and _is_heavy(answers.get("gsm"))
         and "confirm_heat_weight_tradeoff" not in answers
     ):
-        conflicts.append(
-            {
-                "id": "confirm_heat_weight_tradeoff",
-                "phase": "material",
-                "prompt": "A heavy long-sleeve can trap heat in Singapore's humid climate. Keep the substantial weight, reduce the GSM, or add a breathable construction?",
-                "answer_type": "choice_or_text",
-                "critical": True,
-                "visual": False,
-                "options_source": "garments-materials.md#climate-and-weight",
-            }
-        )
-    return conflicts
+        triggered.append("confirm_heat_weight_tradeoff")
+    if (
+        "artwork_content" in answers
+        and "confirm_japanese_text_and_motif" not in answers
+        and _mentions_japanese(answers)
+    ):
+        triggered.append("confirm_japanese_text_and_motif")
+    return triggered
 
 
-def assumption_confirmation(state: dict) -> dict | None:
+def assumption_confirmation(state: dict, node: dict | None = None) -> dict | None:
+    """One grouped question listing every pending inferred or default value."""
     pending = [item for item in state.get("assumptions", []) if not item.get("confirmed")]
     if not pending or "confirm_assumptions" in state.get("answers", {}):
         return None
     summary = "; ".join(f"{item['field']}: {item['value']}" for item in pending)
-    return {
+    question = public_question(node) if node else {
         "id": "confirm_assumptions",
         "phase": "confirmation",
-        "prompt": f"Please confirm or correct these inferred details: {summary}.",
+        "prompt": "Please confirm or correct these inferred details:",
         "answer_type": "confirmation_with_corrections",
-        "critical": any(item.get("critical") for item in pending),
+        "critical": False,
         "visual": False,
         "options_source": "adaptive-interview.md#assumptions",
     }
+    question["prompt"] = f"{question['prompt']} {summary}."
+    question["critical"] = any(item.get("critical") for item in pending)
+    return question
 
 
 def next_question(state: dict, graph: list[dict]) -> dict | None:
-    conflicts = detect_conflicts(state)
-    if conflicts:
-        return conflicts[0]
+    by_id = {node["id"]: node for node in graph}
+    for question_id in triggered_confirmations(state):
+        if question_id in by_id:
+            return public_question(by_id[question_id])
     for node in graph:
-        if node["id"] in {"confirm_heat_weight_tradeoff", "confirm_assumptions"}:
+        # Confirmation nodes are only asked when triggered above or by pending assumptions.
+        if node["phase"] == "confirmation":
             continue
         if applies(node, state) and not known(node, state):
             return public_question(node)
-    return assumption_confirmation(state)
+    return assumption_confirmation(state, by_id.get("confirm_assumptions"))
 
 
 def is_critical(field: str, state: dict) -> bool:
@@ -217,6 +279,7 @@ def record_answer(
     source: str,
     evidence: str | None = None,
     confirmed: bool = True,
+    user_quote: str | None = None,
 ) -> dict:
     if not isinstance(field, str) or not FIELD_PATTERN.match(field):
         raise ValidationError(
@@ -235,6 +298,30 @@ def record_answer(
             "`confirmed` must be true or false.",
             field="confirmed",
             recovery="Send a JSON boolean.",
+        )
+    if field in CONFIRMATION_FIELDS:
+        if source != "user" or not isinstance(user_quote, str) or not user_quote.strip():
+            raise ValidationError(
+                "Only the user can answer a confirmation question; record their reply in `user_quote`.",
+                field="user_quote",
+                recovery="Show the confirmation question to the user and record their actual words.",
+            )
+        if field in STRICT_CONFIRMATIONS and is_delegation(user_quote):
+            raise ValidationError(
+                "A hand-off such as 'you decide' does not confirm cultural or printed text.",
+                field="user_quote",
+                recovery="Show the exact text and motif and ask the user to confirm or correct them.",
+            )
+    concept_ids = {
+        item.get("id")
+        for item in state.get("files", [])
+        if item.get("origin") in {"generated_concept", "approved_design"}
+    }
+    if isinstance(value, str) and value.strip() in concept_ids:
+        raise ValidationError(
+            "Record the chosen option in words, not as a concept id.",
+            field="value",
+            recovery="Send the option's description as `value` and put the concept id in `evidence`.",
         )
     value = canonical_value(field, value)
     updated = copy.deepcopy(state)
@@ -257,6 +344,8 @@ def record_answer(
         "confirmed": confirmed,
         "critical": is_critical(field, updated),
     }
+    if user_quote is not None:
+        assumption["user_quote"] = user_quote
     assumptions = [item for item in updated.setdefault("assumptions", []) if item.get("field") != field]
     assumptions.append(assumption)
     updated["assumptions"] = assumptions

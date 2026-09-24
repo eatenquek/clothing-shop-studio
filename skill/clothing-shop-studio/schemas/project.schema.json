@@ -2,19 +2,36 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://local.clothing-shop-studio/project.schema.json",
   "title": "Clothing Shop Studio project state",
+  "description": "metadata/state.json. Canonical state is always derivable by replaying metadata/decisions.jsonl; last_event_hash ties the two together.",
   "type": "object",
-  "required": ["schema_version", "project_name", "project_slug", "phase", "answers"],
+  "required": ["schema_version", "project_name", "project_slug", "phase", "answers", "last_event_hash"],
   "properties": {
     "schema_version": {"const": 1},
     "project_name": {"type": "string", "minLength": 1},
     "project_slug": {"type": "string", "minLength": 1},
-    "phase": {"type": "string"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "phase": {"enum": ["intake", "approved", "production_exported"]},
     "answers": {"type": "object"},
-    "assumptions": {"type": "array"},
-    "references": {"type": "array"},
-    "concepts": {"type": "array"},
-    "approvals": {"type": "array"},
-    "production": {"type": "object"}
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["field", "value", "source", "confirmed", "critical"],
+        "properties": {
+          "source": {"enum": ["user", "inferred", "default"]},
+          "confirmed": {"type": "boolean"},
+          "critical": {"type": "boolean"}
+        }
+      }
+    },
+    "references": {"type": "array", "description": "Reserved; references are recorded in `files`."},
+    "concepts": {"type": "array", "description": "One record per registered A/B/C/W round."},
+    "approvals": {"type": "array", "description": "One immutable record per designs/approved/vNNN."},
+    "files": {"type": "array", "items": {"$ref": "manifest.schema.json#/$defs/file"}},
+    "production": {"type": "object", "properties": {"packs": {"type": "array"}}},
+    "events_count": {"type": "integer", "minimum": 1},
+    "last_event_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
   "additionalProperties": true
 }

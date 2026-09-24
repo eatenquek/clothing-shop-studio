@@ -11,6 +11,7 @@ import stat
 from pathlib import Path
 
 from .errors import StorageError, ValidationError
+from .interview import is_delegation
 from .store import _utc_now, append_event, load_state, write_atomic
 
 APPROVED_DIR = Path("designs/approved")
@@ -39,6 +40,12 @@ def approve_design(project_dir: Path, concept_ids: list[str], statement: str, no
             "Record the user's approval statement.",
             field="statement",
             recovery="Quote what the user said when approving, for example `Approve A`.",
+        )
+    if is_delegation(statement):
+        raise ValidationError(
+            "A hand-off such as 'continue' or 'you decide' is not an approval.",
+            field="statement",
+            recovery="Show the design and ask the user whether they approve it.",
         )
     if not isinstance(concept_ids, list) or not concept_ids or len(set(concept_ids)) != len(concept_ids):
         raise ValidationError(

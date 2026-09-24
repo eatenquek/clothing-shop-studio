@@ -74,8 +74,9 @@ def command_record_answer(payload: dict) -> dict:
         "source": payload.get("source", "user"),
         "confirmed": payload.get("confirmed", True),
     }
-    if payload.get("evidence") is not None:
-        event["evidence"] = payload["evidence"]
+    for key in ("evidence", "user_quote"):
+        if payload.get(key) is not None:
+            event[key] = payload[key]
     state = append_event(project, event, payload.get("now"))
     return {"state": state, "next_question": _next_question(state)}
 

@@ -287,6 +287,20 @@
       "options_source": "production-pack.md#artwork-scaling"
     },
     {
+      "id": "brand_assets",
+      "phase": "artwork",
+      "prompt": "Do you have existing brand artwork, such as a logo, wordmark, fonts, or colours, that must be used exactly? Share the files, or say none.",
+      "answer_type": "optional_file",
+      "applies_when": {},
+      "skip_if_known": [
+        "brand_assets"
+      ],
+      "inferable": false,
+      "critical": false,
+      "visual": false,
+      "options_source": "production-pack.md#masters"
+    },
+    {
       "id": "artwork_content",
       "phase": "artwork",
       "prompt": "What exact artwork, wording, symbol, or subject should appear?",
@@ -447,7 +461,7 @@
     {
       "id": "confirm_heat_weight_tradeoff",
       "phase": "confirmation",
-      "prompt": "Confirm how to resolve the heat-versus-weight trade-off.",
+      "prompt": "A heavy fabric can trap heat in a humid climate such as Singapore's. Keep the substantial weight, move to a mid-weight, or use a more breathable construction?",
       "answer_type": "choice_or_text",
       "applies_when": {},
       "skip_if_known": [
@@ -459,9 +473,23 @@
       "options_source": "garments-materials.md#climate-and-weight"
     },
     {
+      "id": "confirm_japanese_text_and_motif",
+      "phase": "confirmation",
+      "prompt": "Please confirm the exact Japanese text (characters, meaning, and reading) and which yokai or motif to use.",
+      "answer_type": "confirmation_with_corrections",
+      "applies_when": {},
+      "skip_if_known": [
+        "confirm_japanese_text_and_motif"
+      ],
+      "inferable": false,
+      "critical": true,
+      "visual": false,
+      "options_source": "safety-scope.md#folklore-and-japanese-text"
+    },
+    {
       "id": "confirm_assumptions",
       "phase": "confirmation",
-      "prompt": "Confirm or correct the grouped low-risk assumptions.",
+      "prompt": "Please confirm or correct these inferred details:",
       "answer_type": "confirmation_with_corrections",
       "applies_when": {},
       "skip_if_known": [

@@ -234,6 +234,7 @@ def _apply_event(state: dict, event: dict) -> dict:
             source=event["source"],
             evidence=event.get("evidence"),
             confirmed=event["confirmed"],
+            user_quote=event.get("user_quote"),
         )
     elif event_type == "options_registered":
         entries = event.get("entries") or []

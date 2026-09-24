@@ -2,16 +2,46 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://local.clothing-shop-studio/command-io.schema.json",
   "title": "Clothing Shop Studio command response",
+  "description": "Every command reads one JSON object (stdin or --input) and prints one response. Exit codes: 0 success, 2 validation error, 3 unsafe path, 4 storage error, 5 internal error.",
   "type": "object",
   "required": ["ok", "command", "schema_version"],
   "properties": {
     "ok": {"type": "boolean"},
-    "command": {"type": "string"},
+    "command": {
+      "enum": [
+        "create_project",
+        "resume_project",
+        "record_answer",
+        "generate_options",
+        "approve_design",
+        "register_file",
+        "validate",
+        "export_production_pack",
+        "status",
+        "render_options"
+      ]
+    },
     "schema_version": {"const": 1},
     "data": {"type": "object"},
     "error": {
       "type": "object",
-      "required": ["code", "message", "recovery"]
+      "required": ["code", "message", "recovery"],
+      "properties": {
+        "code": {"enum": ["validation_error", "unsafe_path", "storage_error", "internal_error"]},
+        "message": {"type": "string"},
+        "recovery": {"type": "string"},
+        "field": {"type": "string"},
+        "path": {"type": "string"},
+        "details": {
+          "type": "array",
+          "description": "Structured findings, for example export blockers, each with a stable code.",
+          "items": {"type": "object", "required": ["code", "message"]}
+        }
+      }
     }
-  }
+  },
+  "oneOf": [
+    {"properties": {"ok": {"const": true}}, "required": ["data"]},
+    {"properties": {"ok": {"const": false}}, "required": ["error"]}
+  ]
 }

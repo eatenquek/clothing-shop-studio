@@ -29,11 +29,11 @@ Before asking anything, turn facts already in the brief into `record_answer` cal
 
 ## 5. Visual decisions
 
-When `next_question.visual` is true, or the user must judge a look, follow [visual-options.md](visual-options.md): `generate_options` `plan`, render four labelled images, `generate_options` `register`, then show A, B, C, and W together. Record the user's choice with `record_answer` (for example `field: typography`, value naming the chosen concept id).
+When `next_question.visual` is true, or the user must judge a look, follow [visual-options.md](visual-options.md): `generate_options` `plan`, render four labelled images, `generate_options` `register`, then show A, B, C, and W together. Record the user's choice with `record_answer` as words a factory can read (for example `field: base_color`, `value: "jet black"`, `evidence: "base_color-r01-A"`). A bare concept id is rejected as a value.
 
 ## 6. Approval
 
-Only the user can approve. When they clearly approve a concept or a combination, run `approve_design` with `concept_ids` and their words as `statement`. This creates an immutable `designs/approved/vNNN/`. A later change is a new version.
+Only the user can approve. Ask whether they approve, wait for the reply, and when they clearly approve a concept or a combination, run `approve_design` with `concept_ids` and their words as `statement`. A hand-off such as "continue" or "use your recommendation" is refused as a statement; ask again plainly. This creates an immutable `designs/approved/vNNN/`. A later change is a new version.
 
 ## 7. Production masters
 

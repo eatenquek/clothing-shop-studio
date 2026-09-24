@@ -236,6 +236,20 @@ class CliTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 2)
         self.assertEqual(response["error"]["field"], "mode")
 
+    def test_every_schema_command_dispatches(self):
+        schema = json.loads((self.bundle / "schemas/command-io.schema.json").read_text("utf-8"))
+        commands = set(schema["properties"]["command"]["enum"]) - {"render_options"}
+        for command in sorted(commands):
+            completed, response = self.run_cli(command, {})
+            self.assertEqual(response["command"], command)
+            self.assertFalse(response["ok"], command)  # an empty payload is always incomplete
+            self.assertEqual(completed.returncode, 2, command)
+        help_text = subprocess.run(
+            [sys.executable, str(self.script), "--help"], text=True, capture_output=True, check=False
+        ).stdout
+        listed = set(help_text.split("{", 1)[1].split("}", 1)[0].split(","))
+        self.assertEqual(listed, commands)
+
     def test_structured_validation_error(self):
         completed, response = self.run_cli("create_project", {"name": "Missing root"})
         self.assertEqual(completed.returncode, 2)

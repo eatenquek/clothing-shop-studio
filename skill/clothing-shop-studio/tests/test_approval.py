@@ -56,6 +56,12 @@ class ApprovalTests(unittest.TestCase):
             approve_design(self.project, [self.concepts["A"]["id"]], "  ", now=FIXED_NOW)
         self.assertEqual(list((self.project / "designs/approved").iterdir()), [])
 
+    def test_delegation_is_not_an_approval(self):
+        for statement in ("Use your recommendation and continue.", "you decide", "Continue"):
+            with self.assertRaises(ValidationError, msg=statement):
+                approve_design(self.project, [self.concepts["A"]["id"]], statement, now=FIXED_NOW)
+        self.assertEqual(list((self.project / "designs/approved").iterdir()), [])
+
     def test_approval_rejects_concept_changed_after_registration(self):
         (self.project / self.concepts["C"]["path"]).write_text("<svg><text>C edited</text></svg>", "utf-8")
         with self.assertRaises(ValidationError):

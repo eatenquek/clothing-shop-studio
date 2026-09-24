@@ -44,11 +44,34 @@ Artwork width relative to the garment, and how it behaves across the size range:
 1. **Plan.** Run `studio.py generate_options` with `"mode": "plan"`, a `decision_id` (for example `back_typography`), four `axes`, and the hard `constraints`. The response gives each slot's label, axis, and destination under `concepts/generated/<decision_id>/rNN/`.
 2. **Render.** Create one image per slot with the available image tool and save it at its destination. Put the slot label visibly inside every image, or deliver a labelled contact sheet as well. Brand artwork and exact text must be composited from the user's files, never redrawn by an image model.
 3. **Register.** Run `generate_options` with `"mode": "register"`, the `decision_id`, and four `results`. Each result has `label`, `axis`, relative `path`, `renderer`, and `prompt`; W also has `convention_broken`. Registration hashes each file and records it as a `generated_concept` with `production_eligible: false`.
-4. **Show.** Present all four images together with their labels and one-line differences, then ask the user to choose, combine, revise, or regenerate.
+4. **Show.** Present all four images together with their labels and one-line differences, then ask the user to choose, combine, revise, or regenerate. If you cannot display images inline, give the path to the contact sheet (or open it with an available viewer) and still ask only which option they choose. Do not ask whether to publish, upload, or retry a preview page; that would be a second question.
+
+Payload examples (axes are plain strings):
+
+```json
+{"project_dir": "/path/to/project", "mode": "plan", "decision_id": "back_typography",
+ "axes": ["letter density", "baseline irregularity", "distress depth", "scale"],
+ "constraints": {"colours": 1, "method": "plastisol screen print"}}
+```
+
+```json
+{"project_dir": "/path/to/project", "mode": "register", "decision_id": "back_typography",
+ "contact_sheet": "concepts/generated/back_typography/r01/contact-sheet.svg",
+ "results": [
+   {"label": "A", "axis": "letter density", "path": "concepts/generated/back_typography/r01/option-A.svg",
+    "renderer": "svg-fallback", "prompt": "Tight condensed stack"},
+   {"label": "B", "axis": "baseline irregularity", "path": "concepts/generated/back_typography/r01/option-B.svg",
+    "renderer": "svg-fallback", "prompt": "Offset baseline"},
+   {"label": "C", "axis": "distress depth", "path": "concepts/generated/back_typography/r01/option-C.svg",
+    "renderer": "svg-fallback", "prompt": "Heavy halftone erosion"},
+   {"label": "W", "axis": "scale", "path": "concepts/generated/back_typography/r01/option-W.svg",
+    "renderer": "svg-fallback", "prompt": "Oversized type", "convention_broken": "Type crosses the shoulder seams"}
+ ]}
+```
 
 ## No image tool
 
-When no raster image tool is available, run `scripts/render-options.py` with the planned `output_dir` and four briefs (`label`, `axis`, `title`, `brief`, `garment`, `placement`, `colors` as `#RRGGBB`). It writes `option-A.svg` through `option-W.svg` and `contact-sheet.svg`. Register the four option files with `"renderer": "svg-fallback"` and show the contact sheet.
+When no raster image tool is available, run `scripts/render-options.py` with the planned `output_dir` (the absolute folder of the slot destinations, for example `<project_dir>/concepts/generated/back_typography/r01`) and four briefs (`label`, `axis`, `title`, `brief`, `garment`, `placement`, `colors` as `#RRGGBB`). It writes `option-A.svg` through `option-W.svg` and `contact-sheet.svg`. Register the four option files with `"renderer": "svg-fallback"` and show the contact sheet.
 
 ## Combining and revising
 

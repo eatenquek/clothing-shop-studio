@@ -50,7 +50,7 @@ def collect_question_ids(state: dict, graph: list[dict], limit: int = 10) -> lis
         if question is None or question["id"] in seen:
             break
         seen.append(question["id"])
-        working = record_answer(working, question["id"], "test-answer", source="user")
+        working = record_answer(working, question["id"], "test-answer", source="user", user_quote="test reply")
     return seen
 
 
