@@ -16,13 +16,13 @@ Pricing, inventory, orders, and storefront operations are out of scope.
 
 ## Install
 
-Copy the bundle into your agent's skills directory:
+Sync the bundle into your agent's skills directory without local Python caches:
 
 ```bash
 # Codex
-cp -R skill/clothing-shop-studio ~/.codex/skills/
+rsync -a --delete --exclude '__pycache__/' --exclude '*.pyc' skill/clothing-shop-studio/ ~/.codex/skills/clothing-shop-studio/
 # Claude Code
-cp -R skill/clothing-shop-studio ~/.claude/skills/
+rsync -a --delete --exclude '__pycache__/' --exclude '*.pyc' skill/clothing-shop-studio/ ~/.claude/skills/clothing-shop-studio/
 ```
 
 Requires Python 3.9+. No third-party packages.

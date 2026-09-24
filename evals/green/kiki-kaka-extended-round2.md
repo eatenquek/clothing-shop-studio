@@ -1,6 +1,6 @@
 # GREEN evaluation: kiki-kaka
 
-- Workspace: `/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu`
+- Workspace: `<EVAL_WORKSPACE>`
 - Harness: fresh headless `claude -p` session; skill installed as a project skill; user settings, hooks, plugins, and MCP servers excluded; Bash limited to the skill scripts.
 
 ## Turn 1
@@ -12,33 +12,33 @@
 **Tool calls:**
 
 - `Skill: clothing-shop-studio`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio/references/workflow.md`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && echo '{"name": "kiki-kaka-yokai-longsleeve"}' | python3 scripts/studio.py create_project`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py --help 2>&1 | head -50`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"garment_category\", \"value\": \"long_sleeve\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/st`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio"
-PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve"
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/workflow.md`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && echo '{"name": "kiki-kaka-yokai-longsleeve"}' | python3 scripts/studio.py create_project`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py --help 2>&1 | head -50`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"garment_category\", \"value\": \"long_sleeve\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/st`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio"
+PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve"
 
 record() {
   echo "{\"project_dir\": \"$PROJ\", \"field\": \"$1\", \"value\": \"$2\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py record_`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/record_facts.py`
-- `Bash: python3 "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/record_facts.py"`
-- `Bash: python3 "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/record_facts.py"`
-- `Bash: python3 "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/record_facts.py"`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"fit\", \"value\": \"oversized\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py record_`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"brand_status\", \"value\": \"existing\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"brand_name\", \"value\": \"KIKI KAKA\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py `
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"audience\", \"value\": \"unisex_young_adult\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/stu`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"climate\", \"value\": \"humid_tropical\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.p`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"quantity\", \"value\": \"100\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py record_a`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"budget\", \"value\": \"average\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py record`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"aesthetic_direction\", \"value\": \"monochrome_utilitarian_streetwear\", \"source\": \"user\", \"confirmed\": tr`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"theme\", \"value\": \"japanese_yokai\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py `
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"back_artwork_placement\", \"value\": \"upper_back\", \"source\": \"user\", \"confirmed\": true}" | python3 scrip`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"back_artwork_style\", \"value\": \"irregular_distressed_typography\", \"source\": \"user\", \"confirmed\": true}`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"front_artwork_placement\", \"value\": \"centre_chest\", \"source\": \"user\", \"confirmed\": true}" | python3 sc`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"front_artwork_style\", \"value\": \"small_text\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/`
+- `Write: <EVAL_SCRATCH>/scratchpad/record_facts.py`
+- `Bash: python3 "<EVAL_SCRATCH>/scratchpad/record_facts.py"`
+- `Bash: python3 "<EVAL_SCRATCH>/scratchpad/record_facts.py"`
+- `Bash: python3 "<EVAL_SCRATCH>/scratchpad/record_facts.py"`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"fit\", \"value\": \"oversized\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py record_`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"brand_status\", \"value\": \"existing\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"brand_name\", \"value\": \"KIKI KAKA\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py `
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"audience\", \"value\": \"unisex_young_adult\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/stu`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"climate\", \"value\": \"humid_tropical\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.p`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"quantity\", \"value\": \"100\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py record_a`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"budget\", \"value\": \"average\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py record`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"aesthetic_direction\", \"value\": \"monochrome_utilitarian_streetwear\", \"source\": \"user\", \"confirmed\": tr`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"theme\", \"value\": \"japanese_yokai\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py `
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"back_artwork_placement\", \"value\": \"upper_back\", \"source\": \"user\", \"confirmed\": true}" | python3 scrip`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"back_artwork_style\", \"value\": \"irregular_distressed_typography\", \"source\": \"user\", \"confirmed\": true}`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"front_artwork_placement\", \"value\": \"centre_chest\", \"source\": \"user\", \"confirmed\": true}" | python3 sc`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"front_artwork_style\", \"value\": \"small_text\", \"source\": \"user\", \"confirmed\": true}" | python3 scripts/`
 
 **Assistant (verbatim):**
 
@@ -54,8 +54,8 @@ record() {
 
 **Tool calls:**
 
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"reference_image\", \"value\": null, \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py reco`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio/references/garments-materials.md`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"reference_image\", \"value\": null, \"source\": \"user\", \"confirmed\": true}" | python3 scripts/studio.py reco`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/garments-materials.md`
 
 **Assistant (verbatim):**
 
@@ -76,23 +76,23 @@ record() {
 
 **Tool calls:**
 
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"garment_subtype\", \"value\": \"drop_shoulder_crew_long_sleeve\", \"source\": \"default\", \"confirmed\": false,`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"intended_use\", \"value\": \"retail_streetwear_drop\", \"source\": \"inferred\", \"confirmed\": false, \"evidenc`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"length\", \"value\": \"boxy_hip_length_body_full_length_dropped_sleeve\", \"source\": \"default\", \"confirmed\"`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"construction\", \"value\": \"side_seamed_body_ribbed_crew_neck_and_cuffs_double_needle_hem_topstitched_utility_s`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"fiber_blend\", \"value\": \"ring_spun_combed_cotton\", \"source\": \"user\", \"confirmed\": true, \"evidence\": `
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"fabric_structure\", \"value\": \"single_jersey\", \"source\": \"default\", \"confirmed\": false, \"evidence\": \`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"gsm\", \"value\": \"220\", \"source\": \"user\", \"confirmed\": true, \"evidence\": \"User asked for heavyweight`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"handfeel\", \"value\": \"garment_washed_soft_dry\", \"source\": \"default\", \"confirmed\": false, \"evidence\":`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"stretch\", \"value\": \"none\", \"source\": \"default\", \"confirmed\": false, \"evidence\": \"100% cotton singl`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"opacity\", \"value\": \"full_opacity\", \"source\": \"default\", \"confirmed\": false, \"evidence\": \"220 GSM c`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"care\", \"value\": \"cold_machine_wash_no_iron_directly_on_print\", \"source\": \"default\", \"confirmed\": fals`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio/references/visual-options.md`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"mode\": \"plan\", \"decision_id\": \"base_color\", \"axes\": [\"solid jet black\", \"solid bone/off-white\", \"heather char`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --help 2>&1 | head -40`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/base_color_payload.json`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && sed -n '1,120p' scripts/render-options.py`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 -c "
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"garment_subtype\", \"value\": \"drop_shoulder_crew_long_sleeve\", \"source\": \"default\", \"confirmed\": false,`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"intended_use\", \"value\": \"retail_streetwear_drop\", \"source\": \"inferred\", \"confirmed\": false, \"evidenc`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"length\", \"value\": \"boxy_hip_length_body_full_length_dropped_sleeve\", \"source\": \"default\", \"confirmed\"`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"construction\", \"value\": \"side_seamed_body_ribbed_crew_neck_and_cuffs_double_needle_hem_topstitched_utility_s`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"fiber_blend\", \"value\": \"ring_spun_combed_cotton\", \"source\": \"user\", \"confirmed\": true, \"evidence\": `
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"fabric_structure\", \"value\": \"single_jersey\", \"source\": \"default\", \"confirmed\": false, \"evidence\": \`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"gsm\", \"value\": \"220\", \"source\": \"user\", \"confirmed\": true, \"evidence\": \"User asked for heavyweight`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"handfeel\", \"value\": \"garment_washed_soft_dry\", \"source\": \"default\", \"confirmed\": false, \"evidence\":`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"stretch\", \"value\": \"none\", \"source\": \"default\", \"confirmed\": false, \"evidence\": \"100% cotton singl`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"opacity\", \"value\": \"full_opacity\", \"source\": \"default\", \"confirmed\": false, \"evidence\": \"220 GSM c`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"care\", \"value\": \"cold_machine_wash_no_iron_directly_on_print\", \"source\": \"default\", \"confirmed\": fals`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/visual-options.md`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"mode\": \"plan\", \"decision_id\": \"base_color\", \"axes\": [\"solid jet black\", \"solid bone/off-white\", \"heather char`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --help 2>&1 | head -40`
+- `Write: <EVAL_SCRATCH>/scratchpad/base_color_payload.json`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && sed -n '1,120p' scripts/render-options.py`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 -c "
 import inspect
 from studio_core.options import render_option_cards, render_svg
 print(inspect.getsource(render_option_cards))
@@ -102,22 +102,22 @@ print(inspect.getsource(render_svg))
 - `Grep: def render_option_cards|def render_svg`
 - `Grep: def _validate_briefs|def _card\b`
 - `Grep: GARMENT_OUTLINES = |PLACEMENT_BOXES = |BACK_PLACEMENTS = ">
-<parameter name="path">/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio/scripts/studio_core/options.py`
+<parameter name="path"><EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/scripts/studio_core/options.py`
 - `Grep: GARMENT_OUTLINES|PLACEMENT_BOXES|BACK_PLACEMENTS`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio/scripts/studio_core/options.py`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/base_color_payload.json`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/base_color_payload.json"`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve"
-cat > "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/base_colo`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/base_color_register.json`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py generate_options --input "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/base_color_register.json"`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve/concepts/generated/base_color/r01/contact-sheet.svg`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/scripts/studio_core/options.py`
+- `Write: <EVAL_SCRATCH>/scratchpad/base_color_payload.json`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input "<EVAL_SCRATCH>/scratchpad/base_color_payload.json"`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve"
+cat > "<EVAL_SCRATCH>/scratchpad/base_colo`
+- `Write: <EVAL_SCRATCH>/scratchpad/base_color_register.json`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py generate_options --input "<EVAL_SCRATCH>/scratchpad/base_color_register.json"`
+- `Read: <EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve/concepts/generated/base_color/r01/contact-sheet.svg`
 - `Artifact: `
 - `Skill: artifact-design`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/base_color_options.html`
-- `Artifact: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/base_color_options.html`
-- `Artifact: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/base_color_options.html`
-- `Bash: open "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve/concepts/generated/base_color/r01/contact-sheet.svg"`
+- `Write: <EVAL_SCRATCH>/scratchpad/base_color_options.html`
+- `Artifact: <EVAL_SCRATCH>/scratchpad/base_color_options.html`
+- `Artifact: <EVAL_SCRATCH>/scratchpad/base_color_options.html`
+- `Bash: open "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve/concepts/generated/base_color/r01/contact-sheet.svg"`
 
 **Assistant (verbatim):**
 
@@ -142,7 +142,7 @@ cat > "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7
 
 **Tool calls:**
 
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"base_color\", \"value\": \"base_color-r01-A\", \"source\": \"default\", \"confirmed\": false, \"evidence\": \"Re`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"base_color\", \"value\": \"base_color-r01-A\", \"source\": \"default\", \"confirmed\": false, \"evidence\": \"Re`
 
 **Assistant (verbatim):**
 
@@ -158,8 +158,8 @@ cat > "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7
 
 **Tool calls:**
 
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"size_range\", \"value\": \"S-XL_4sizes_S15_M30_L35_XL20\", \"source\": \"default\", \"confirmed\": false, \"evid`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"grading_strategy\", \"value\": \"one_print_size_all_sizes\", \"source\": \"default\", \"confirmed\": false, \"ev`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"size_range\", \"value\": \"S-XL_4sizes_S15_M30_L35_XL20\", \"source\": \"default\", \"confirmed\": false, \"evid`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"grading_strategy\", \"value\": \"one_print_size_all_sizes\", \"source\": \"default\", \"confirmed\": false, \"ev`
 
 **Assistant (verbatim):**
 
@@ -175,7 +175,7 @@ cat > "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7
 
 **Tool calls:**
 
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"brand_assets\", \"value\": null, \"source\": \"user\", \"confirmed\": true, \"evidence\": \"User delegated; no e`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"brand_assets\", \"value\": null, \"source\": \"user\", \"confirmed\": true, \"evidence\": \"User delegated; no e`
 
 **Assistant (verbatim):**
 
@@ -214,26 +214,26 @@ cat > "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7
 
 **Tool calls:**
 
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"artwork_content\", \"value\": \"Back: NO REST FOR YOKAI (irregular distressed stencil typography). Chest: KIKI K`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio/references/safety-scope.md`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"confirm_japanese_text_and_motif\", \"value\": \"No Japanese characters used anywhere on the garment; all print t`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"mode\": \"plan\", \"decision_id\": \"artwork_style\", \"axes\": [\"type-led with integrated mask accent\", \"icon-led large`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/artwork_style_payload.json`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/artwork_style_payload.json"`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/artwork_style_register.json`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py generate_options --input "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/artwork_style_register.json"`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"artwork_style\", \"value\": \"artwork_style-r01-A\", \"source\": \"default\", \"confirmed\": false, \"evidence\"`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"mode\": \"plan\", \"decision_id\": \"typography\", \"axes\": [\"condensed stencil, minor baseline jitter\", \"extended grun`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/typography_payload.json`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/typography_payload.json"`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/typography_register.json`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py generate_options --input "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/typography_register.json"`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"typography\", \"value\": \"typography-r01-B\", \"source\": \"default\", \"confirmed\": false, \"evidence\": \"Re`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"mode\": \"plan\", \"decision_id\": \"placement\", \"axes\": [\"high yoke back + dead-center chest tag\", \"mid-back larger `
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/placement_payload.json`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/placement_payload.json"`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/placement_register.json`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py generate_options --input "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/placement_register.json"`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"artwork_content\", \"value\": \"Back: NO REST FOR YOKAI (irregular distressed stencil typography). Chest: KIKI K`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/safety-scope.md`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"confirm_japanese_text_and_motif\", \"value\": \"No Japanese characters used anywhere on the garment; all print t`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"mode\": \"plan\", \"decision_id\": \"artwork_style\", \"axes\": [\"type-led with integrated mask accent\", \"icon-led large`
+- `Write: <EVAL_SCRATCH>/scratchpad/artwork_style_payload.json`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input "<EVAL_SCRATCH>/scratchpad/artwork_style_payload.json"`
+- `Write: <EVAL_SCRATCH>/scratchpad/artwork_style_register.json`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py generate_options --input "<EVAL_SCRATCH>/scratchpad/artwork_style_register.json"`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"artwork_style\", \"value\": \"artwork_style-r01-A\", \"source\": \"default\", \"confirmed\": false, \"evidence\"`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"mode\": \"plan\", \"decision_id\": \"typography\", \"axes\": [\"condensed stencil, minor baseline jitter\", \"extended grun`
+- `Write: <EVAL_SCRATCH>/scratchpad/typography_payload.json`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input "<EVAL_SCRATCH>/scratchpad/typography_payload.json"`
+- `Write: <EVAL_SCRATCH>/scratchpad/typography_register.json`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py generate_options --input "<EVAL_SCRATCH>/scratchpad/typography_register.json"`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"typography\", \"value\": \"typography-r01-B\", \"source\": \"default\", \"confirmed\": false, \"evidence\": \"Re`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"mode\": \"plan\", \"decision_id\": \"placement\", \"axes\": [\"high yoke back + dead-center chest tag\", \"mid-back larger `
+- `Write: <EVAL_SCRATCH>/scratchpad/placement_payload.json`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input "<EVAL_SCRATCH>/scratchpad/placement_payload.json"`
+- `Write: <EVAL_SCRATCH>/scratchpad/placement_register.json`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py generate_options --input "<EVAL_SCRATCH>/scratchpad/placement_register.json"`
 
 **Assistant (verbatim):**
 
@@ -256,19 +256,19 @@ cat > "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7
 
 **Tool calls:**
 
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"placement\", \"value\": \"placement-r01-A\", \"source\": \"user\", \"confirmed\": true, \"evidence\": \"User con`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"mode\": \"plan\", \"decision_id\": \"scale\", \"axes\": [\"compact back 9in / subtle chest 2.5in\", \"standard back 11in / `
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/scale_payload.json`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/scale_payload.json"`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/scale_register.json`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py generate_options --input "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/scale_register.json"`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"scale\", \"value\": \"scale-r01-B\", \"source\": \"default\", \"confirmed\": false, \"evidence\": \"Recommended:`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio/references/production-pack.md`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"mode\": \"plan\", \"decision_id\": \"decoration_method\", \"axes\": [\"plastisol screen print, flat matte\", \"discharge sc`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/decoration_method_payload.json`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/decoration_method_payload.json"`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/decoration_method_register.json`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py generate_options --input "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7-bba3-4566-879b-cba2ef4cbb44/scratchpad/decoration_method_register.json"`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"placement\", \"value\": \"placement-r01-A\", \"source\": \"user\", \"confirmed\": true, \"evidence\": \"User con`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"mode\": \"plan\", \"decision_id\": \"scale\", \"axes\": [\"compact back 9in / subtle chest 2.5in\", \"standard back 11in / `
+- `Write: <EVAL_SCRATCH>/scratchpad/scale_payload.json`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input "<EVAL_SCRATCH>/scratchpad/scale_payload.json"`
+- `Write: <EVAL_SCRATCH>/scratchpad/scale_register.json`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py generate_options --input "<EVAL_SCRATCH>/scratchpad/scale_register.json"`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"scale\", \"value\": \"scale-r01-B\", \"source\": \"default\", \"confirmed\": false, \"evidence\": \"Recommended:`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/production-pack.md`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"mode\": \"plan\", \"decision_id\": \"decoration_method\", \"axes\": [\"plastisol screen print, flat matte\", \"discharge sc`
+- `Write: <EVAL_SCRATCH>/scratchpad/decoration_method_payload.json`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input "<EVAL_SCRATCH>/scratchpad/decoration_method_payload.json"`
+- `Write: <EVAL_SCRATCH>/scratchpad/decoration_method_register.json`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py generate_options --input "<EVAL_SCRATCH>/scratchpad/decoration_method_register.json"`
 - `Bash: echo done`
 
 **Assistant (verbatim):**
@@ -292,11 +292,11 @@ cat > "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7
 
 **Tool calls:**
 
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"decoration_method\", \"value\": \"decoration_method-r01-A\", \"source\": \"user\", \"confirmed\": true, \"eviden`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"budget_tier\", \"value\": \"average\", \"source\": \"user\", \"confirmed\": true, \"evidence\": \"Matches the av`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"producer_constraints\", \"value\": \"none specified; confirm blank garment source, press colour limits, print ar`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"packaging\", \"value\": \"flat-folded, individually polybagged, standard woven care/size label at the neck\", \"`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"deliverables\", \"value\": \"production_pack\", \"source\": \"user\", \"confirmed\": true, \"evidence\": \"User'`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"decoration_method\", \"value\": \"decoration_method-r01-A\", \"source\": \"user\", \"confirmed\": true, \"eviden`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"budget_tier\", \"value\": \"average\", \"source\": \"user\", \"confirmed\": true, \"evidence\": \"Matches the av`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"producer_constraints\", \"value\": \"none specified; confirm blank garment source, press colour limits, print ar`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"packaging\", \"value\": \"flat-folded, individually polybagged, standard woven care/size label at the neck\", \"`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"deliverables\", \"value\": \"production_pack\", \"source\": \"user\", \"confirmed\": true, \"evidence\": \"User'`
 
 **Assistant (verbatim):**
 
@@ -332,7 +332,7 @@ cat > "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7
 
 **Tool calls:**
 
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"confirm_assumptions\", \"value\": \"confirmed all\", \"source\": \"user\", \"confirmed\": true, \"evidence\": \"`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"field\": \"confirm_assumptions\", \"value\": \"confirmed all\", \"source\": \"user\", \"confirmed\": true, \"evidence\": \"`
 
 **Assistant (verbatim):**
 
@@ -359,18 +359,18 @@ cat > "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-dchtmbnu/83bdbbd7
 
 **Tool calls:**
 
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"concept_ids\": [\"base_color-r01-A\", \"artwork_style-r01-A\", \"typography-r01-B\", \"placement-r01-A\", \"scale-r01-B\", `
-- `Bash: ls "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve/"`
-- `Bash: ls -la "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve/production/"`
-- `Bash: mkdir -p "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve/production/masters"`
-- `Write: /private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve/production/masters/back-typography_MASTER.svg`
-- `Write: /private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve/production/masters/chest-tag_MASTER.svg`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"origin\": \"production_master\", \"path\": \"production/masters/back-typography_MASTER.svg\", \"construction\": \"vector_co`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"origin\": \"production_master\", \"path\": \"production/masters/chest-tag_MASTER.svg\", \"construction\": \"typeset\", \"ap`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"for_export\": true}" | python3 scripts/studio.py validate`
-- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/.claude/skills/clothing-shop-studio" && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\"}" | python3 scripts/studio.py export_production_pack`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve/production/pack-v001/production-spec.md`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-dchtmbnu/projects/kiki-kaka-yokai-longsleeve/production/pack-v001/handoff-checklist.md`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"concept_ids\": [\"base_color-r01-A\", \"artwork_style-r01-A\", \"typography-r01-B\", \"placement-r01-A\", \"scale-r01-B\", `
+- `Bash: ls "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve/"`
+- `Bash: ls -la "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve/production/"`
+- `Bash: mkdir -p "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve/production/masters"`
+- `Write: <EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve/production/masters/back-typography_MASTER.svg`
+- `Write: <EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve/production/masters/chest-tag_MASTER.svg`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"origin\": \"production_master\", \"path\": \"production/masters/back-typography_MASTER.svg\", \"construction\": \"vector_co`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"origin\": \"production_master\", \"path\": \"production/masters/chest-tag_MASTER.svg\", \"construction\": \"typeset\", \"ap`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\", \"for_export\": true}" | python3 scripts/studio.py validate`
+- `Bash: cd "<EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio" && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve" && echo "{\"project_dir\": \"$PROJ\"}" | python3 scripts/studio.py export_production_pack`
+- `Read: <EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve/production/pack-v001/production-spec.md`
+- `Read: <EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve/production/pack-v001/handoff-checklist.md`
 
 **Assistant (verbatim):**
 

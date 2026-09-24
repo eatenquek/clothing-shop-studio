@@ -47,7 +47,13 @@ REPLIES = {
     "grading_strategy": "two print sizes: S-M at 280 mm, L-XXL at 320 mm wide",
     "brand_assets": "existing KIKI KAKA wordmark supplied as vector",
     "artwork_content": "KIKI KAKA wordmark with a Japanese yokai motif",
-    "confirm_japanese_text_and_motif": "Text 鬼 (oni) confirmed; motif: traditional kasa-obake silhouette",
+    "confirm_japanese_text_and_motif": {
+        "approved": True,
+        "text": "鬼",
+        "reading": "oni",
+        "meaning": "ogre",
+        "motif": "traditional kasa-obake silhouette",
+    },
     "typography": "condensed sans, irregular baseline",
     "scale": "back print about 300 mm wide on the base size",
     "decoration_method": "plastisol screen print, one off-white ink",
@@ -99,7 +105,11 @@ class KikiKakaAcceptance(unittest.TestCase):
             asked.append(qid)
             payload = {"project_dir": project, "field": qid, "value": REPLIES[qid]}
             if qid.startswith("confirm_"):
-                payload["user_quote"] = str(REPLIES[qid])  # the user's own words
+                payload["user_quote"] = (
+                    "Yes: 鬼 (oni), meaning ogre; traditional kasa-obake silhouette"
+                    if qid == "confirm_japanese_text_and_motif"
+                    else str(REPLIES[qid])
+                )  # the user's own words
             data = self.cli("record_answer", payload)
             self.assertIsInstance(data["next_question"], (dict, type(None)))
             question = data["next_question"]

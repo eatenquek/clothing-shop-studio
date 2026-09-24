@@ -30,7 +30,7 @@ Screen colours are approximations. Record the user's Pantone codes when supplied
 
 ## Singapore seller generation notice
 
-After every newly generated concept, option sheet, artwork, mockup, sample visual, or production-facing visual, place the following notice at the end of the user-facing response or presentation. Do not bake this notice into the artwork, print master, or garment graphic. If the user asks for a shorter treatment, keep every topic and its link but compress the prose. This is informational, not legal advice, and the linked rules should be checked again before launch because law and marketplace policies can change.
+After every newly generated concept, option sheet, artwork, mockup, sample visual, or production-facing visual, place the following notice after the visual and before that single closing question. Do not bake this notice into the artwork, print master, or garment graphic. If the user asks for a shorter treatment, keep every topic and its link but compress the prose. This is informational, not legal advice, and the linked rules should be checked again before launch because law and marketplace policies can change.
 
 > **Singapore seller note — informational, not legal advice**
 >

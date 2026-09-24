@@ -1,6 +1,6 @@
 # GREEN evaluation: kiki-kaka
 
-- Workspace: `/private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u`
+- Workspace: `<EVAL_WORKSPACE>`
 - Harness: fresh headless `claude -p` session; skill installed as a project skill; user settings, hooks, plugins, and MCP servers excluded; Bash limited to the skill scripts.
 
 ## Turn 1
@@ -12,9 +12,9 @@
 **Tool calls:**
 
 - `Skill: clothing-shop-studio`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/.claude/skills/clothing-shop-studio/references/workflow.md`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/.claude/skills/clothing-shop-studio && echo '{"name": "KIKI KAKA Oversized Long-Sleeve Yokai"}' | python3 scripts/studio.py create_project`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/workflow.md`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio && echo '{"name": "KIKI KAKA Oversized Long-Sleeve Yokai"}' | python3 scripts/studio.py create_project`
 
 **Assistant (verbatim):**
 
@@ -30,11 +30,11 @@
 
 **Tool calls:**
 
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/.claude/skills/clothing-shop-studio && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/projects/kiki-kaka-oversized-long-sleeve-yokai"
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-oversized-long-sleeve-yokai"
 echo "{\"project_dir\": \"$PROJ\", \"field\": \"reference_image\", \"value\": null}" | python3 scripts/studio.py record_answer`
-- `Bash: PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/projects/kiki-kaka-oversized-long-sleeve-yokai"
+- `Bash: PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-oversized-long-sleeve-yokai"
 echo "{\"project_dir\": \"$PROJ\", \"field\": \"garment_category\", \"value\": \"long_sleeve\"}" | python3 scripts/studio.py record_answer`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/.claude/skills/clothing-shop-studio/references/garments-materials.md`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/garments-materials.md`
 - `ScheduleWakeup: `
 
 **Assistant (verbatim):**
@@ -49,16 +49,16 @@ echo "{\"project_dir\": \"$PROJ\", \"field\": \"garment_category\", \"value\": \
 
 **Tool calls:**
 
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/.claude/skills/clothing-shop-studio && PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/projects/kiki-kaka-oversized-long-sleeve-yokai"
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio && PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-oversized-long-sleeve-yokai"
 echo "{\"project_dir\": \"$PROJ\", \"field\": \"garment_subtype\", \"value\": \"crew_long_sleeve\", \"source\": \"inferred\", \"evidence\": \"Utilitarian `
-- `Bash: PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/projects/kiki-kaka-oversized-long-sleeve-yokai"
+- `Bash: PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-oversized-long-sleeve-yokai"
 echo "{\"project_dir\": \"$PROJ\", \"field\": \"intended_use\", \"value\": \"Retail streetwear drop for existing brand KIKI KAKA\", \"source\": \"user\"}" | python3 scripts/studio.py record_answer`
-- `Bash: PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/projects/kiki-kaka-oversized-long-sleeve-yokai"
+- `Bash: PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-oversized-long-sleeve-yokai"
 echo "{\"project_dir\": \"$PROJ\", \"field\": \"audience\", \"value\": \"Unisex young adults, Singapore\", \"source\": \"user\"}" | python3 scripts/studio.py record_answer`
-- `Bash: PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/projects/kiki-kaka-oversized-long-sleeve-yokai"
+- `Bash: PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-oversized-long-sleeve-yokai"
 echo "{\"project_dir\": \"$PROJ\", \"field\": \"climate\", \"value\": \"humid_tropical\", \"source\": \"user\"}" | python3 scripts/studio.py record_answer`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/.claude/skills/clothing-shop-studio/references/visual-options.md`
-- `Bash: PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/projects/kiki-kaka-oversized-long-sleeve-yokai"
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/visual-options.md`
+- `Bash: PROJ="<EVAL_WORKSPACE>/projects/kiki-kaka-oversized-long-sleeve-yokai"
 cat <<'EOF' | python3 scripts/studio.py generate_options
 {
   "project_dir": "PROJ_PLACEHOLDER",
@@ -67,29 +67,29 @@ cat <<'EOF' | python3 scripts/studio.py generate_options
   "axes": [
     {"label": "A", "axis": "Boxy dropped-shoulder oversized", "title": "Boxy Drop-Shoulder"},
     {"label": "B`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-h5qw220u/289e8916-a303-48ac-a796-b8dde2184464/scratchpad/plan_fit.json`
-- `Bash: python3 scripts/studio.py generate_options < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-h5qw220u/289e8916-a303-48ac-a796-b8dde2184464/scratchpad/plan_fit.json`
+- `Write: <EVAL_SCRATCH>/scratchpad/plan_fit.json`
+- `Bash: python3 scripts/studio.py generate_options < <EVAL_SCRATCH>/scratchpad/plan_fit.json`
 - `Bash: python3 scripts/studio.py generate_options --help 2>&1 | head -50`
 - `Grep: axes|distinct visual axes|def.*generate_options|mode.*plan`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/.claude/skills/clothing-shop-studio/scripts/studio.py`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/scripts/studio.py`
 - `Grep: def plan_options" -A 40`
 - `Grep: def plan_options`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-h5qw220u/289e8916-a303-48ac-a796-b8dde2184464/scratchpad/plan_fit.json`
-- `Bash: python3 scripts/studio.py generate_options < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-h5qw220u/289e8916-a303-48ac-a796-b8dde2184464/scratchpad/plan_fit.json`
+- `Write: <EVAL_SCRATCH>/scratchpad/plan_fit.json`
+- `Bash: python3 scripts/studio.py generate_options < <EVAL_SCRATCH>/scratchpad/plan_fit.json`
 - `Bash: python3 scripts/render-options.py --help 2>&1 | head -60`
 - `Bash: sed -n '1,120p' scripts/render-options.py`
 - `Grep: def render_option_cards|def render_svg|title|brief|garment|placement|colors`
 - `Grep: GARMENT_OUTLINES = |PLACEMENT_BOXES = |BACK_PLACEMENTS =`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-h5qw220u/289e8916-a303-48ac-a796-b8dde2184464/scratchpad/render_fit.json`
-- `Bash: python3 scripts/render-options.py < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-h5qw220u/289e8916-a303-48ac-a796-b8dde2184464/scratchpad/render_fit.json`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-h5qw220u/289e8916-a303-48ac-a796-b8dde2184464/scratchpad/register_fit.json`
-- `Bash: python3 scripts/studio.py generate_options < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-h5qw220u/289e8916-a303-48ac-a796-b8dde2184464/scratchpad/register_fit.json`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-h5qw220u/projects/kiki-kaka-oversized-long-sleeve-yokai/concepts/generated/fit_silhouette/r01/contact-sheet.svg`
+- `Write: <EVAL_SCRATCH>/scratchpad/render_fit.json`
+- `Bash: python3 scripts/render-options.py < <EVAL_SCRATCH>/scratchpad/render_fit.json`
+- `Write: <EVAL_SCRATCH>/scratchpad/register_fit.json`
+- `Bash: python3 scripts/studio.py generate_options < <EVAL_SCRATCH>/scratchpad/register_fit.json`
+- `Read: <EVAL_WORKSPACE>/projects/kiki-kaka-oversized-long-sleeve-yokai/concepts/generated/fit_silhouette/r01/contact-sheet.svg`
 - `Bash: which rsvg-convert inkscape 2>/dev/null; python3 -c "import cairosvg" 2>&1 | tail -1`
 - `Artifact: `
 - `Skill: artifact-design`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-h5qw220u/289e8916-a303-48ac-a796-b8dde2184464/scratchpad/fit_options.html`
-- `Artifact: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-h5qw220u/289e8916-a303-48ac-a796-b8dde2184464/scratchpad/fit_options.html`
+- `Write: <EVAL_SCRATCH>/scratchpad/fit_options.html`
+- `Artifact: <EVAL_SCRATCH>/scratchpad/fit_options.html`
 
 **Assistant (verbatim):**
 

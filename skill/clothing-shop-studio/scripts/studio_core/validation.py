@@ -8,13 +8,15 @@ each master's lineage, so a renamed or edited file cannot pass by name alone.
 from __future__ import annotations
 
 import hashlib
+import math
 import re
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from .approval import APPROVED_DIR
 from .config import resolve_inside
 from .errors import StudioError, ValidationError
-from .interview import CRITICAL_FIELDS, is_critical
+from .interview import CRITICAL_FIELDS, is_critical, pending_assumptions
 from .store import (
     _load_events,
     _utc_now,
@@ -36,6 +38,10 @@ ORIGIN_FOLDERS = {
 REGISTRABLE_ORIGINS = ("user_reference", "online_reference", "production_master")
 ID_PREFIXES = {"user_reference": "ref-user", "online_reference": "ref-online", "production_master": "master"}
 RASTER_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".tif", ".tiff", ".psd", ".heic"}
+PRODUCTION_MASTER_SUFFIXES = {
+    ".ai", ".dxf", ".emb", ".eps", ".pdf", ".svg",
+    ".dst", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".psd",
+}
 MASTER_CONSTRUCTIONS = ("user_supplied", "typeset", "vector_construction")
 USER_REFERENCE_RIGHTS = ("unconfirmed", "third-party-inspiration-only", "user-owned-or-licensed")
 MASTER_TOKEN, MOCKUP_TOKEN = "MASTER", "MOCKUP"
@@ -61,6 +67,55 @@ def _sha256(path: Path) -> str:
 
 def _is_raster(path: str) -> bool:
     return Path(path).suffix.lower() in RASTER_SUFFIXES
+
+
+def _is_dxf(data: bytes) -> bool:
+    """Binary DXF sentinel, or ASCII group-code pairs opening with `0` / `SECTION`.
+
+    ASCII DXF stores (group code, value) line pairs, so a drawing starts with the
+    code `0` followed by `SECTION`, optionally after `999` comment pairs. Both LF
+    and CRLF line endings are valid.
+    """
+    if data.startswith(b"AutoCAD Binary DXF\r\n\x1a\x00"):
+        return True
+    text = data[3:] if data.startswith(b"\xef\xbb\xbf") else data  # tolerate a UTF-8 BOM
+    lines = [line.strip() for line in text[:4096].splitlines()]
+    index = 0
+    while index + 1 < len(lines) and lines[index] == b"999":
+        index += 2
+    return index + 1 < len(lines) and lines[index] == b"0" and lines[index + 1] == b"SECTION"
+
+
+def _master_container_problem(path: Path) -> str | None:
+    """Return a basic container/signature error; producer software remains authoritative."""
+    data = path.read_bytes()
+    suffix = path.suffix.lower()
+    if suffix == ".svg":
+        try:
+            root = ET.fromstring(data)
+        except (ET.ParseError, ValueError):
+            return "SVG masters must contain well-formed XML."
+        if root.tag.rsplit("}", 1)[-1].lower() != "svg":
+            return "SVG masters must have an `svg` root element."
+        return None
+    if suffix == ".dxf":
+        return None if _is_dxf(data) else "`.dxf` master content is not an ASCII or binary DXF drawing."
+    signatures = {
+        ".pdf": (b"%PDF-",),
+        ".eps": (b"%!PS-Adobe",),
+        ".ai": (b"%PDF-", b"%!PS-Adobe"),
+        ".png": (b"\x89PNG\r\n\x1a\n",),
+        ".jpg": (b"\xff\xd8\xff",),
+        ".jpeg": (b"\xff\xd8\xff",),
+        ".tif": (b"II*\x00", b"MM\x00*"),
+        ".tiff": (b"II*\x00", b"MM\x00*"),
+        ".psd": (b"8BPS",),
+        ".dst": (b"LA:",),
+    }
+    expected = signatures.get(suffix)
+    if expected and not any(data.lstrip().startswith(signature) for signature in expected):
+        return f"`{suffix}` master content does not match its expected file signature."
+    return None
 
 
 def _generated_ancestors(entry: dict, files: dict[str, dict]) -> list[dict]:
@@ -113,7 +168,45 @@ def master_problems(entry: dict, files: dict[str, dict]) -> list[dict]:
             {"code": "master_missing_token", "message": f"`{name}` must contain `{MASTER_TOKEN}`.", "id": entry["id"]}
         )
     if entry.get("origin") == "production_master":
+        if Path(entry["path"]).suffix.lower() not in PRODUCTION_MASTER_SUFFIXES:
+            problems.append(
+                {
+                    "code": "master_unsupported_format",
+                    "message": f"`{name}` is not a recognised production artwork format.",
+                    "id": entry["id"],
+                }
+            )
+        for key in MEASUREMENT_KEYS:
+            value = entry.get(key)
+            invalid = value is not None and (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+                or value < 0
+                or (key != "offset_mm" and value == 0)
+            )
+            if invalid:
+                problems.append(
+                    {
+                        "code": "master_invalid_measurement",
+                        "message": f"`{entry['id']}` has an invalid `{key}` measurement.",
+                        "id": entry["id"],
+                        "field": key,
+                    }
+                )
         references = _ancestors_with_origin(entry, files, "user_reference")
+        online_references = _ancestors_with_origin(entry, files, "online_reference")
+        for reference in online_references:
+            problems.append(
+                {
+                    "code": "master_online_reference_not_clearable",
+                    "message": (
+                        f"`{name}` derives from online reference `{reference['id']}`; "
+                        "online references are inspiration only."
+                    ),
+                    "id": entry["id"],
+                }
+            )
         for reference in references:
             if reference.get("rights") != "user-owned-or-licensed":
                 problems.append(
@@ -129,6 +222,18 @@ def master_problems(entry: dict, files: dict[str, dict]) -> list[dict]:
                 {
                     "code": "master_construction_unknown",
                     "message": f"`{entry['id']}` must state how it was made: {', '.join(MASTER_CONSTRUCTIONS)}.",
+                    "id": entry["id"],
+                }
+            )
+        elif construction == "user_supplied" and (
+            entry.get("rights") != "user-owned-or-licensed"
+            or not str(entry.get("rights_statement") or "").strip()
+            or not references
+        ):
+            problems.append(
+                {
+                    "code": "master_user_supplied_rights_unconfirmed",
+                    "message": f"`{name}` needs a user-owned-or-licensed source reference and rights statement.",
                     "id": entry["id"],
                 }
             )
@@ -167,6 +272,32 @@ def register_file(project_dir: Path, payload: dict, now: str | None = None) -> d
             recovery="Register concepts with generate_options and approvals with approve_design.",
         )
     absolute, relative = resolve_inside(project, payload.get("path"), ORIGIN_FOLDERS[origin])
+    if origin == "production_master":
+        if absolute.suffix.lower() not in PRODUCTION_MASTER_SUFFIXES:
+            raise ValidationError(
+                "Unsupported production-master format.",
+                field="path",
+                path=relative,
+                recovery=(
+                    "Use a recognised artwork or embroidery format such as SVG, PDF, AI, EPS, "
+                    "DXF, DST, EMB, PNG, TIFF, JPEG, or PSD."
+                ),
+            )
+        if absolute.stat().st_size == 0:
+            raise ValidationError(
+                "Production masters cannot be empty files.",
+                field="path",
+                path=relative,
+                recovery="Export or save the actual artwork, then register that file.",
+            )
+        container_problem = _master_container_problem(absolute)
+        if container_problem:
+            raise ValidationError(
+                container_problem,
+                field="path",
+                path=relative,
+                recovery="Export the actual artwork in the selected format and verify that it opens before registration.",
+            )
     state = load_state(project)
     files = {item["id"]: item for item in state.get("files", [])}
     parents = payload.get("parents") or []
@@ -231,9 +362,14 @@ def register_file(project_dir: Path, payload: dict, now: str | None = None) -> d
             )
         for key in MEASUREMENT_KEYS:
             value = payload.get(key)
-            if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0):
+            if value is not None and (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+                or value < 0
+            ):
                 raise ValidationError(
-                    f"`{key}` must be a non-negative number of millimetres.",
+                    f"`{key}` must be a finite, non-negative number of millimetres.",
                     field=key,
                     recovery="Send the measurement as a number, for example 300.",
                 )
@@ -309,6 +445,22 @@ def validate_project(project_dir: Path, master_ids: list[str] | None = None, for
         elif _sha256(path) != entry["sha256"]:
             code = "approved_hash_mismatch" if entry.get("origin") == "approved_design" else "file_hash_mismatch"
             error(code, f"`{entry['path']}` changed after registration.", id=entry["id"], path=entry["path"])
+        elif entry.get("origin") == "production_master" and path.stat().st_size == 0:
+            error(
+                "master_empty_file",
+                f"`{entry['path']}` is an empty production master.",
+                id=entry["id"],
+                path=entry["path"],
+            )
+        elif entry.get("origin") == "production_master":
+            container_problem = _master_container_problem(path)
+            if container_problem:
+                error(
+                    "master_invalid_container",
+                    container_problem,
+                    id=entry["id"],
+                    path=entry["path"],
+                )
 
     # A contact sheet may be the only visual the user sees before approval, so it
     # is part of the review evidence even though it is not an approvable concept.
@@ -317,6 +469,18 @@ def validate_project(project_dir: Path, master_ids: list[str] | None = None, for
         if not relative:
             continue
         path = project / relative
+        if "contact_sheet_sha256" not in concept:
+            warnings.append(
+                {
+                    "code": "legacy_contact_sheet_unhashed",
+                    "message": (
+                        f"`{relative}` predates hashed review evidence; create and show a new option round "
+                        "before approving it."
+                    ),
+                    "path": relative,
+                }
+            )
+            continue
         expected = concept.get("contact_sheet_sha256")
         if not path.is_file() or not expected or _sha256(path) != expected:
             error(
@@ -377,9 +541,7 @@ def validate_project(project_dir: Path, master_ids: list[str] | None = None, for
 
     # 7. Assumptions: an export treats every critical field as critical; otherwise
     # criticality is recomputed because production scope may have changed.
-    for item in state.get("assumptions", []):
-        if item.get("confirmed"):
-            continue
+    for item in pending_assumptions(state):
         if for_export and (item["field"] in CRITICAL_FIELDS or is_critical(item["field"], state)):
             error(
                 "unconfirmed_critical_assumption",

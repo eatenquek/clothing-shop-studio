@@ -8,7 +8,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # discoverable from any cwd
 
 from scripts.studio_core.errors import ValidationError
-from scripts.studio_core.interview import assumption_confirmation, load_graph, next_question, record_answer
+from scripts.studio_core.interview import (
+    assumption_confirmation,
+    load_graph,
+    next_question,
+    record_answer,
+    triggered_confirmations,
+)
 from tests.helpers import blank_state, collect_question_ids, state_with_answers
 
 
@@ -111,7 +117,16 @@ class InterviewTests(unittest.TestCase):
             self.assertEqual(question["id"], "confirm_japanese_text_and_motif", content)
             self.assertTrue(question["critical"])
             confirmed = record_answer(
-                state, question["id"], "Text: 鬼 (oni); motif: kasa-obake", source="user",
+                state,
+                question["id"],
+                {
+                    "approved": True,
+                    "text": "鬼",
+                    "reading": "oni",
+                    "meaning": "ogre",
+                    "motif": "kasa-obake",
+                },
+                source="user",
                 user_quote="Yes: 鬼 (oni), kasa-obake",
             )
             self.assertNotEqual(next_question(confirmed, self.graph)["id"], "confirm_japanese_text_and_motif")
@@ -132,10 +147,116 @@ class InterviewTests(unittest.TestCase):
 
     def test_delegation_cannot_confirm_japanese_text(self):
         state = state_with_answers(reference_status="none", artwork_content="yokai motif")
+        confirmation = {
+            "approved": True,
+            "text": "天狗",
+            "reading": "tengu",
+            "meaning": "heavenly dog",
+            "motif": "tengu",
+        }
         for quote in ("Use your recommendation and continue.", "continue", "you decide"):
             with self.assertRaises(ValidationError, msg=quote):
-                record_answer(state, "confirm_japanese_text_and_motif", "Tengu", source="user", user_quote=quote)
-        record_answer(state, "confirm_japanese_text_and_motif", "Tengu", source="user", user_quote="Yes, Tengu is right")
+                record_answer(
+                    state,
+                    "confirm_japanese_text_and_motif",
+                    confirmation,
+                    source="user",
+                    user_quote=quote,
+                )
+        record_answer(
+            state,
+            "confirm_japanese_text_and_motif",
+            confirmation,
+            source="user",
+            user_quote="Yes, 天狗 (tengu) is right",
+        )
+
+    def test_negative_or_incomplete_japanese_reply_keeps_confirmation_pending(self):
+        state = state_with_answers(reference_status="none", artwork_content="Japanese text 判定")
+        with self.assertRaises(ValidationError):
+            record_answer(
+                state,
+                "confirm_japanese_text_and_motif",
+                False,
+                source="user",
+                user_quote="No, that text is wrong",
+            )
+        with self.assertRaises(ValidationError):
+            record_answer(
+                state,
+                "confirm_japanese_text_and_motif",
+                {"approved": True, "text": "判定"},
+                source="user",
+                user_quote="Yes",
+            )
+        complete = {
+            "approved": True,
+            "text": "判定",
+            "reading": "hantei",
+            "meaning": "judgment",
+            "motif": "original talisman",
+        }
+        for quote in (
+            "I cannot confirm that text",
+            "I refuse to confirm that text",
+            "Confirmation denied",
+            "Maybe later",
+            "Do you approve this?",
+            "I would approve it if corrected",
+            "Yes but the reading is kun'yomi",
+            "Correct except the meaning",
+            "Right, change the motif",
+            "Yes, though double-check the reading",
+            "Yes, I guess",
+            "Close enough",
+            "Nope",
+        ):
+            with self.assertRaises(ValidationError, msg=quote):
+                record_answer(
+                    state,
+                    "confirm_japanese_text_and_motif",
+                    complete,
+                    source="user",
+                    user_quote=quote,
+                )
+        self.assertEqual(next_question(state, self.graph)["id"], "confirm_japanese_text_and_motif")
+
+    def test_affirmative_japanese_confirmation_allows_no_changes_phrase(self):
+        state = state_with_answers(reference_status="none", artwork_content="Japanese text 判定")
+        confirmed = record_answer(
+            state,
+            "confirm_japanese_text_and_motif",
+            {
+                "approved": True,
+                "text": "判定",
+                "reading": "hantei",
+                "meaning": "judgment",
+                "motif": "original talisman",
+            },
+            source="user",
+            user_quote="Yes, no changes",
+        )
+        self.assertNotIn("confirm_japanese_text_and_motif", triggered_confirmations(confirmed))
+
+    def test_affirmative_japanese_confirmation_accepts_plain_agreement(self):
+        state = state_with_answers(reference_status="none", artwork_content="Japanese text 判定")
+        complete = {
+            "approved": True,
+            "text": "判定",
+            "reading": "hantei",
+            "meaning": "judgment",
+            "motif": "original talisman",
+        }
+        for quote in ("Yes", "Correct", "That’s right", "Confirmed", "Yes, confirmed as shown"):
+            confirmed = record_answer(
+                state, "confirm_japanese_text_and_motif", complete, source="user", user_quote=quote
+            )
+            self.assertNotIn("confirm_japanese_text_and_motif", triggered_confirmations(confirmed), quote)
+
+    def test_non_user_answers_cannot_claim_confirmation(self):
+        for source in ("inferred", "default"):
+            with self.assertRaises(ValidationError, msg=source):
+                record_answer(blank_state(), "fit", "oversized", source=source, confirmed=True)
 
     def test_correction_cannot_confirm_all_assumptions(self):
         state = record_answer(blank_state(), "fit", "oversized", source="inferred", confirmed=False)
@@ -145,6 +266,28 @@ class InterviewTests(unittest.TestCase):
                 user_quote="No, the fit should be slim",
             )
         self.assertFalse(state["assumptions"][0]["confirmed"])
+
+    def test_natural_unqualified_yes_preserves_the_users_quote(self):
+        for quote in (
+            "Yes, all correct",
+            "yep",
+            "yes that is right",
+            "Yes please",
+            "sure",
+            "ok",
+            "all good",
+            "Yes that's right",
+        ):
+            state = record_answer(blank_state(), "fit", "oversized", source="inferred", confirmed=False)
+            confirmed = record_answer(
+                state,
+                "confirm_assumptions",
+                "confirmed",
+                source="user",
+                user_quote=quote,
+            )
+            self.assertTrue(confirmed["assumptions"][0]["confirmed"], quote)
+            self.assertEqual(confirmed["assumptions"][-1]["user_quote"], quote)
 
     def test_new_assumption_after_confirmation_is_asked_again(self):
         state = state_with_answers(reference_status="none")

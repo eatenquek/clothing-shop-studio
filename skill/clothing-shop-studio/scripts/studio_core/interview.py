@@ -82,7 +82,27 @@ GSM_PATTERN = re.compile(r"^\s*(\d{2,3}(?:\.\d+)?)\s*(?:gsm|g/m2|g/m²|g)?\s*$",
 CONFIRMATION_FIELDS = {"confirm_heat_weight_tradeoff", "confirm_japanese_text_and_motif", "confirm_assumptions"}
 # Culturally sensitive text cannot be confirmed by a hand-off such as "you decide".
 STRICT_CONFIRMATIONS = {"confirm_japanese_text_and_motif"}
-ASSUMPTION_CONFIRMATIONS = {"yes", "confirm", "confirmed", "correct", "all correct"}
+JAPANESE_CONFIRMATION_KEYS = ("text", "reading", "meaning", "motif")
+ASSUMPTION_CONFIRMATIONS = {
+    "yes",
+    "yep",
+    "yeah",
+    "yes please",
+    "yes all correct",
+    "yes that is right",
+    "yes that is correct",
+    "confirm",
+    "confirmed",
+    "correct",
+    "all correct",
+    "looks good",
+    "sure",
+    "ok",
+    "okay",
+    "all good",
+    "yes that's right",
+    "that's right",
+}
 DELEGATION_PATTERN = re.compile(
     r"^\s*(sounds good[,;]?\s*)?(continue|go on|proceed|next|carry on|keep going|up to you|your call"
     r"|whatever( you think| works)?|(?:ok|okay)[, ]+go with your pick"
@@ -90,6 +110,58 @@ DELEGATION_PATTERN = re.compile(
     r"|use your (recommendation|judgement|judgment|best judgement|best judgment)( and continue)?)"
     r"\s*[.!]*\s*$",
     re.IGNORECASE,
+)
+DELEGATION_CUE_PATTERN = re.compile(
+    r"\b(?:your\s+(?:recommendation|pick|choice|call|judgement|judgment)"
+    r"|you\s+(?:recommend|pick|choose|decide)"
+    r"|whichever\s+you\s+recommend"
+    r"|whatever\s+you\s+think)\b",
+    re.IGNORECASE,
+)
+# Whole-utterance decision checks. A reply counts as a decision only when it has an
+# affirmative cue and nothing that asks, hedges, refuses, negates, or requests a
+# change. Over-strict is safe here: a rejected reply simply means asking again.
+_I = re.IGNORECASE
+# "No changes" and "as is" affirm the design as shown; remove them before scanning
+# for negation or revision words.
+NO_CHANGE_PHRASE = re.compile(
+    r"\b(?:no|without)\s+(?:further\s+|more\s+)?(?:changes?|edits?|corrections?|tweaks?)(?:\s+needed)?\b"
+    r"|\bnothing\s+to\s+change\b|\bas\s+(?:is|shown)\b",
+    _I,
+)
+DECISION_BLOCKERS = (
+    ("question", re.compile(
+        r"\?|^\s*(?:do|does|did|can|could|would|should|will|shall|may|might|is|are|am|was|were"
+        r"|have|has|what|which|how|why|when)\b", _I)),
+    ("conditional", re.compile(
+        r"\b(?:if|unless|once|provided|assuming|as\s+long\s+as|would|could|should|might|may)\b", _I)),
+    ("negative", re.compile(
+        r"\b(?:no|not|nope|nah|never|neither|nor|cannot|dont|wont|cant|doesnt|isnt|wouldnt|shouldnt)\b"
+        r"|n['\u2019]t\b", _I)),
+    ("hesitant", re.compile(
+        r"\b(?:maybe|perhaps|possibly|probably|unsure|undecided|hmm+|idk|dunno|later|wait|hold|pause"
+        r"|yet|let\s+me\s+think|think\s+about|thinking|considering|reconsider|guess|suppose|tentativ\w*"
+        r"|provisional\w*|for\s+now|pending|subject\s+to|kind\s+of|sort\s+of|or)\b", _I)),
+    ("refusal", re.compile(
+        r"\b(?:reject\w*|declin\w*|disapprov\w*|veto\w*|den(?:y|ies|ied)|refus\w*|withh[eo]ld\w*"
+        r"|wrong|incorrect|cancel\w*|scrap\w*)\b", _I)),
+    ("revision", re.compile(
+        r"\b(?:but|except|although|though|however|instead|rather|different|another|other|else"
+        # Requests, not past participles: "Approve revised B" approves a revision.
+        r"|chang(?:e|es|ing)|revis(?:e|es|ing)|fix(?:es|ing)?|adjust(?:s|ing)?|edit(?:s|ing)?|tweak(?:s|ing)?"
+        r"|swap(?:s|ping)?|replac(?:e|es|ing)|modify(?:ing)?|alter(?:s|ing)?|updat(?:e|es|ing)|redo|rework(?:ing)?"
+        r"|improv(?:e|es|ing)|remov(?:e|es|ing)|drop(?:s|ping)?|lose|losing|add|adding|take\s+(?:out|off|away)"
+        r"|minus|without|apart\s+from|excluding|needs?\s+work|more|less|longer|shorter|bigger|smaller|larger|darker|lighter)\b",
+        _I)),
+)
+APPROVAL_CUES = re.compile(
+    r"\b(?:yes|yeah|yep|yup|approv(?:e|ed|ing)|go\s+with|going\s+with|proceed\s+with|choose|chose|select"
+    r"|pick|take|use|let['\u2019]?s\s+do|lock\s+in|sign\s+off|signed\s+off|agreed)\b",
+    _I,
+)
+CONFIRMATION_CUES = re.compile(
+    r"\b(?:yes|yeah|yep|confirm(?:ed)?|correct|right|approv(?:e|ed)|exactly|accurate)\b",
+    _I,
 )
 
 CRITICAL_FIELDS = {
@@ -136,7 +208,26 @@ def load_graph(bundle_dir: Path) -> list[dict]:
 
 def is_delegation(text) -> bool:
     """True for a reply that hands the decision back rather than stating one."""
-    return isinstance(text, str) and bool(DELEGATION_PATTERN.match(text))
+    return isinstance(text, str) and bool(
+        DELEGATION_PATTERN.match(text) or DELEGATION_CUE_PATTERN.search(text)
+    )
+
+
+def decision_problem(text, cues: re.Pattern) -> str | None:
+    """Why a reply is not an unqualified affirmative decision, or None when it is.
+
+    Returns `delegation`, `question`, `conditional`, `negative`, `hesitant`,
+    `refusal`, `revision`, or `no_affirmation`.
+    """
+    if not isinstance(text, str) or not text.strip():
+        return "no_affirmation"
+    if is_delegation(text):
+        return "delegation"
+    scanned = NO_CHANGE_PHRASE.sub(" ", text.replace("\u2019", "'"))
+    for reason, pattern in DECISION_BLOCKERS:
+        if pattern.search(scanned):
+            return reason
+    return None if cues.search(scanned) else "no_affirmation"
 
 
 def _condition_matches(actual, condition) -> bool:
@@ -224,16 +315,50 @@ def triggered_confirmations(state: dict) -> list[str]:
         triggered.append("confirm_heat_weight_tradeoff")
     if (
         "artwork_content" in answers
-        and "confirm_japanese_text_and_motif" not in answers
+        and not _valid_japanese_confirmation(answers.get("confirm_japanese_text_and_motif"))
         and _mentions_japanese(answers)
     ):
         triggered.append("confirm_japanese_text_and_motif")
     return triggered
 
 
+def _valid_japanese_confirmation(value) -> bool:
+    return (
+        isinstance(value, dict)
+        and value.get("approved") is True
+        and all(isinstance(value.get(key), str) and value[key].strip() for key in JAPANESE_CONFIRMATION_KEYS)
+    )
+
+
+def pending_assumptions(state: dict) -> list[dict]:
+    """Inferred/default values lacking a later explicit grouped user confirmation."""
+    records = state.get("assumptions", [])
+    pending = []
+    for index, item in enumerate(records):
+        if item.get("source") not in {"inferred", "default"}:
+            continue
+        confirmed_later = any(
+            later.get("field") == "confirm_assumptions"
+            and later.get("source") == "user"
+            and later.get("confirmed") is True
+            and isinstance(later.get("user_quote"), str)
+            and _valid_assumption_confirmation(later["user_quote"])
+            for later in records[index + 1 :]
+        )
+        if not confirmed_later:
+            pending.append(item)
+    return pending
+
+
+def _valid_assumption_confirmation(user_quote: str) -> bool:
+    reply = user_quote.strip().lower().replace("’", "'")
+    reply = re.sub(r"[,;:\s]+", " ", reply).rstrip(".!?")
+    return reply in ASSUMPTION_CONFIRMATIONS
+
+
 def assumption_confirmation(state: dict, node: dict | None = None) -> dict | None:
     """One grouped question listing every pending inferred or default value."""
-    pending = [item for item in state.get("assumptions", []) if not item.get("confirmed")]
+    pending = pending_assumptions(state)
     if not pending:
         return None
     summary = "; ".join(f"{item['field']}: {item['value']}" for item in pending)
@@ -283,6 +408,7 @@ def record_answer(
     evidence: str | None = None,
     confirmed: bool = True,
     user_quote: str | None = None,
+    allow_legacy_confirmations: bool = False,
 ) -> dict:
     if not isinstance(field, str) or not FIELD_PATTERN.match(field):
         raise ValidationError(
@@ -296,13 +422,22 @@ def record_answer(
             field="source",
             recovery="Record who supplied the value: the user, an inference, or a default.",
         )
+    if source != "user" and confirmed and not allow_legacy_confirmations:
+        raise ValidationError(
+            "Inferred and default answers remain unconfirmed until the user confirms them.",
+            field="confirmed",
+            recovery="Set `confirmed` to false and include the value in the grouped confirmation.",
+        )
     if not isinstance(confirmed, bool):
         raise ValidationError(
             "`confirmed` must be true or false.",
             field="confirmed",
             recovery="Send a JSON boolean.",
         )
-    if field in CONFIRMATION_FIELDS:
+    # Replaying a historical log must reproduce what was accepted then, so wording
+    # rules apply only to new answers; pending_assumptions() still distrusts a vague
+    # historical confirmation.
+    if field in CONFIRMATION_FIELDS and not allow_legacy_confirmations:
         if source != "user" or not isinstance(user_quote, str) or not user_quote.strip():
             raise ValidationError(
                 "Only the user can answer a confirmation question; record their reply in `user_quote`.",
@@ -315,14 +450,26 @@ def record_answer(
                 field="user_quote",
                 recovery="Show the exact text and motif and ask the user to confirm or correct them.",
             )
-        if field == "confirm_assumptions":
-            reply = re.sub(r"\s+", " ", user_quote.strip().lower()).rstrip(".!?")
-            if reply not in ASSUMPTION_CONFIRMATIONS:
-                raise ValidationError(
-                    "Assumptions can only be confirmed with an explicit, unqualified confirmation.",
-                    field="user_quote",
-                    recovery="Record each correction first, show the revised assumption list, then ask for confirmation again.",
-                )
+        if field == "confirm_japanese_text_and_motif" and (
+            not _valid_japanese_confirmation(value) or decision_problem(user_quote, CONFIRMATION_CUES)
+        ):
+            raise ValidationError(
+                "Japanese text and motif need an affirmative structured confirmation.",
+                field="value",
+                recovery=(
+                    "Record `approved: true` plus the exact `text`, `reading`, `meaning`, and `motif`; "
+                    "record corrections first and ask again. Use the word `none` for an intentionally absent item."
+                ),
+            )
+        if field == "confirm_assumptions" and not _valid_assumption_confirmation(user_quote):
+            raise ValidationError(
+                "Assumptions can only be confirmed with an explicit, unqualified confirmation.",
+                field="user_quote",
+                recovery=(
+                    "If the reply contains a correction, record it first and show the revised list; "
+                    "otherwise preserve the user's exact unqualified confirmation."
+                ),
+            )
     concept_ids = {
         item.get("id")
         for item in state.get("files", [])

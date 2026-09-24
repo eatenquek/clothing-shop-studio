@@ -18,6 +18,7 @@
         "validate",
         "export_production_pack",
         "status",
+        "command_error",
         "render_options"
       ]
     },

@@ -12,7 +12,7 @@ from pathlib import Path
 
 from .config import ensure_external
 from .errors import StorageError, ValidationError
-from .interview import record_answer
+from .interview import pending_assumptions, record_answer
 from .views import render_decisions_md, render_manifest, render_project_yaml
 
 SCHEMA_VERSION = 1
@@ -127,7 +127,7 @@ def replay_state(events: list[dict]) -> dict:
     state = _state_template(first["name"], first.get("slug") or _slugify(first["name"]), first["timestamp"])
     state["last_event_hash"] = first.get("event_hash")
     for event in events[1:]:
-        state = _apply_event(state, event)
+        state = _apply_event(state, event, allow_legacy_confirmations=True)
     return state
 
 
@@ -222,7 +222,9 @@ def _add_files(state: dict, entries: list[dict]) -> None:
     state.setdefault("files", []).extend(entries)
 
 
-def _apply_event(state: dict, event: dict) -> dict:
+def _apply_event(
+    state: dict, event: dict, allow_legacy_confirmations: bool = False
+) -> dict:
     next_state = json.loads(json.dumps(state, ensure_ascii=False))
     event_type = event.get("type")
     if event_type == "answer":
@@ -235,19 +237,23 @@ def _apply_event(state: dict, event: dict) -> dict:
             evidence=event.get("evidence"),
             confirmed=event["confirmed"],
             user_quote=event.get("user_quote"),
+            allow_legacy_confirmations=allow_legacy_confirmations,
         )
     elif event_type == "options_registered":
         entries = event.get("entries") or []
         _add_files(next_state, entries)
-        next_state.setdefault("concepts", []).append(
-            {
-                "decision_id": event.get("decision_id"),
-                "round": event.get("round"),
-                "ids": [entry["id"] for entry in entries],
-                "contact_sheet": event.get("contact_sheet"),
-                "contact_sheet_sha256": event.get("contact_sheet_sha256"),
-            }
-        )
+        concept = {
+            "decision_id": event.get("decision_id"),
+            "round": event.get("round"),
+            "ids": [entry["id"] for entry in entries],
+            "contact_sheet": event.get("contact_sheet"),
+        }
+        # Preserve the exact legacy state shape when replaying events written
+        # before review-evidence hashes were introduced. Adding a null key here
+        # would make an untouched older state appear hand-edited after upgrade.
+        if "contact_sheet_sha256" in event:
+            concept["contact_sheet_sha256"] = event.get("contact_sheet_sha256")
+        next_state.setdefault("concepts", []).append(concept)
     elif event_type == "concept_merged":
         _add_files(next_state, [event["entry"]])
     elif event_type == "files_registered":
@@ -345,7 +351,7 @@ def status(project_dir: Path) -> dict:
         "answered_fields": sorted(state.get("answers", {})),
         "assumption_count": len(state.get("assumptions", [])),
         "unconfirmed_assumptions": sorted(
-            item["field"] for item in state.get("assumptions", []) if not item.get("confirmed")
+            item["field"] for item in pending_assumptions(state)
         ),
         "approval_count": len(state.get("approvals", [])),
         "approved_versions": [item["version"] for item in state.get("approvals", [])],

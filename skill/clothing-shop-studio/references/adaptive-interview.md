@@ -32,7 +32,9 @@ For a critical field (garment category, intended use, artwork wording, placement
 
 ## Confirmations
 
-`confirm_heat_weight_tradeoff`, `confirm_japanese_text_and_motif`, and `confirm_assumptions` exist to be shown to the user. Ask them as their own turn, wait, and record the reply with `"source": "user"` and the user's words in `user_quote`; the command refuses a confirmation without them. For Japanese text and the yokai or motif, show the exact characters, meaning, reading, and motif, and accept only a reply that confirms or corrects them; a hand-off is refused. Never invent critical facts this way: garment category, intended use, artwork wording, placement, decoration method, size range, and quantity still need the user's answer.
+`confirm_heat_weight_tradeoff`, `confirm_japanese_text_and_motif`, and `confirm_assumptions` exist to be shown to the user. Ask them as their own turn, wait, and record the reply with `"source": "user"` and the user's exact words in `user_quote`; the command refuses a confirmation without them. Inferred and default answers cannot set `confirmed: true`.
+
+For Japanese text and the yokai or motif, show the exact characters, meaning, reading, and motif. An affirmative reply is recorded as a structured value containing `approved: true`, `text`, `reading`, `meaning`, and `motif`; use the literal word `none` for an intentionally absent item. The whole reply must be an unqualified affirmative such as “yes”, “correct”, or “that’s right” (“yes, no changes” counts); a question, condition, hedge, correction, rejection, incomplete structure, or hand-off leaves the confirmation pending. Never invent critical facts this way: garment category, intended use, artwork wording, placement, decoration method, size range, and quantity still need the user's answer.
 
 ## Safe inference
 
@@ -40,7 +42,7 @@ Infer only reversible, low-risk details supported by clear evidence. Record the 
 
 ## Assumptions
 
-Every inferred or default value enters the assumptions register with `confirmed: false`. When `next_question.id` is `confirm_assumptions`, list the pending values in one question and let the user confirm or correct them together. Record corrections as normal answers; record agreement with `record_answer` on `confirm_assumptions`. A critical inferred value remains a production blocker until confirmed, and export lists every low-risk assumption that is still open.
+Every inferred or default value enters the assumptions register with `confirmed: false`. When `next_question.id` is `confirm_assumptions`, list the pending values in one question and let the user confirm or correct them together. Record corrections as normal answers; record an unqualified agreement such as “yes”, “yes, all correct”, “yes that is right”, “sure”, “all good”, or “confirmed” with `record_answer` on `confirm_assumptions`, preserving the exact `user_quote`. A legacy inferred/default record marked confirmed is reopened unless a later valid user confirmation exists. A critical inferred value remains a production blocker until confirmed, and export lists every low-risk assumption that is still open.
 
 ## Enough to generate
 

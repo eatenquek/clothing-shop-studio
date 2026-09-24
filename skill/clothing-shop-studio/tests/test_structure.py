@@ -39,6 +39,8 @@ class StructureTests(unittest.TestCase):
 
         self.assertIn("informational, not legal advice", safety_text)
         self.assertIn("Do not bake this notice into the artwork", safety_text)
+        self.assertIn("before the single closing question", skill_text)
+        self.assertIn("before that single closing question", safety_text)
 
 
 if __name__ == "__main__":

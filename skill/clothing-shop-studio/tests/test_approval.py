@@ -30,7 +30,7 @@ class ApprovalTests(unittest.TestCase):
         concept = self.concepts["A"]["id"]
         v1 = approve_design(self.project, [concept], "Approve A", now=FIXED_NOW)
         before = hash_tree(v1)
-        v2 = approve_design(self.project, [concept], "Revise sleeve", now=LATER)
+        v2 = approve_design(self.project, [concept], "Approve A for the new version", now=LATER)
         self.assertEqual(v1.name, "v001")
         self.assertEqual(v2.name, "v002")
         self.assertNotEqual(hash_tree(v1), hash_tree(v2))
@@ -61,10 +61,81 @@ class ApprovalTests(unittest.TestCase):
             "Use your recommendation and continue.", "you decide", "Continue",
             "Do what you think is best", "Use your best judgment", "Surprise me",
             "Sounds good, use your recommendation", "Whatever works", "OK go with your pick",
+            "Go with your recommendation", "I will go with your recommendation",
+            "Sure, you pick", "Your choice", "fine, whatever you think is best",
+            "Approve whichever you recommend",
         ):
             with self.assertRaises(ValidationError, msg=statement):
                 approve_design(self.project, [self.concepts["A"]["id"]], statement, now=FIXED_NOW)
         self.assertEqual(list((self.project / "designs/approved").iterdir()), [])
+
+    def test_rejection_is_not_an_approval(self):
+        for statement in (
+            "I do not approve A",
+            "Don't approve this",
+            "I cannot approve A",
+            "This is not approved",
+            "Reject option A",
+            "No, I decline this design",
+            "I refuse to approve A",
+            "Approval denied",
+            "I veto option A",
+            "Maybe later",
+            "Not sure, maybe A",
+            "A, but change the sleeve",
+            "Nope",
+            "nah",
+            "This could use more work",
+            "Do you approve A?",
+            "I would approve A if you change it",
+            # Leading refusals and negative selections.
+            "No, take it back",
+            "No thanks, I'll take a different one",
+            "I wouldn't pick A",
+            "Don't go with A",
+            "Pick anything except A",
+            "I'll take B instead",
+            # Affirmative words carrying a revision request.
+            "Yes, but make the sleeve longer",
+            "Yes, but swap the navy for black",
+            "Go with A, just make the logo bigger",
+            "Take A but lose the sleeve print",
+            "Use A, minus the back print",
+            "Yes, go with A and tweak the font",
+            "Yes — go with A and remove the hem tag",
+            "Approve A without the tag",
+            # Conditional, provisional, hedged, or ambiguous approvals.
+            "Yes if the print is smaller",
+            "Yes, approve A after you tweak it",
+            "approve A pending the strike-off",
+            "A is approved, subject to the printer's proof",
+            "Approve A for now",
+            "Approve A tentatively",
+            "I approve A, I guess",
+            "Approve A or B",
+            "Approve A?",
+            "Hold off for now",
+            "Not yet",
+        ):
+            with self.assertRaises(ValidationError, msg=statement):
+                approve_design(self.project, [self.concepts["A"]["id"]], statement, now=FIXED_NOW)
+        self.assertEqual(list((self.project / "designs/approved").iterdir()), [])
+
+    def test_approval_requires_an_affirmative_decision(self):
+        for statement in (
+            "I approve A",
+            "Approved.",
+            "Yes, approve option A",
+            "Go with A",
+            "Let's do A",
+            "No changes, approve A",
+            "Yes, approve A as is",
+            "Approve revised A",
+            "Lock in A",
+        ):
+            project = make_project(Path(self.temp.name), name=statement)
+            concepts = register_concepts(project)
+            approve_design(project, [concepts["A"]["id"]], statement, now=FIXED_NOW)
 
     def test_approval_rejects_concept_changed_after_registration(self):
         (self.project / self.concepts["C"]["path"]).write_text("<svg><text>C edited</text></svg>", "utf-8")
@@ -85,7 +156,12 @@ class ApprovalTests(unittest.TestCase):
             },
             FIXED_NOW,
         )
-        version = approve_design(self.project, [merged["id"]], "A's density, C's distress", now=FIXED_NOW)
+        version = approve_design(
+            self.project,
+            [merged["id"]],
+            "Approve the merged concept: A's density, C's distress",
+            now=FIXED_NOW,
+        )
         approval = json.loads((version / "approval.json").read_text("utf-8"))
         self.assertEqual(approval["lineage"][merged["id"]], [self.concepts["A"]["id"], self.concepts["C"]["id"]])
 

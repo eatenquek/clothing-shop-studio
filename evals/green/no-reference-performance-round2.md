@@ -1,6 +1,6 @@
 # GREEN evaluation: no-reference-performance
 
-- Workspace: `/private/tmp/clothing-shop-studio-eval/css-eval-nye27uua`
+- Workspace: `<EVAL_WORKSPACE>`
 - Harness: fresh headless `claude -p` session; skill installed as a project skill; user settings, hooks, plugins, and MCP servers excluded; Bash limited to the skill scripts.
 
 ## Turn 1
@@ -12,33 +12,33 @@
 **Tool calls:**
 
 - `Skill: clothing-shop-studio`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-nye27uua/.claude/skills/clothing-shop-studio/references/workflow.md`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-nye27uua/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-nye27uua/.claude/skills/clothing-shop-studio && echo '{"name": "sg-running-club-tee"}' | python3 scripts/studio.py create_project`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/workflow.md`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio && echo '{"name": "sg-running-club-tee"}' | python3 scripts/studio.py create_project`
 - `Bash: \
-PROJECT_DIR="/private/tmp/clothing-shop-studio-eval/css-eval-nye27uua/projects/sg-running-club-tee" && \
+PROJECT_DIR="<EVAL_WORKSPACE>/projects/sg-running-club-tee" && \
 echo "{\"project_dir\": \"$PROJECT_DIR\", \"field\": \"reference_image\", \"value\": null}" | python3 scripts/studio.py record_answer && \
 echo "{\"project_dir\": \"$PROJECT_DIR\", \"field\": \"garment_category\", \"value\": \"performance_top\", \"source\": \"user\", \"confi`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans1.json`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans2.json`
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-nye27uua/.claude/skills/clothing-shop-studio
-SCRATCH=/private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad
+- `Write: <EVAL_SCRATCH>/scratchpad/ans1.json`
+- `Write: <EVAL_SCRATCH>/scratchpad/ans2.json`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio
+SCRATCH=<EVAL_SCRATCH>/scratchpad
 python3 scripts/studio.py record_answer < "$SCRATCH/ans1.json"
 python3 scripts/studio.py record_answer < "$SCRATCH/ans2.json"`
-- `Bash: python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans1.json`
-- `Bash: python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans2.json`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-nye27uua/.claude/skills/clothing-shop-studio/references/garments-materials.md`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans3.json`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans4.json`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans5.json`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans6.json`
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-nye27uua/.claude/skills/clothing-shop-studio
-SCRATCH=/private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad
+- `Bash: python3 scripts/studio.py record_answer < <EVAL_SCRATCH>/scratchpad/ans1.json`
+- `Bash: python3 scripts/studio.py record_answer < <EVAL_SCRATCH>/scratchpad/ans2.json`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/garments-materials.md`
+- `Write: <EVAL_SCRATCH>/scratchpad/ans3.json`
+- `Write: <EVAL_SCRATCH>/scratchpad/ans4.json`
+- `Write: <EVAL_SCRATCH>/scratchpad/ans5.json`
+- `Write: <EVAL_SCRATCH>/scratchpad/ans6.json`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio
+SCRATCH=<EVAL_SCRATCH>/scratchpad
 python3 scripts/studio.py record_answer < "$SCRATCH/ans3.json"`
-- `Bash: python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans3.json`
-- `Bash: python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans4.json`
-- `Bash: python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans5.json`
-- `Bash: python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans6.json`
+- `Bash: python3 scripts/studio.py record_answer < <EVAL_SCRATCH>/scratchpad/ans3.json`
+- `Bash: python3 scripts/studio.py record_answer < <EVAL_SCRATCH>/scratchpad/ans4.json`
+- `Bash: python3 scripts/studio.py record_answer < <EVAL_SCRATCH>/scratchpad/ans5.json`
+- `Bash: python3 scripts/studio.py record_answer < <EVAL_SCRATCH>/scratchpad/ans6.json`
 
 **Assistant (verbatim):**
 
@@ -54,8 +54,8 @@ python3 scripts/studio.py record_answer < "$SCRATCH/ans3.json"`
 
 **Tool calls:**
 
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans7.json`
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-nye27uua/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans7.json`
+- `Write: <EVAL_SCRATCH>/scratchpad/ans7.json`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < <EVAL_SCRATCH>/scratchpad/ans7.json`
 
 **Assistant (verbatim):**
 
@@ -71,8 +71,8 @@ python3 scripts/studio.py record_answer < "$SCRATCH/ans3.json"`
 
 **Tool calls:**
 
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans8.json`
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-nye27uua/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-nye27uua/80db4f59-0fd4-4c3c-8064-60dc0750e266/scratchpad/ans8.json`
+- `Write: <EVAL_SCRATCH>/scratchpad/ans8.json`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < <EVAL_SCRATCH>/scratchpad/ans8.json`
 
 **Assistant (verbatim):**
 

@@ -1,6 +1,6 @@
 # GREEN evaluation: kiki-kaka
 
-- Workspace: `/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9`
+- Workspace: `<EVAL_WORKSPACE>`
 - Harness: fresh headless `claude -p` session; skill installed as a project skill; user settings, hooks, plugins, and MCP servers excluded; Bash limited to the skill scripts.
 
 ## Turn 1
@@ -12,35 +12,35 @@
 **Tool calls:**
 
 - `Skill: clothing-shop-studio`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/.claude/skills/clothing-shop-studio/references/workflow.md`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/workflow.md`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
 - `Bash: cat ~/.config/clothing-shop-studio/config.json 2>/dev/null || echo "NO_CONFIG"`
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/.claude/skills/clothing-shop-studio && echo '{"name": "KIKI KAKA Yokai Oversized Long-Sleeve"}' | python3 scripts/studio.py create_project`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/.claude/skills/clothing-shop-studio/references/garments-materials.md`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/.claude/skills/clothing-shop-studio/references/visual-options.md`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio && echo '{"name": "KIKI KAKA Yokai Oversized Long-Sleeve"}' | python3 scripts/studio.py create_project`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/garments-materials.md`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/visual-options.md`
 - `Bash: python3 scripts/studio.py 2>&1 | head -50; echo "---"; python3 scripts/studio.py record_answer --help 2>&1 | head -30`
-- `Bash: PD="/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve"
+- `Bash: PD="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve"
 echo "{\"project_dir\": \"$PD\", \"field\": \"garment_category\", \"value\": \"long_sleeve\", \"source\": \"user\", \"evidence\": \"oversized long-sleeve\"}" | python3 scripts/studio.py record_answer`
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/.claude/skills/clothing-shop-studio
-PD="/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve"
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio
+PD="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve"
 
 echo "{\"project_dir\": \"$PD\", \"field\": \"fit\", \"value\": \"oversized\", \"source\": \"user\", \"evidence\": \"oversized long-sleeve\"}" | python3 scrip`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-tlewbke9/cd7a0aa9-977c-4e65-88a4-ae280e65f26c/scratchpad/record_facts.sh`
-- `Bash: bash /private/tmp/clothing-shop-studio-eval-scratch/css-eval-tlewbke9/cd7a0aa9-977c-4e65-88a4-ae280e65f26c/scratchpad/record_facts.sh`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "fit", "value": "oversized", "source": "user", "evidence": "oversized long-sleeve"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "brand", "value": "KIKI KAKA (existing brand)", "source": "user", "evidence": "KIKI KAKA oversized long-sleeve; I have an existing brand"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "intended_use", "value": "retail drop / streetwear apparel", "source": "user", "evidence": "monochrome utilitarian streetwear"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "audience", "value": "unisex young-adult customers", "source": "user", "evidence": "100 unisex young-adult customers"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "size_range", "value": "unisex", "source": "user", "evidence": "100 unisex young-adult customers"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "quantity", "value": 100, "source": "user", "evidence": "100 unisex young-adult customers"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "location", "value": "Singapore", "source": "user", "evidence": "Singapore"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "climate", "value": "humid_tropical", "source": "inferred", "evidence": "Singapore", "confirmed": false}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "style_direction", "value": "monochrome utilitarian streetwear", "source": "user", "evidence": "monochrome utilitarian streetwear"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "color_scheme", "value": "monochrome", "source": "user", "evidence": "monochrome utilitarian streetwear"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "back_graphic_style", "value": "irregular distressed typography, upper back placement", "source": "user", "evidence": "irregular distressed upper-back typography"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "chest_graphic_style", "value": "small centre-chest text", "source": "user", "evidence": "small centre-chest text"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "theme", "value": "Japanese yokai", "source": "user", "evidence": "Japanese yokai theme"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "budget_tier", "value": "average", "source": "user", "evidence": "average budget"}' | python3 scripts/studio.py record_answer`
+- `Write: <EVAL_SCRATCH>/scratchpad/record_facts.sh`
+- `Bash: bash <EVAL_SCRATCH>/scratchpad/record_facts.sh`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "fit", "value": "oversized", "source": "user", "evidence": "oversized long-sleeve"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "brand", "value": "KIKI KAKA (existing brand)", "source": "user", "evidence": "KIKI KAKA oversized long-sleeve; I have an existing brand"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "intended_use", "value": "retail drop / streetwear apparel", "source": "user", "evidence": "monochrome utilitarian streetwear"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "audience", "value": "unisex young-adult customers", "source": "user", "evidence": "100 unisex young-adult customers"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "size_range", "value": "unisex", "source": "user", "evidence": "100 unisex young-adult customers"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "quantity", "value": 100, "source": "user", "evidence": "100 unisex young-adult customers"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "location", "value": "Singapore", "source": "user", "evidence": "Singapore"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "climate", "value": "humid_tropical", "source": "inferred", "evidence": "Singapore", "confirmed": false}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "style_direction", "value": "monochrome utilitarian streetwear", "source": "user", "evidence": "monochrome utilitarian streetwear"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "color_scheme", "value": "monochrome", "source": "user", "evidence": "monochrome utilitarian streetwear"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "back_graphic_style", "value": "irregular distressed typography, upper back placement", "source": "user", "evidence": "irregular distressed upper-back typography"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "chest_graphic_style", "value": "small centre-chest text", "source": "user", "evidence": "small centre-chest text"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "theme", "value": "Japanese yokai", "source": "user", "evidence": "Japanese yokai theme"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "budget_tier", "value": "average", "source": "user", "evidence": "average budget"}' | python3 scripts/studio.py record_answer`
 
 **Assistant (verbatim):**
 
@@ -58,7 +58,7 @@ echo "{\"project_dir\": \"$PD\", \"field\": \"fit\", \"value\": \"oversized\", \
 
 **Tool calls:**
 
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "reference_image", "value": null, "source": "user", "evidence": "I do not have a reference image for this evaluation."}' | pyth`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio && echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "reference_image", "value": null, "source": "user", "evidence": "I do not have a reference image for this evaluation."}' | pyth`
 
 **Assistant (verbatim):**
 
@@ -74,12 +74,12 @@ echo "{\"project_dir\": \"$PD\", \"field\": \"fit\", \"value\": \"oversized\", \
 
 **Tool calls:**
 
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "garment_subtype", "value": "crew long-sleeve, drop shoulder", "source": "default", "confirmed": false, "evidence": "User deleg`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "length", "value": "body hits at hip (standard oversized drop), sleeves full length to wrist", "source": "default", "confirmed": false, "evidence": "User delegated pacing; standard oversized proportions for a streetwear long-sleeve"}' | python3`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "construction", "value": "ribbed crew neckline and cuffs, taped shoulder seams, double-needle hem, side-seamed body", "source": "default", "confirmed": false, "evidence": "User delegated pacing; standard utilitarian streetwear construction deta`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "fiber_blend", "value": "100% ring-spun cotton", "source": "user", "evidence": "Use a heavyweight but still wearable fabric — ring-spun cotton gives the heavyweight structured hand utilitarian streetwear needs while staying breathable enough fo`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "fabric_structure", "value": "single jersey, heavyweight", "source": "user", "evidence": "Use a heavyweight but still wearable fabric — heavyweight single jersey is standard for oversized cotton long-sleeves"}' | python3 scripts/studio.py recor`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-tlewbke9/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "gsm", "value": 260, "source": "user", "evidence": "Use a heavyweight but still wearable fabric — 260 GSM is heavyweight (220-300 heavy range) while staying below the stiffest end, matching the wearable request"}' | python3 scripts/studio.py re`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio && echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "garment_subtype", "value": "crew long-sleeve, drop shoulder", "source": "default", "confirmed": false, "evidence": "User deleg`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "length", "value": "body hits at hip (standard oversized drop), sleeves full length to wrist", "source": "default", "confirmed": false, "evidence": "User delegated pacing; standard oversized proportions for a streetwear long-sleeve"}' | python3`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "construction", "value": "ribbed crew neckline and cuffs, taped shoulder seams, double-needle hem, side-seamed body", "source": "default", "confirmed": false, "evidence": "User delegated pacing; standard utilitarian streetwear construction deta`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "fiber_blend", "value": "100% ring-spun cotton", "source": "user", "evidence": "Use a heavyweight but still wearable fabric — ring-spun cotton gives the heavyweight structured hand utilitarian streetwear needs while staying breathable enough fo`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "fabric_structure", "value": "single jersey, heavyweight", "source": "user", "evidence": "Use a heavyweight but still wearable fabric — heavyweight single jersey is standard for oversized cotton long-sleeves"}' | python3 scripts/studio.py recor`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-oversized-long-sleeve", "field": "gsm", "value": 260, "source": "user", "evidence": "Use a heavyweight but still wearable fabric — 260 GSM is heavyweight (220-300 heavy range) while staying below the stiffest end, matching the wearable request"}' | python3 scripts/studio.py re`
 
 **Assistant (verbatim):**
 

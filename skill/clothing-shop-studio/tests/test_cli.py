@@ -277,7 +277,7 @@ class CliTests(unittest.TestCase):
 
     def test_every_schema_command_dispatches(self):
         schema = json.loads((self.bundle / "schemas/command-io.schema.json").read_text("utf-8"))
-        commands = set(schema["properties"]["command"]["enum"]) - {"render_options"}
+        commands = set(schema["properties"]["command"]["enum"]) - {"render_options", "command_error"}
         for command in sorted(commands):
             completed, response = self.run_cli(command, {})
             self.assertEqual(response["command"], command)
@@ -342,6 +342,20 @@ class CliTests(unittest.TestCase):
         self.assertFalse(response["data"]["ok"])
         self.assertIn("approval_answers_changed", [item["code"] for item in response["data"]["errors"]])
 
+    def test_validate_for_export_honours_requested_master_ids(self):
+        project = ready_project(self.root)
+        completed, response = self.run_cli(
+            "validate",
+            {
+                "project_dir": str(project),
+                "for_export": True,
+                "master_ids": ["missing-master"],
+            },
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertFalse(response["data"]["ok"])
+        self.assertIn("master_missing", [item["code"] for item in response["data"]["errors"]])
+
     def test_render_options_missing_input_is_structured_error(self):
         missing = self.root / "missing-render.json"
         completed = subprocess.run(
@@ -359,6 +373,38 @@ class CliTests(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 2)
         self.assertEqual(response["error"]["field"], "config_path")
+
+    def test_invalid_or_missing_command_returns_structured_error(self):
+        schema = json.loads((self.bundle / "schemas/command-io.schema.json").read_text("utf-8"))
+        allowed_commands = schema["properties"]["command"]["enum"]
+        for args in ([], ["not-a-command"]):
+            completed = subprocess.run(
+                [sys.executable, str(self.script), *args],
+                input="{}",
+                text=True,
+                capture_output=True,
+                check=False,
+                cwd=self.root,
+            )
+            self.assertEqual(completed.returncode, 2, completed.stderr)
+            response = json.loads(completed.stdout)
+            self.assertFalse(response["ok"])
+            self.assertEqual(response["error"]["field"], "command")
+            self.assertIn(response["command"], allowed_commands)
+
+    def test_render_options_invalid_argument_returns_structured_error(self):
+        completed = subprocess.run(
+            [sys.executable, str(self.bundle / "scripts/render-options.py"), "--not-a-real-flag"],
+            input="{}",
+            text=True,
+            capture_output=True,
+            check=False,
+            cwd=self.root,
+        )
+        self.assertEqual(completed.returncode, 2, completed.stderr)
+        response = json.loads(completed.stdout)
+        self.assertFalse(response["ok"])
+        self.assertEqual(response["error"]["field"], "arguments")
 
 
 if __name__ == "__main__":

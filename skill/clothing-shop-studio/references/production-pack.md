@@ -22,7 +22,9 @@ Save masters in `production/masters/` and register each one:
  "colours": ["Off-white plastisol, match to approved strike-off"], "decoration_method": "plastisol screen print"}
 ```
 
-Registration refuses masters whose lineage includes a generated concept or any third-party/unconfirmed reference, mockups, and raster masters that are not the client's own artwork. A raster `user_supplied` master must name a registered `user-owned-or-licensed` reference as a parent and include the user's rights statement. Vector construction must be original; linking a third-party reference as content lineage is also refused.
+Recognised production formats are SVG, PDF, AI, EPS, DXF, DST, EMB, PNG, TIFF, JPEG, and PSD. Empty files, arbitrary text renamed as artwork, malformed SVG, mismatched common file signatures, and non-finite measurements such as `NaN` or `Infinity` are refused. Registration performs a basic container and metadata check; the producer must still confirm that the file opens and is usable in their specific artwork, RIP, or embroidery software.
+
+Registration refuses masters whose lineage includes a generated concept or any third-party/unconfirmed reference, mockups, and raster masters that are not the client's own artwork. Every `user_supplied` master—vector or raster—must name a registered `user-owned-or-licensed` reference as a parent and include the user's rights statement. Vector construction must be original; linking a third-party reference as content lineage is also refused.
 
 ## Sizing
 
@@ -68,7 +70,8 @@ Run `studio.py validate` with `"for_export": true` to see blockers early, then `
 | `no_production_master`, `no_current_production_master`, `master_missing_dimensions`, `master_not_linked_to_approval` | Register a complete master for the latest approved version. |
 | `approval_answers_changed` | Show the revised design and record a new explicit approval. |
 | `required_confirmation_pending` | Confirm the triggered cultural-text or climate/material trade-off question. |
-| `master_raster_rights_unconfirmed`, `master_reference_rights_unconfirmed` | Record a user-owned-or-licensed source and the user's rights statement, or rebuild original vector artwork. |
+| `master_user_supplied_rights_unconfirmed`, `master_raster_rights_unconfirmed`, `master_reference_rights_unconfirmed`, `master_online_reference_not_clearable` | Record a user-owned-or-licensed source and the user's rights statement, or rebuild original vector artwork without third-party lineage. |
+| `master_invalid_container`, `master_unsupported_format`, `master_empty_file` | Export actual artwork in a recognised format, confirm the extension/container match, and register it again. |
 | `master_generated_raster`, `master_generated_concept`, `mockup_as_master` | Rebuild the master from typeset, vector, or client artwork. |
 | `incompatible_production_method` | Choose one of the listed alternatives with the user. |
 | `*_hash_mismatch`, `state_tampered`, `event_chain_broken`, `generated_view_tampered` | Stop. A file changed outside the tools; restore it from backup. |

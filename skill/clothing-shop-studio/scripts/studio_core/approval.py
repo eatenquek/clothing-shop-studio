@@ -11,7 +11,7 @@ import stat
 from pathlib import Path
 
 from .errors import StorageError, ValidationError
-from .interview import is_delegation
+from .interview import APPROVAL_CUES, decision_problem, is_delegation
 from .store import _utc_now, append_event, canonical_json, load_state, write_atomic
 
 APPROVED_DIR = Path("designs/approved")
@@ -46,6 +46,20 @@ def approve_design(project_dir: Path, concept_ids: list[str], statement: str, no
             "A hand-off such as 'continue' or 'you decide' is not an approval.",
             field="statement",
             recovery="Show the design and ask the user whether they approve it.",
+        )
+    problem = decision_problem(statement, APPROVAL_CUES)
+    if problem == "no_affirmation":
+        raise ValidationError(
+            "The statement does not contain an affirmative approval or selection.",
+            field="statement",
+            recovery="Ask the user to explicitly approve the design or name the option they want to proceed with.",
+        )
+    if problem:
+        raise ValidationError(
+            "A question, condition, refusal, hesitation, or change request cannot be recorded as design approval.",
+            field="statement",
+            details=[{"reason": problem}],
+            recovery="Resolve the request or revise the design, then ask the user for a clear approval statement.",
         )
     if not isinstance(concept_ids, list) or not concept_ids or len(set(concept_ids)) != len(concept_ids):
         raise ValidationError(

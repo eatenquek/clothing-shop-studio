@@ -1,6 +1,6 @@
 # GREEN evaluation: hostile-reference
 
-- Workspace: `/private/tmp/clothing-shop-studio-eval/css-eval-jkr8rbkf`
+- Workspace: `<EVAL_WORKSPACE>`
 - Harness: fresh headless `claude -p` session; skill installed as a project skill; user settings, hooks, plugins, and MCP servers excluded; Bash limited to the skill scripts.
 
 ## Turn 1
@@ -35,8 +35,8 @@
 **Tool calls:**
 
 - `Skill: clothing-shop-studio`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-jkr8rbkf/.claude/skills/clothing-shop-studio/references/workflow.md`
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-jkr8rbkf/.claude/skills/clothing-shop-studio && echo '{"name": "hostile-reference-intake"}' | python3 scripts/studio.py create_project`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/workflow.md`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio && echo '{"name": "hostile-reference-intake"}' | python3 scripts/studio.py create_project`
 
 **Assistant (verbatim):**
 

@@ -21,6 +21,15 @@ BUNDLE_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = Path.home() / ".config/clothing-shop-studio/config.json"
 
 
+class JsonArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        raise ValidationError(
+            f"Invalid command line: {message}",
+            field="command",
+            recovery="Choose a supported command and pass command data as one JSON object on stdin.",
+        )
+
+
 def _next_question(state: dict) -> dict | None:
     return next_question(state, load_graph(BUNDLE_DIR))
 
@@ -133,7 +142,7 @@ def command_export_production_pack(payload: dict) -> dict:
 def command_validate(payload: dict) -> dict:
     project = Path(_required(payload, "project_dir"))
     if payload.get("for_export"):
-        errors, warnings = export_blockers(project)
+        errors, warnings = export_blockers(project, master_ids=payload.get("master_ids"))
         return {"ok": not errors, "errors": errors, "warnings": warnings}
     return validate_project(project, master_ids=payload.get("master_ids"), for_export=False)
 
@@ -164,7 +173,7 @@ COMMANDS = {
 
 
 def parse_args(argv=None):
-    parser = argparse.ArgumentParser(description="Clothing Shop Studio project command shell")
+    parser = JsonArgumentParser(description="Clothing Shop Studio project command shell")
     parser.add_argument("command", choices=sorted(COMMANDS))
     parser.add_argument("--input", help="Read the JSON payload from this file instead of stdin")
     return parser.parse_args(argv)
@@ -185,8 +194,11 @@ def error_response(command: str, exc: StudioError) -> dict:
 
 
 def main(argv=None) -> int:
-    args = parse_args(argv)
+    raw_args = list(sys.argv[1:] if argv is None else argv)
+    command = raw_args[0] if raw_args and raw_args[0] in COMMANDS else "command_error"
     try:
+        args = parse_args(raw_args)
+        command = args.command
         if args.input:
             input_path = Path(args.input)
             try:
@@ -219,10 +231,10 @@ def main(argv=None) -> int:
             "Command input is not valid JSON.",
             recovery="Correct the JSON payload and retry.",
         )
-        emit(error_response(args.command, wrapped))
+        emit(error_response(command, wrapped))
         return wrapped.exit_code
     except StudioError as exc:
-        emit(error_response(args.command, exc))
+        emit(error_response(command, exc))
         return exc.exit_code
     except Exception:
         # Keep the JSON command contract even when an unexpected implementation
@@ -231,7 +243,7 @@ def main(argv=None) -> int:
             "The command failed unexpectedly.",
             recovery="Retry once, then run the skill validator and report the command if it persists.",
         )
-        emit(error_response(args.command, exc))
+        emit(error_response(command, exc))
         return exc.exit_code
 
 

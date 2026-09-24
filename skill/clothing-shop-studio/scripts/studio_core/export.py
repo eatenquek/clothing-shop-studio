@@ -194,10 +194,12 @@ def _compatibility(state: dict, masters: list[dict] | None = None) -> list[tuple
     return results
 
 
-def export_blockers(project_dir: Path) -> tuple[list[dict], list[dict]]:
+def export_blockers(
+    project_dir: Path, master_ids: list[str] | None = None
+) -> tuple[list[dict], list[dict]]:
     """Return (errors, warnings) that decide whether a production pack can be exported."""
     project = Path(project_dir)
-    report = validate_project(project, for_export=True)
+    report = validate_project(project, master_ids=master_ids, for_export=True)
     errors, warnings = list(report["errors"]), list(report["warnings"])
     state = load_state(project)
     answers = state.get("answers", {})

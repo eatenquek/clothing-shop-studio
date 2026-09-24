@@ -25,16 +25,25 @@ BUNDLE_DIR = Path(__file__).resolve().parents[1]
 COMMAND = "render_options"
 
 
+class JsonArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        raise ValidationError(
+            f"Invalid command line: {message}",
+            field="arguments",
+            recovery="Pass one optional `--input` JSON file, or send the JSON payload on stdin.",
+        )
+
+
 def emit(payload: dict) -> None:
     json.dump(payload, sys.stdout, ensure_ascii=False, sort_keys=True)
     sys.stdout.write("\n")
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--input", help="Read the JSON payload from this file instead of stdin")
-    args = parser.parse_args(argv)
     try:
+        parser = JsonArgumentParser(description=__doc__.splitlines()[0])
+        parser.add_argument("--input", help="Read the JSON payload from this file instead of stdin")
+        args = parser.parse_args(argv)
         try:
             payload = json.loads(Path(args.input).read_text("utf-8")) if args.input else json.load(sys.stdin)
         except OSError as exc:

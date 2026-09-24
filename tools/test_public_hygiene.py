@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 import subprocess
 import unittest
 
@@ -12,7 +13,11 @@ class PublicHygieneTests(unittest.TestCase):
             "private-" + "var-folders",
             "/" + "var/folders/l0/",
             "claude-" + "501",
+            "/" + "private/" + "tmp/",
+            "/" + "tmp/",
         )
+        home_path = re.compile(r"/" + r"(?:Users|home)" + r"/[^/<\s]+/")
+        windows_home = re.compile(r"[A-Za-z]:\\" + r"Users\\[^\\\s]+\\")
         offenders = []
         tracked = subprocess.run(
             ["git", "ls-files"], cwd=root, check=True, text=True, capture_output=True
@@ -25,7 +30,11 @@ class PublicHygieneTests(unittest.TestCase):
                 text = path.read_text("utf-8")
             except (UnicodeDecodeError, OSError):
                 continue
-            if any(token in text for token in prohibited):
+            if (
+                any(token in text for token in prohibited)
+                or home_path.search(text)
+                or windows_home.search(text)
+            ):
                 offenders.append(str(path.relative_to(root)))
         self.assertEqual(offenders, [])
 

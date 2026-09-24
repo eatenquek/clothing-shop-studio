@@ -6,7 +6,7 @@ Every persistent change goes through `scripts/studio.py`. Run it from the skill 
 echo '{"project_dir": "/path/to/project"}' | python3 scripts/studio.py status
 ```
 
-Each response is JSON with `ok`, `command`, `schema_version`, and either `data` or `error` (`code`, `message`, `recovery`, and optional `field`, `path`, `details`). Never edit `metadata/`, `project.yaml`, `decisions.md`, approved versions, or packs by hand; `validate` detects it.
+Each command response, including an invalid or missing command, is JSON with `ok`, `command`, `schema_version`, and either `data` or `error` (`code`, `message`, `recovery`, and optional `field`, `path`, `details`). Parse-time failures use the schema-defined `command_error` command value; `--help` remains ordinary terminal help. Never edit `metadata/`, `project.yaml`, `decisions.md`, approved versions, or packs by hand; `validate` detects it.
 
 ## 1. Choose the project root (first use only)
 
@@ -33,7 +33,7 @@ When `next_question.visual` is true, or the user must judge a look, follow [visu
 
 ## 6. Approval
 
-Only the user can approve. Ask whether they approve, wait for the reply, and when they clearly approve a concept or a combination, run `approve_design` with `concept_ids` and their words as `statement`. A hand-off such as "continue" or "use your recommendation" is refused as a statement; ask again plainly. This creates an immutable `designs/approved/vNNN/`, freezes the selected concept plus its hashed review contact sheet, and snapshots the current interview answers. Any later answer change requires a new approval version before export.
+Only the user can approve. Ask whether they approve, wait for the reply, and when they affirmatively approve or name the option they want to proceed with, run `approve_design` with `concept_ids` and their exact words as `statement`. The whole statement is checked: a hand-off, question, condition, hedge ("for now", "I guess"), refusal, negative selection, or change request anywhere in it is refused, even after "yes" (for example "Yes, but make the sleeve longer"). The error's `details` name the reason. Make any requested change first, show it, and ask again plainly. This creates an immutable `designs/approved/vNNN/`, freezes the selected concept and any registered hashed review contact sheet, and snapshots the current interview answers. Any later answer change requires a new approval version before export. A legacy unhashed contact sheet cannot be approved; create and show a new option round first.
 
 ## 7. Production masters
 

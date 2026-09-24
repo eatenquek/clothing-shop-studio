@@ -1,6 +1,6 @@
 # GREEN evaluation: kiki-kaka
 
-- Workspace: `/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a`
+- Workspace: `<EVAL_WORKSPACE>`
 - Harness: fresh headless `claude -p` session; skill installed as a project skill; user settings, hooks, plugins, and MCP servers excluded; Bash limited to the skill scripts.
 
 ## Turn 1
@@ -12,44 +12,44 @@
 **Tool calls:**
 
 - `Skill: clothing-shop-studio`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/.claude/skills/clothing-shop-studio/references/workflow.md`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/.claude/skills/clothing-shop-studio && echo '{"name": "kiki-kaka-yokai-longsleeve"}' | python3 scripts/studio.py create_project`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/.claude/skills/clothing-shop-studio/references/garments-materials.md`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/.claude/skills/clothing-shop-studio/references/visual-options.md`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/workflow.md`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio && echo '{"name": "kiki-kaka-yokai-longsleeve"}' | python3 scripts/studio.py create_project`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/garments-materials.md`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/references/visual-options.md`
 - `Bash: python3 scripts/studio.py --help 2>&1 | head -50; echo "---"; grep -n "field" scripts/studio.py | head -80`
 - `Bash: grep -n "\"id\"\|'id'\|QUESTIONS\|garment_category\|next_question\|PHASE" scripts/studio.py | head -100`
 - `Bash: find . -iname "*.json" -path "*interview*" -o -iname "*graph*" | head; echo "---"; find . -path "*studio_core*" -name "*.py" | xargs -I{} echo {}`
 - `Bash: find . -path "*studio_core*"`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/.claude/skills/clothing-shop-studio/scripts/studio_core/interview.py`
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/scripts/studio_core/interview.py`
 - `Bash: python3 -c "
 import json
 d = json.load(open('data/interview-graph.json'))
 for q in d['questions']:
     print(q['id'], '|', q['phase'], '|', q['answer_type'], '|', q.get('critical'), '|', q.get('visual'), '|', q.get('applies_when'))
 "`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/.claude/skills/clothing-shop-studio/data/interview-graph.json`
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/.claude/skills/clothing-shop-studio
-PROJECT_DIR="/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve"
+- `Read: <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio/data/interview-graph.json`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio
+PROJECT_DIR="<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve"
 
 record() {
   echo "$1" | python3 scripts/studio.py record_answer | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['ok'], d.get('error'))"
 }
 
 recor`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-esoqdr8a/f66a1616-0d69-4a11-b73f-893ca29b7534/scratchpad/record_intake.py`
-- `Bash: python3 /private/tmp/clothing-shop-studio-eval-scratch/css-eval-esoqdr8a/f66a1616-0d69-4a11-b73f-893ca29b7534/scratchpad/record_intake.py`
-- `Bash: python3 /private/tmp/clothing-shop-studio-eval-scratch/css-eval-esoqdr8a/f66a1616-0d69-4a11-b73f-893ca29b7534/scratchpad/record_intake.py`
-- `Bash: python3 /private/tmp/clothing-shop-studio-eval-scratch/css-eval-esoqdr8a/f66a1616-0d69-4a11-b73f-893ca29b7534/scratchpad/record_intake.py`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "garment_category", "value": "long_sleeve", "source": "user", "evidence": "brief: oversized long-sleeve", "confirmed": true}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "fit", "value": "oversized", "source": "user", "evidence": "brief: oversized long-sleeve", "confirmed": true}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "audience", "value": "unisex young-adult customers in Singapore", "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "climate", "value": "Singapore", "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "quantity", "value": 100, "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "budget_tier", "value": "average", "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "intended_use", "value": "physical-production retail drop for existing brand KIKI KAKA", "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "placement", "value": "upper back: irregular distressed typography; centre chest: small text", "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "artwork_style", "value": "monochrome utilitarian streetwear", "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
+- `Write: <EVAL_SCRATCH>/scratchpad/record_intake.py`
+- `Bash: python3 <EVAL_SCRATCH>/scratchpad/record_intake.py`
+- `Bash: python3 <EVAL_SCRATCH>/scratchpad/record_intake.py`
+- `Bash: python3 <EVAL_SCRATCH>/scratchpad/record_intake.py`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "garment_category", "value": "long_sleeve", "source": "user", "evidence": "brief: oversized long-sleeve", "confirmed": true}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "fit", "value": "oversized", "source": "user", "evidence": "brief: oversized long-sleeve", "confirmed": true}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "audience", "value": "unisex young-adult customers in Singapore", "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "climate", "value": "Singapore", "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "quantity", "value": 100, "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "budget_tier", "value": "average", "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "intended_use", "value": "physical-production retail drop for existing brand KIKI KAKA", "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "placement", "value": "upper back: irregular distressed typography; centre chest: small text", "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "artwork_style", "value": "monochrome utilitarian streetwear", "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
 
 **Assistant (verbatim):**
 
@@ -65,7 +65,7 @@ recor`
 
 **Tool calls:**
 
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "reference_image", "value": null, "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio && echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "reference_image", "value": null, "source": "user", "confirmed": true}' | python3 scripts/studio.py record_answer`
 
 **Assistant (verbatim):**
 
@@ -81,34 +81,34 @@ recor`
 
 **Tool calls:**
 
-- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "garment_subtype", "value": "crew long-sleeve, dropped shoulder", "source": "default", "evidence": "default construction for oversized uti`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "length", "value": "boxy oversized body length, full-length sleeve with ribbed cuff", "source": "default", "evidence": "boxy oversized proportion is standard for the requested silhouette and aids airflow in humid climate", "confirmed": false}' | python3 s`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "construction", "value": "dropped shoulder set-in sleeve, self-fabric ribbed crew neck with taped seam, ribbed cuffs, straight double-needle hem, no vents", "source": "default", "evidence": "utilitarian streetwear construction consistent with monochrome, `
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "fiber_blend", "value": "100% combed ring-spun cotton", "source": "default", "evidence": "cotton gives crisp screen-print results and authentic utilitarian streetwear hand", "confirmed": false}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "fabric_structure", "value": "interlock knit, brushed interior", "source": "default", "evidence": "interlock gives structured drape for a boxy utilitarian silhouette, brushed interior offsets heavyweight cotton in a humid climate", "confirmed": false}' | `
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "gsm", "value": 280, "source": "user", "evidence": "user: use a heavyweight but still wearable fabric", "confirmed": true}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "confirm_heat_weight_tradeoff", "value": "keep the heavyweight 280gsm cotton for structure and print quality; offset humidity with a brushed interior, garment/enzyme wash for a softer hand, and a boxy oversized drop-shoulder cut for airflow", "source": "u`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "handfeel", "value": "dry, structured hand softened by an enzyme/garment wash", "source": "default", "evidence": "matches confirmed heavyweight-but-wearable resolution", "confirmed": false}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "stretch", "value": "none (rigid, structured utilitarian handle)", "source": "default", "evidence": "no stretch is typical for heavyweight utilitarian streetwear knits at this weight", "confirmed": false}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "opacity", "value": "full opacity, no show-through", "source": "default", "evidence": "inherent at 280gsm", "confirmed": false}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "field": "care", "value": "cold machine wash, tumble dry low, do not iron directly over print", "source": "default", "evidence": "standard care for garment-washed heavyweight cotton with a plastisol/discharge print", "confirmed": false}' | python3 scripts/studio.p`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "mode": "plan", "decision_id": "base_color", "axes": ["true black piece-dye", "washed charcoal heather", "bone/ecru reverse-monochrome", "two-tone black body with off-white trims"], "constraints": {"palette": "strict monochrome: black, white, grey, bone only", "ga`
+- `Bash: cd <EVAL_WORKSPACE>/.claude/skills/clothing-shop-studio && echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "garment_subtype", "value": "crew long-sleeve, dropped shoulder", "source": "default", "evidence": "default construction for oversized uti`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "length", "value": "boxy oversized body length, full-length sleeve with ribbed cuff", "source": "default", "evidence": "boxy oversized proportion is standard for the requested silhouette and aids airflow in humid climate", "confirmed": false}' | python3 s`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "construction", "value": "dropped shoulder set-in sleeve, self-fabric ribbed crew neck with taped seam, ribbed cuffs, straight double-needle hem, no vents", "source": "default", "evidence": "utilitarian streetwear construction consistent with monochrome, `
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "fiber_blend", "value": "100% combed ring-spun cotton", "source": "default", "evidence": "cotton gives crisp screen-print results and authentic utilitarian streetwear hand", "confirmed": false}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "fabric_structure", "value": "interlock knit, brushed interior", "source": "default", "evidence": "interlock gives structured drape for a boxy utilitarian silhouette, brushed interior offsets heavyweight cotton in a humid climate", "confirmed": false}' | `
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "gsm", "value": 280, "source": "user", "evidence": "user: use a heavyweight but still wearable fabric", "confirmed": true}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "confirm_heat_weight_tradeoff", "value": "keep the heavyweight 280gsm cotton for structure and print quality; offset humidity with a brushed interior, garment/enzyme wash for a softer hand, and a boxy oversized drop-shoulder cut for airflow", "source": "u`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "handfeel", "value": "dry, structured hand softened by an enzyme/garment wash", "source": "default", "evidence": "matches confirmed heavyweight-but-wearable resolution", "confirmed": false}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "stretch", "value": "none (rigid, structured utilitarian handle)", "source": "default", "evidence": "no stretch is typical for heavyweight utilitarian streetwear knits at this weight", "confirmed": false}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "opacity", "value": "full opacity, no show-through", "source": "default", "evidence": "inherent at 280gsm", "confirmed": false}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "field": "care", "value": "cold machine wash, tumble dry low, do not iron directly over print", "source": "default", "evidence": "standard care for garment-washed heavyweight cotton with a plastisol/discharge print", "confirmed": false}' | python3 scripts/studio.p`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "mode": "plan", "decision_id": "base_color", "axes": ["true black piece-dye", "washed charcoal heather", "bone/ecru reverse-monochrome", "two-tone black body with off-white trims"], "constraints": {"palette": "strict monochrome: black, white, grey, bone only", "ga`
 - `Bash: python3 scripts/render-options.py --help 2>&1 | head -60`
 - `Bash: sed -n '1,120p' scripts/render-options.py`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-esoqdr8a/f66a1616-0d69-4a11-b73f-893ca29b7534/scratchpad/base_color_briefs.json`
-- `Bash: python3 scripts/render-options.py --input "/private/tmp/clothing-shop-studio-eval-scratch/css-eval-esoqdr8a/f66a1616-0d69-4a11-b73f-893ca29b7534/scratchpad/base_color_briefs.json"`
-- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve", "mode": "register", "decision_id": "base_color", "contact_sheet": "concepts/generated/base_color/r01/contact-sheet.svg", "results": [{"label": "A", "axis": "true black piece-dye", "path": "concepts/generated/base_color/r01/option-A.svg", "renderer": "svg-fallback"`
-- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve/concepts/generated/base_color/r01/contact-sheet.svg`
+- `Write: <EVAL_SCRATCH>/scratchpad/base_color_briefs.json`
+- `Bash: python3 scripts/render-options.py --input "<EVAL_SCRATCH>/scratchpad/base_color_briefs.json"`
+- `Bash: echo '{"project_dir": "<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve", "mode": "register", "decision_id": "base_color", "contact_sheet": "concepts/generated/base_color/r01/contact-sheet.svg", "results": [{"label": "A", "axis": "true black piece-dye", "path": "concepts/generated/base_color/r01/option-A.svg", "renderer": "svg-fallback"`
+- `Read: <EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve/concepts/generated/base_color/r01/contact-sheet.svg`
 - `Skill: artifact-design`
-- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-esoqdr8a/f66a1616-0d69-4a11-b73f-893ca29b7534/scratchpad/base_color_review.html`
-- `Edit: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-esoqdr8a/f66a1616-0d69-4a11-b73f-893ca29b7534/scratchpad/base_color_review.html`
-- `Artifact: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-esoqdr8a/f66a1616-0d69-4a11-b73f-893ca29b7534/scratchpad/base_color_review.html`
+- `Write: <EVAL_SCRATCH>/scratchpad/base_color_review.html`
+- `Edit: <EVAL_SCRATCH>/scratchpad/base_color_review.html`
+- `Artifact: <EVAL_SCRATCH>/scratchpad/base_color_review.html`
 
 **Assistant (verbatim):**
 
 > The artifact publish is waiting on your approval — no worries, I'll give you the direct paths instead. The four rendered concept cards are at:
 >
-> - **Contact sheet (all four together):** `/private/tmp/clothing-shop-studio-eval/css-eval-esoqdr8a/projects/kiki-kaka-yokai-longsleeve/concepts/generated/base_color/r01/contact-sheet.svg`
+> - **Contact sheet (all four together):** `<EVAL_WORKSPACE>/projects/kiki-kaka-yokai-longsleeve/concepts/generated/base_color/r01/contact-sheet.svg`
 > - Individual: `option-A.svg`, `option-B.svg`, `option-C.svg`, `option-W.svg` in that same folder.
 >
 > Garment, weight, and construction are locked (oversized crew long-sleeve, dropped shoulder, 280gsm brushed cotton interlock). Base colour direction, staying strictly monochrome:
