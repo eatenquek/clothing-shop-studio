@@ -19,7 +19,11 @@
         "export_production_pack",
         "status",
         "command_error",
-        "render_options"
+        "render_options",
+        "extract",
+        "create_models",
+        "try_on",
+        "create_listing"
       ]
     },
     "schema_version": {"const": 1},

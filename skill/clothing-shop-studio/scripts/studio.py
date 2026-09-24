@@ -15,6 +15,12 @@ from studio_core.export import export_blockers, export_production_pack
 from studio_core.interview import load_graph, next_question
 from studio_core.options import merge_concept, next_round, plan_options, register_options
 from studio_core.store import append_event, create_project, load_state, status
+from studio_core.extract import (
+    confirm_inventory, decide_garments, plan_extraction, record_consent, record_inventory, register_extraction,
+)
+from studio_core.listing import build_listing, decide_listing
+from studio_core.models import install_defaults, keep_models, plan_models, plan_reference, register_models
+from studio_core.tryon import decide_tryon, plan_tryon, register_tryon
 from studio_core.validation import register_file, validate_project
 
 BUNDLE_DIR = Path(__file__).resolve().parents[1]
@@ -159,6 +165,58 @@ def command_status(payload: dict) -> dict:
     }
 
 
+def _dispatch(payload: dict, modes: dict, command: str) -> dict:
+    project = Path(_required(payload, "project_dir"))
+    handler = modes.get(payload.get("mode"))
+    if handler is None:
+        raise ValidationError(
+            f"Mode must be one of: {', '.join(modes)}.",
+            field="mode",
+            recovery=f"See references/presentation.md for the `{command}` workflow.",
+        )
+    return handler(project, payload)
+
+
+def command_extract(payload: dict) -> dict:
+    now = payload.get("now")
+    return _dispatch(payload, {
+        "inventory": lambda p, d: record_inventory(p, d, now),
+        "confirm": lambda p, d: confirm_inventory(p, d, now),
+        "consent": lambda p, d: record_consent(p, d, now),
+        "plan": lambda p, d: plan_extraction(p, d),
+        "register": lambda p, d: register_extraction(p, d, now),
+        "decide": lambda p, d: decide_garments(p, d, now),
+    }, "extract")
+
+
+def command_create_models(payload: dict) -> dict:
+    now = payload.get("now")
+    return _dispatch(payload, {
+        "install_defaults": lambda p, d: install_defaults(p, BUNDLE_DIR),
+        "plan": lambda p, d: plan_models(p, d),
+        "plan_reference": lambda p, d: plan_reference(p, d),
+        "register": lambda p, d: {"entries": register_models(p, d, now)},
+        "keep": lambda p, d: keep_models(p, d, now),
+    }, "create_models")
+
+
+def command_try_on(payload: dict) -> dict:
+    now = payload.get("now")
+    return _dispatch(payload, {
+        "plan": lambda p, d: plan_tryon(p, d, now),
+        "register": lambda p, d: {"entries": register_tryon(p, d, now)},
+        "decide": lambda p, d: decide_tryon(p, d, now),
+    }, "try_on")
+
+
+def command_create_listing(payload: dict) -> dict:
+    now = payload.get("now")
+    return _dispatch(payload, {
+        "build": lambda p, d: build_listing(p, d, now),
+        "decide": lambda p, d: decide_listing(p, d, now),
+    }, "create_listing")
+
+
 COMMANDS = {
     "create_project": command_create_project,
     "resume_project": command_resume_project,
@@ -169,6 +227,10 @@ COMMANDS = {
     "register_file": command_register_file,
     "validate": command_validate,
     "status": command_status,
+    "extract": command_extract,
+    "create_models": command_create_models,
+    "try_on": command_try_on,
+    "create_listing": command_create_listing,
 }
 
 

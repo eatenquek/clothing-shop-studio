@@ -406,6 +406,38 @@ class CliTests(unittest.TestCase):
         self.assertFalse(response["ok"])
         self.assertEqual(response["error"]["field"], "arguments")
 
+    def test_presentation_commands_are_wired_and_structured(self):
+        project = ready_project(self.root / "p")
+        completed, response = self.run_cli("create_models", {"project_dir": str(project), "mode": "install_defaults"})
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(len(response["data"]["installed"]), 4)
+        for command in ("extract", "create_models", "try_on", "create_listing"):
+            completed, response = self.run_cli(command, {"project_dir": str(project), "mode": "bogus"})
+            self.assertEqual(completed.returncode, 2, command)
+            self.assertEqual(response["command"], command)
+            self.assertEqual(response["error"]["field"], "mode")
+        completed, response = self.run_cli("create_listing", {"project_dir": str(project), "mode": "build",
+                                                              "version": "v001"})
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn("white_background", response["data"]["missing"])
+        schema = json.loads((self.bundle / "schemas/command-io.schema.json").read_text("utf-8"))
+        names = schema["properties"]["command"]["enum"]
+        for command in ("extract", "create_models", "try_on", "create_listing"):
+            self.assertIn(command, names)
+
+    def test_create_listing_cli_uses_the_recorded_project_name(self):
+        project = ready_project(self.root / "names")
+        completed, response = self.run_cli("create_listing", {"project_dir": str(project), "mode": "build",
+                                                              "version": "v001",
+                                                              "design_name": "Silk Luxe Premium Cashmere Blend"})
+        self.assertEqual(completed.returncode, 2)
+        self.assertEqual(response["command"], "create_listing")
+        self.assertEqual(response["error"]["field"], "design_name")
+        completed, response = self.run_cli("create_listing", {"project_dir": str(project), "mode": "build",
+                                                              "version": "v001"})
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        html = (project / response["data"]["files"]["html"]).read_text("utf-8")
+        self.assertIn("Test project", html)
 
 if __name__ == "__main__":
     unittest.main()
