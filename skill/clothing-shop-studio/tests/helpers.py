@@ -40,8 +40,18 @@ def state_with_answers(**answers) -> dict:
     return state
 
 
-def collect_question_ids(graph: dict) -> list[str]:
-    return [node["id"] for node in graph.get("questions", [])]
+def collect_question_ids(state: dict, graph: list[dict], limit: int = 10) -> list[str]:
+    from scripts.studio_core.interview import next_question, record_answer
+
+    working = json.loads(json.dumps(state, ensure_ascii=False))
+    seen = []
+    for _ in range(limit):
+        question = next_question(working, graph)
+        if question is None or question["id"] in seen:
+            break
+        seen.append(question["id"])
+        working = record_answer(working, question["id"], "test-answer", source="user")
+    return seen
 
 
 def four_results(project: Path) -> list[dict]:

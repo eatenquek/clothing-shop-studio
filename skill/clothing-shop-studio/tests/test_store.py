@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # discoverable from any cwd
 
 from scripts.studio_core.errors import StorageError, UnsafePathError
 from scripts.studio_core.store import append_event, create_project, load_state
@@ -68,6 +71,37 @@ class StoreTests(unittest.TestCase):
         self.assertIn("fit", (project / "decisions.md").read_text("utf-8"))
         events = [json.loads(line) for line in (project / "metadata/decisions.jsonl").read_text("utf-8").splitlines()]
         self.assertEqual(events[-1]["field"], "fit")
+
+    def test_answer_event_matches_interview_assumption_register(self):
+        project = make_project(self.root)
+        append_event(project, {"type": "answer", "field": "reference_image", "value": None}, FIXED_NOW)
+        state = append_event(
+            project,
+            {
+                "type": "answer",
+                "field": "stretch",
+                "value": "mechanical stretch",
+                "source": "inferred",
+                "evidence": "Performance brief",
+                "confirmed": False,
+            },
+            FIXED_NOW,
+        )
+        self.assertEqual(state["answers"]["reference_status"], "none")
+        register = {item["field"]: item for item in state["assumptions"]}
+        self.assertEqual(
+            register["stretch"],
+            {
+                "field": "stretch",
+                "value": "mechanical stretch",
+                "source": "inferred",
+                "evidence": "Performance brief",
+                "confirmed": False,
+                "critical": False,
+            },
+        )
+        # Resuming from disk yields the same register as the in-memory result.
+        self.assertEqual(load_state(project)["assumptions"], state["assumptions"])
 
 
 if __name__ == "__main__":

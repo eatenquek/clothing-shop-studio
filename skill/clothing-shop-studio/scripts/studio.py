@@ -10,10 +10,15 @@ from pathlib import Path
 from studio_core import SCHEMA_VERSION
 from studio_core.config import resolve_storage_root, save_storage_root
 from studio_core.errors import StudioError, ValidationError
-from studio_core.store import create_project, load_state, status
+from studio_core.interview import load_graph, next_question
+from studio_core.store import append_event, create_project, load_state, status
 
 BUNDLE_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = Path.home() / ".config/clothing-shop-studio/config.json"
+
+
+def _next_question(state: dict) -> dict | None:
+    return next_question(state, load_graph(BUNDLE_DIR))
 
 
 def _required(payload: dict, field: str):
@@ -37,11 +42,38 @@ def command_create_project(payload: dict) -> dict:
         __import__("datetime").timezone.utc
     ).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     state = create_project(root, _required(payload, "name"), BUNDLE_DIR, now)
-    return {**state, "project_dir": str(root / state["project_slug"])}
+    return {
+        **state,
+        "project_dir": str(root / state["project_slug"]),
+        "next_question": _next_question(state),
+    }
 
 
 def command_resume_project(payload: dict) -> dict:
-    return load_state(Path(_required(payload, "project_dir")))
+    state = load_state(Path(_required(payload, "project_dir")))
+    return {**state, "next_question": _next_question(state)}
+
+
+def command_record_answer(payload: dict) -> dict:
+    """Append one answer event and return the new state plus exactly one next question."""
+    project = Path(_required(payload, "project_dir"))
+    if "value" not in payload:
+        raise ValidationError(
+            "Value is required; send null to decline an optional question.",
+            field="value",
+            recovery="Provide `value` and retry.",
+        )
+    event = {
+        "type": "answer",
+        "field": _required(payload, "field"),
+        "value": payload["value"],
+        "source": payload.get("source", "user"),
+        "confirmed": payload.get("confirmed", True),
+    }
+    if payload.get("evidence") is not None:
+        event["evidence"] = payload["evidence"]
+    state = append_event(project, event, payload.get("now"))
+    return {"state": state, "next_question": _next_question(state)}
 
 
 def command_status(payload: dict) -> dict:
@@ -51,6 +83,7 @@ def command_status(payload: dict) -> dict:
 COMMANDS = {
     "create_project": command_create_project,
     "resume_project": command_resume_project,
+    "record_answer": command_record_answer,
     "status": command_status,
 }
 

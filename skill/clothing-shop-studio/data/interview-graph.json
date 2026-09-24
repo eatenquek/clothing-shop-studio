@@ -1,0 +1,476 @@
+{
+  "schema_version": 1,
+  "questions": [
+    {
+      "id": "reference_image",
+      "phase": "reference",
+      "prompt": "Would you like to attach a reference image? If not, say no and we will continue.",
+      "answer_type": "optional_file",
+      "applies_when": {},
+      "skip_if_known": [
+        "reference_status"
+      ],
+      "inferable": false,
+      "critical": false,
+      "visual": false,
+      "options_source": "adaptive-interview.md#reference-first"
+    },
+    {
+      "id": "garment_category",
+      "phase": "garment",
+      "prompt": "What are we designing: tee, long-sleeve, polo, tank, performance top, sweatshirt, hoodie, jacket, bottoms, headwear, bag, or another garment?",
+      "answer_type": "choice_or_text",
+      "applies_when": {},
+      "skip_if_known": [
+        "garment_category"
+      ],
+      "inferable": false,
+      "critical": true,
+      "visual": false,
+      "options_source": "garments-materials.md#garment-families"
+    },
+    {
+      "id": "garment_subtype",
+      "phase": "garment",
+      "prompt": "Which subtype or construction should this garment use?",
+      "answer_type": "choice_or_text",
+      "applies_when": {
+        "garment_category": {
+          "present": true
+        }
+      },
+      "skip_if_known": [
+        "garment_subtype"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "garments-materials.md#garment-families"
+    },
+    {
+      "id": "intended_use",
+      "phase": "context",
+      "prompt": "What is the garment's main use or wearing situation?",
+      "answer_type": "text",
+      "applies_when": {},
+      "skip_if_known": [
+        "intended_use"
+      ],
+      "inferable": false,
+      "critical": true,
+      "visual": false,
+      "options_source": "adaptive-interview.md#context"
+    },
+    {
+      "id": "audience",
+      "phase": "context",
+      "prompt": "Who is the intended wearer or customer?",
+      "answer_type": "text",
+      "applies_when": {},
+      "skip_if_known": [
+        "audience"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "adaptive-interview.md#context"
+    },
+    {
+      "id": "climate",
+      "phase": "context",
+      "prompt": "In what climate and conditions will it be worn?",
+      "answer_type": "choice_or_text",
+      "applies_when": {},
+      "skip_if_known": [
+        "climate"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "garments-materials.md#climate-and-weight"
+    },
+    {
+      "id": "fit",
+      "phase": "silhouette",
+      "prompt": "Which fit and silhouette should the garment have?",
+      "answer_type": "visual_choice",
+      "applies_when": {},
+      "skip_if_known": [
+        "fit"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": true,
+      "options_source": "garments-materials.md#fit"
+    },
+    {
+      "id": "length",
+      "phase": "silhouette",
+      "prompt": "What body, sleeve, or inseam length should it use?",
+      "answer_type": "choice_or_measurement",
+      "applies_when": {},
+      "skip_if_known": [
+        "length"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "garments-materials.md#fit"
+    },
+    {
+      "id": "construction",
+      "phase": "silhouette",
+      "prompt": "Are there required seams, panels, ribbing, vents, closures, or other construction details?",
+      "answer_type": "text",
+      "applies_when": {},
+      "skip_if_known": [
+        "construction"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "garments-materials.md#construction"
+    },
+    {
+      "id": "fiber_blend",
+      "phase": "material",
+      "prompt": "Which fibre blend should the garment use?",
+      "answer_type": "choice_or_text",
+      "applies_when": {},
+      "skip_if_known": [
+        "fiber_blend",
+        "material"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "garments-materials.md#fibres"
+    },
+    {
+      "id": "fabric_structure",
+      "phase": "material",
+      "prompt": "Which fabric structure should it use, such as jersey, interlock, fleece, pique, mesh, woven, or ripstop?",
+      "answer_type": "choice_or_text",
+      "applies_when": {},
+      "skip_if_known": [
+        "fabric_structure"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "garments-materials.md#structures"
+    },
+    {
+      "id": "gsm",
+      "phase": "material",
+      "prompt": "What fabric weight or GSM should this garment use?",
+      "answer_type": "number_or_choice",
+      "applies_when": {
+        "garment_category": {
+          "in": [
+            "tee",
+            "long_sleeve",
+            "hoodie",
+            "sweatshirt",
+            "performance_top"
+          ]
+        }
+      },
+      "skip_if_known": [
+        "gsm"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "garments-materials.md#fabric-weight"
+    },
+    {
+      "id": "handfeel",
+      "phase": "material",
+      "prompt": "What hand-feel should the fabric have?",
+      "answer_type": "choice_or_text",
+      "applies_when": {},
+      "skip_if_known": [
+        "handfeel"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "garments-materials.md#hand-feel"
+    },
+    {
+      "id": "stretch",
+      "phase": "material",
+      "prompt": "How much stretch and recovery does the garment need?",
+      "answer_type": "choice_or_percentage",
+      "applies_when": {},
+      "skip_if_known": [
+        "stretch"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "garments-materials.md#performance"
+    },
+    {
+      "id": "opacity",
+      "phase": "material",
+      "prompt": "What opacity or coverage is required?",
+      "answer_type": "choice_or_text",
+      "applies_when": {},
+      "skip_if_known": [
+        "opacity"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "garments-materials.md#performance"
+    },
+    {
+      "id": "care",
+      "phase": "material",
+      "prompt": "Are there wash, dry, ironing, or durability requirements?",
+      "answer_type": "text",
+      "applies_when": {},
+      "skip_if_known": [
+        "care"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "garments-materials.md#care"
+    },
+    {
+      "id": "base_color",
+      "phase": "colour",
+      "prompt": "Which garment base colour direction should we explore?",
+      "answer_type": "visual_choice",
+      "applies_when": {},
+      "skip_if_known": [
+        "base_color"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": true,
+      "options_source": "visual-options.md#colour"
+    },
+    {
+      "id": "size_range",
+      "phase": "sizing",
+      "prompt": "What size range must the garment cover?",
+      "answer_type": "range",
+      "applies_when": {},
+      "skip_if_known": [
+        "size_range"
+      ],
+      "inferable": false,
+      "critical": true,
+      "visual": false,
+      "options_source": "production-pack.md#sizing"
+    },
+    {
+      "id": "grading_strategy",
+      "phase": "sizing",
+      "prompt": "Should artwork and placement use one size, grouped sizes, or proportional scaling across the size range?",
+      "answer_type": "choice_or_text",
+      "applies_when": {
+        "size_range": {
+          "present": true
+        }
+      },
+      "skip_if_known": [
+        "grading_strategy"
+      ],
+      "inferable": false,
+      "critical": false,
+      "visual": false,
+      "options_source": "production-pack.md#artwork-scaling"
+    },
+    {
+      "id": "artwork_content",
+      "phase": "artwork",
+      "prompt": "What exact artwork, wording, symbol, or subject should appear?",
+      "answer_type": "text_or_file",
+      "applies_when": {},
+      "skip_if_known": [
+        "artwork_content"
+      ],
+      "inferable": false,
+      "critical": true,
+      "visual": false,
+      "options_source": "visual-options.md#artwork"
+    },
+    {
+      "id": "artwork_style",
+      "phase": "artwork",
+      "prompt": "Which visual style should the artwork use?",
+      "answer_type": "visual_choice",
+      "applies_when": {},
+      "skip_if_known": [
+        "artwork_style"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": true,
+      "options_source": "visual-options.md#artwork"
+    },
+    {
+      "id": "typography",
+      "phase": "artwork",
+      "prompt": "Which typography treatment should the design use?",
+      "answer_type": "visual_choice",
+      "applies_when": {},
+      "skip_if_known": [
+        "typography"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": true,
+      "options_source": "visual-options.md#typography"
+    },
+    {
+      "id": "placement",
+      "phase": "artwork",
+      "prompt": "Where should each artwork element be placed?",
+      "answer_type": "visual_choice",
+      "applies_when": {},
+      "skip_if_known": [
+        "placement"
+      ],
+      "inferable": false,
+      "critical": true,
+      "visual": true,
+      "options_source": "visual-options.md#placement"
+    },
+    {
+      "id": "scale",
+      "phase": "artwork",
+      "prompt": "What artwork scale and maximum dimensions should we explore?",
+      "answer_type": "visual_choice",
+      "applies_when": {
+        "placement": {
+          "present": true
+        }
+      },
+      "skip_if_known": [
+        "scale"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": true,
+      "options_source": "visual-options.md#scale"
+    },
+    {
+      "id": "decoration_method",
+      "phase": "production",
+      "prompt": "Which decoration method should be used or evaluated?",
+      "answer_type": "visual_choice",
+      "applies_when": {},
+      "skip_if_known": [
+        "decoration_method"
+      ],
+      "inferable": false,
+      "critical": true,
+      "visual": true,
+      "options_source": "production-pack.md#decoration"
+    },
+    {
+      "id": "quantity",
+      "phase": "production",
+      "prompt": "What production quantity is planned?",
+      "answer_type": "positive_integer",
+      "applies_when": {},
+      "skip_if_known": [
+        "quantity"
+      ],
+      "inferable": false,
+      "critical": true,
+      "visual": false,
+      "options_source": "production-pack.md#quantity"
+    },
+    {
+      "id": "budget_tier",
+      "phase": "production",
+      "prompt": "Is the production budget economy, average, premium, or not fixed yet?",
+      "answer_type": "choice",
+      "applies_when": {},
+      "skip_if_known": [
+        "budget_tier"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "production-pack.md#budget"
+    },
+    {
+      "id": "producer_constraints",
+      "phase": "production",
+      "prompt": "What blank garment, printer, factory, minimum order, colour, or equipment constraints already exist?",
+      "answer_type": "text",
+      "applies_when": {},
+      "skip_if_known": [
+        "producer_constraints"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "production-pack.md#producer-constraints"
+    },
+    {
+      "id": "packaging",
+      "phase": "handoff",
+      "prompt": "What packaging, folding, tagging, or labelling is required?",
+      "answer_type": "text",
+      "applies_when": {},
+      "skip_if_known": [
+        "packaging"
+      ],
+      "inferable": true,
+      "critical": false,
+      "visual": false,
+      "options_source": "production-pack.md#packaging"
+    },
+    {
+      "id": "deliverables",
+      "phase": "handoff",
+      "prompt": "Which outputs are required: concept visuals, approved artwork, production pack, or factory handoff?",
+      "answer_type": "multi_choice",
+      "applies_when": {},
+      "skip_if_known": [
+        "deliverables"
+      ],
+      "inferable": false,
+      "critical": false,
+      "visual": false,
+      "options_source": "production-pack.md#deliverables"
+    },
+    {
+      "id": "confirm_heat_weight_tradeoff",
+      "phase": "confirmation",
+      "prompt": "Confirm how to resolve the heat-versus-weight trade-off.",
+      "answer_type": "choice_or_text",
+      "applies_when": {},
+      "skip_if_known": [
+        "confirm_heat_weight_tradeoff"
+      ],
+      "inferable": false,
+      "critical": true,
+      "visual": false,
+      "options_source": "garments-materials.md#climate-and-weight"
+    },
+    {
+      "id": "confirm_assumptions",
+      "phase": "confirmation",
+      "prompt": "Confirm or correct the grouped low-risk assumptions.",
+      "answer_type": "confirmation_with_corrections",
+      "applies_when": {},
+      "skip_if_known": [
+        "confirm_assumptions"
+      ],
+      "inferable": false,
+      "critical": false,
+      "visual": false,
+      "options_source": "adaptive-interview.md#assumptions"
+    }
+  ]
+}

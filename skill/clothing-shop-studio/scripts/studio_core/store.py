@@ -11,6 +11,7 @@ from pathlib import Path
 
 from .config import ensure_external
 from .errors import StorageError, ValidationError
+from .interview import record_answer
 from .views import render_decisions_md, render_project_yaml
 
 SCHEMA_VERSION = 1
@@ -164,14 +165,15 @@ def _apply_event(state: dict, event: dict) -> dict:
     next_state = json.loads(json.dumps(state, ensure_ascii=False))
     event_type = event.get("type")
     if event_type == "answer":
-        field = event.get("field")
-        if not isinstance(field, str) or not field:
-            raise ValidationError(
-                "Answer events require a field.",
-                field="field",
-                recovery="Provide the interview field being answered.",
-            )
-        next_state.setdefault("answers", {})[field] = event.get("value")
+        # Delegate to the interview engine so the log and live calls derive identical state.
+        next_state = record_answer(
+            next_state,
+            event.get("field"),
+            event.get("value"),
+            source=event["source"],
+            evidence=event.get("evidence"),
+            confirmed=event["confirmed"],
+        )
     elif event_type == "phase_changed":
         next_state["phase"] = event.get("phase", next_state.get("phase"))
     elif event_type == "assumption":
@@ -197,6 +199,10 @@ def append_event(project_dir: Path, event: dict, now: str | None = None) -> dict
         events = _load_events(project)
         enriched = dict(event)
         enriched["timestamp"] = enriched.get("timestamp") or now or _utc_now()
+        if enriched["type"] == "answer":
+            # Store defaults explicitly so the log is self-describing on replay.
+            enriched.setdefault("source", "user")
+            enriched.setdefault("confirmed", True)
         next_state = _apply_event(state, enriched)
         next_events = events + [enriched]
         targets = {
