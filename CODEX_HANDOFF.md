@@ -1,6 +1,6 @@
-# Codex handoff — presentation commands (Tasks 4–9 remaining)
+# Codex handoff — presentation commands (Tasks 5–9 remaining)
 
-Read this whole file before you touch anything, then continue from **Task 4**. Do not redo Tasks 1–3.
+Read this whole file before you touch anything, then continue from **Task 5**. Do not redo Tasks 1–4.
 
 ## Where things stand
 
@@ -19,14 +19,14 @@ Read this whole file before you touch anything, then continue from **Task 4**. D
 | 1 Presentation core | done, reviewed | `fcdcfa7`, `01bc4ef` |
 | 2 PNG colour reader | done, reviewed | `d21cbd9` |
 | 3 `extract` | done, reviewed | `fffbd4a`, `2837af3` |
-| 4 AI model library | **next** | — |
-| 5 `try_on` | todo | — |
+| 4 AI model library | done (self-reviewed; awaiting Codex review) | see `progress.md` |
+| 5 `try_on` | **next** | — |
 | 6 `create_listing` | todo | — |
 | 7 CLI commands and schema | todo | — |
 | 8 Router, docs, trigger description, evals | todo | — |
 | 9 Release verification | todo | — |
 
-Test status at `2837af3`: 156/156 passing on Python 3.14 and on `/usr/bin/python3` (3.9.6).
+Test status after Task 4: 163/163 passing on Python 3.14 and on `/usr/bin/python3` (3.9.6).
 
 ## Differences from the plan text (already on the branch)
 
@@ -65,9 +65,9 @@ These are copied from the plan's Global Constraints.
 - **Commits:** end each commit message with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Do not push or merge without the user's explicit request.
 - **No personal paths:** keep machine-specific paths such as home or temp directories out of tracked files. `tools/test_public_hygiene.py` enforces this.
 
-## Known issues to handle while building Tasks 4–9
+## Known issues to handle while building Tasks 5–9
 
-- **`models.register_models`:** a non-integer `round` would raise `TypeError`, which the CLI reports as a generic internal error. Validate it as an int of at least 1.
+- **`models.register_models`:** a non-integer `round` is now refused as a `ValidationError` on `round` (done in Task 4). `install_defaults` also skips stray files such as `.DS_Store` in `assets/models`.
 - **Deferred minor notes** (the final review should decide which to fix):
   - PNG chunk CRCs are not verified.
   - Fixed-grid colour buckets can split a real secondary colour.
@@ -76,7 +76,7 @@ These are copied from the plan's Global Constraints.
 
 ## How to finish
 
-1. **Tasks 4–8:** implement them exactly as the plan's task sections describe, with tests first. After each task, re-read your own diff against that task's section, then commit.
+1. **Tasks 5–8:** implement them exactly as the plan's task sections describe, with tests first. After each task, re-read your own diff against that task's section, then commit.
 2. **Task 9, release verification:**
    - Run both suites on both Pythons.
    - Run the skill validator: `quick_validate.py` from the skill-creator skill, which needs PyYAML on `PYTHONPATH`.

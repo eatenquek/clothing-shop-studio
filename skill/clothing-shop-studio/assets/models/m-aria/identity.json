@@ -1,0 +1,18 @@
+{
+  "id": "m-aria",
+  "display_name": "Aria",
+  "gender_presentation": "feminine",
+  "age_range": "22-28",
+  "build": "slim, 170 cm impression",
+  "height_impression": "tall",
+  "skin_tone": "light olive",
+  "hair": "shoulder-length straight dark brown hair, tucked behind ears",
+  "face_description": "oval face, neutral relaxed expression, no makeup look, no jewellery",
+  "neutral_outfit": "plain white fitted crew tee and straight black trousers",
+  "lighting": "soft even studio light from front-left, no harsh shadows",
+  "camera": "full-length, eye level, 50mm equivalent, centred",
+  "background": "plain warm-grey studio backdrop #E9E6DF",
+  "ai_generated_person": true,
+  "renderer": "unrendered",
+  "prompt": "Photorealistic AI-generated fictional fashion model, not based on any real person."
+}

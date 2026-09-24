@@ -1,0 +1,18 @@
+{
+  "id": "m-noor",
+  "display_name": "Noor",
+  "gender_presentation": "androgynous",
+  "age_range": "25-32",
+  "build": "average",
+  "height_impression": "average",
+  "skin_tone": "deep brown",
+  "hair": "close-cropped curls",
+  "face_description": "heart-shaped face, neutral relaxed expression, no jewellery",
+  "neutral_outfit": "plain white fitted crew tee and straight black trousers",
+  "lighting": "soft even studio light from front-left, no harsh shadows",
+  "camera": "full-length, eye level, 50mm equivalent, centred",
+  "background": "plain warm-grey studio backdrop #E9E6DF",
+  "ai_generated_person": true,
+  "renderer": "unrendered",
+  "prompt": "Photorealistic AI-generated fictional fashion model, not based on any real person."
+}
