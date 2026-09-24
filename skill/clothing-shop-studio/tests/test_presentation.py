@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import sys
 import tempfile
 import unittest
@@ -63,8 +62,10 @@ class PresentationCoreTests(unittest.TestCase):
         register_entries(self.project, [entry], FIXED_NOW)
         master = {"id": "master-x", "origin": "production_master", "path": "production/masters/x_MASTER.png",
                   "parents": ["xg-001"], "construction": "user_supplied"}
-        codes = [item["code"] for item in master_problems(master, {"xg-001": entry})]
+        problems = master_problems(master, {"xg-001": entry})
+        codes = [item["code"] for item in problems]
         self.assertTrue({"master_generated_raster", "master_generated_concept"} & set(codes), codes)
+        self.assertTrue(any("extracted_garment" in item["message"] for item in problems), problems)
 
     def test_listing_eligibility_follows_rights_lineage(self):
         files = {

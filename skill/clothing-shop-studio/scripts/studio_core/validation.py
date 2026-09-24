@@ -159,8 +159,9 @@ def master_problems(entry: dict, files: dict[str, dict]) -> list[dict]:
         problems.append(
             {
                 "code": "master_generated_raster" if raster else "master_generated_concept",
-                "message": f"`{entry['id']}` derives from generated concept `{ancestor['id']}`; "
-                "generated previews cannot become production artwork.",
+                "message": f"`{entry['id']}` derives from generated content `{ancestor['id']}` "
+                f"({ancestor.get('origin')}); generated or AI presentation images cannot become "
+                "production artwork.",
                 "id": entry["id"],
             }
         )
