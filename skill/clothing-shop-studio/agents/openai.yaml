@@ -1,0 +1,6 @@
+interface:
+  display_name: "Clothing Shop Studio"
+  short_description: "Design garments and production-ready artwork"
+  default_prompt: "Use $clothing-shop-studio to develop a garment concept and production handoff."
+policy:
+  allow_implicit_invocation: true
