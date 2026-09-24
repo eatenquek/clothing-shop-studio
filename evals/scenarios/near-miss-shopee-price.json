@@ -1,0 +1,10 @@
+{
+  "id": "near-miss-shopee-price",
+  "query": "Write a Shopee product description with a price for my new hoodie.",
+  "followups": [],
+  "expected": [
+    "does not quote or invent a price",
+    "if the skill is used, declines pricing in one line and offers a listing concept visual instead",
+    "asks no more than one question"
+  ]
+}

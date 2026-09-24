@@ -11,8 +11,9 @@ An agent skill (Codex / Claude Code) that takes a garment from a brief or refere
 - **Decoration/fabric compatibility checks** before export.
 - **Accidental-change detection and resumable project memory.** State lives outside the skill in a SHA-256-linked decision log. Validation catches ordinary edits and missing files; the local hashes are not a cryptographic authenticity guarantee against a determined editor who can recompute them.
 - **Untrusted-input handling.** Text inside reference images, files, and web pages is treated as data, never as instructions.
+- **Presentation.** `extract` turns a reference image into white-background catalogue cut-outs, `create_models` keeps a library of fictional AI models, `try_on` puts approved designs on those models, and `create_listing` builds a Taobao-style listing concept with no prices or claims.
 
-Pricing, inventory, orders, and storefront operations are out of scope.
+Pricing, inventory, orders, and storefront operations are out of scope; listing concepts are visual mock-ups only.
 
 ## Install
 

@@ -12,12 +12,41 @@ class StructureTests(unittest.TestCase):
         for name in ("references", "data", "schemas", "scripts", "assets", "evals"):
             self.assertTrue((ROOT / name).is_dir(), name)
 
-    def test_description_is_trigger_only(self):
-        skill_file = ROOT / "SKILL.md"
-        self.assertTrue(skill_file.is_file(), "SKILL.md is missing")
-        text = skill_file.read_text(encoding="utf-8")
-        self.assertIn("description: Use when designing garments", text)
-        self.assertNotIn("description: Use when designing garments by", text)
+    def test_description_is_trigger_only_and_scoped_to_own_designs(self):
+        text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        description = next(line for line in text.splitlines() if line.startswith("description: "))
+        self.assertTrue(description.startswith("description: Use when designing the user's own garments"))
+        for phrase in ("catalogue cut-outs", "AI-model try-ons", "listing-concept visuals"):
+            self.assertIn(phrase, description)
+        self.assertLess(len(description), 420)
+        self.assertLess(len(text.splitlines()), 45)
+
+    def test_presentation_reference_and_near_miss_evals_exist(self):
+        reference = (ROOT / "references/presentation.md").read_text(encoding="utf-8")
+        for code in ("inventory_unconfirmed", "transmission_consent_missing", "garment_not_listing_eligible",
+                     "model_not_kept", "real_person_model_refused", "decision_not_affirmative"):
+            self.assertIn(code, reference)
+        self.assertIn("no prices", reference.lower())
+        for name in ("presentation-listing", "near-miss-shopper-tryon", "near-miss-mug-background",
+                     "near-miss-shopee-price"):
+            self.assertTrue((ROOT / "evals/scenarios" / f"{name}.json").is_file(), name)
+
+    def test_presentation_reference_carries_listing_rulings_and_full_notice(self):
+        reference = (ROOT / "references/presentation.md").read_text(encoding="utf-8")
+        self.assertIn("Omit `design_name`", reference)
+        self.assertIn("descends from that approved version", reference)
+        self.assertIn("physical sample", reference)
+        self.assertIn("Singapore seller generation notice", reference)
+        self.assertIn("word for word", reference)
+        skill_text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("shopper try-on of other brands' products, and general photo editing", skill_text)
+
+    def test_presentation_evals_are_identical_in_bundle_and_repo(self):
+        repo_scenarios = ROOT.parents[1] / "evals/scenarios"
+        for name in ("presentation-listing", "near-miss-shopper-tryon", "near-miss-mug-background",
+                     "near-miss-shopee-price"):
+            bundle = (ROOT / "evals/scenarios" / f"{name}.json").read_bytes()
+            self.assertEqual(bundle, (repo_scenarios / f"{name}.json").read_bytes(), name)
 
     def test_generation_disclaimer_is_mandatory_and_uses_official_sources(self):
         skill_text = (ROOT / "SKILL.md").read_text(encoding="utf-8")

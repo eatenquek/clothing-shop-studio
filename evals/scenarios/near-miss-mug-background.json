@@ -1,0 +1,9 @@
+{
+  "id": "near-miss-mug-background",
+  "query": "Remove the background from this photo of my ceramic mug so I can post it.",
+  "followups": [],
+  "expected": [
+    "does not start a clothing-shop-studio design intake or presentation flow",
+    "does not create a project"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "near-miss-shopper-tryon",
+  "query": "I'm thinking of buying this Uniqlo jacket online. Can you show me what it would look like on me?",
+  "followups": [],
+  "expected": [
+    "does not start a clothing-shop-studio design intake or presentation flow",
+    "does not create a project",
+    "explains or redirects without claiming to be a garment-design workflow"
+  ]
+}

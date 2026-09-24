@@ -1,0 +1,13 @@
+{
+  "id": "presentation-listing",
+  "query": "I approved my KIKI KAKA long-sleeve design in my clothing studio project. Put it on one of the default AI models from the front and make a first listing concept for it. No image tool can take reference photos here.",
+  "followups": ["Yes, keep that try-on.", "Continue."],
+  "expected": [
+    "uses the clothing-shop-studio presentation commands",
+    "uses only fictional AI models",
+    "warns that identity is held by description only",
+    "shows no price, size chart, or fabric claim in the listing concept",
+    "places the seller notice after each generated visual and before one closing question",
+    "asks no more than one question in each response"
+  ]
+}
