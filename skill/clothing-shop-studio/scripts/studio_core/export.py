@@ -12,8 +12,8 @@ from pathlib import Path
 from string import Template
 
 from .errors import StorageError, ValidationError
-from .interview import CRITICAL_FIELDS
-from .store import _utc_now, append_event, load_state, write_atomic
+from .interview import CRITICAL_FIELDS, triggered_confirmations
+from .store import _utc_now, append_event, canonical_json, load_state, write_atomic
 from .validation import validate_project
 
 BUNDLE_DIR = Path(__file__).resolve().parents[2]
@@ -163,18 +163,26 @@ def _value(answers: dict, field: str) -> str:
     return "Not specified — confirm with the producer" if value in (None, "") else _display(value)
 
 
-def _masters(state: dict) -> list[dict]:
-    return [item for item in state.get("files", []) if item.get("origin") == "production_master"]
+def _latest_approval(state: dict) -> dict | None:
+    approvals = state.get("approvals", [])
+    return approvals[-1] if approvals else None
+
+
+def _masters(state: dict, approved_version: str | None = None) -> list[dict]:
+    masters = [item for item in state.get("files", []) if item.get("origin") == "production_master"]
+    if approved_version is not None:
+        masters = [item for item in masters if item.get("approved_version") == approved_version]
+    return masters
 
 
 def _fabric_text(answers: dict) -> str:
     return " ".join(str(answers[key]) for key in ("fiber_blend", "fabric_structure") if answers.get(key))
 
 
-def _compatibility(state: dict) -> list[tuple[dict, dict]]:
+def _compatibility(state: dict, masters: list[dict] | None = None) -> list[tuple[dict, dict]]:
     answers = state.get("answers", {})
     results = []
-    for master in _masters(state):
+    for master in _masters(state) if masters is None else masters:
         colours = master.get("colours")
         facts = {
             "fabric": _fabric_text(answers),
@@ -193,14 +201,38 @@ def export_blockers(project_dir: Path) -> tuple[list[dict], list[dict]]:
     errors, warnings = list(report["errors"]), list(report["warnings"])
     state = load_state(project)
     answers = state.get("answers", {})
+    for field in triggered_confirmations(state):
+        errors.append(
+            {
+                "code": "required_confirmation_pending",
+                "message": f"`{field}` must be answered by the user before production export.",
+                "field": field,
+            }
+        )
     for field in sorted(CRITICAL_FIELDS):
         if answers.get(field) in (None, ""):
             errors.append({"code": "missing_critical_answer", "message": f"`{field}` has not been answered.", "field": field})
-    if not state.get("approvals"):
+    latest = _latest_approval(state)
+    if latest is None:
         errors.append({"code": "no_approved_design", "message": "No design has been approved with approve_design."})
-    masters = _masters(state)
+    else:
+        answers_sha256 = hashlib.sha256(canonical_json(answers).encode("utf-8")).hexdigest()
+        if latest.get("answers_sha256") != answers_sha256:
+            errors.append(
+                {
+                    "code": "approval_answers_changed",
+                    "message": "Project answers changed after the latest design approval.",
+                    "version": latest["version"],
+                }
+            )
+    masters = _masters(state, latest["version"] if latest else None)
     if not masters:
-        errors.append({"code": "no_production_master", "message": "Register at least one production master."})
+        errors.append(
+            {
+                "code": "no_current_production_master" if latest else "no_production_master",
+                "message": "Register at least one production master for the latest approved version.",
+            }
+        )
     approved = {item["version"] for item in state.get("approvals", [])}
     for master in masters:
         missing = [key for key in PLACEMENT_KEYS if master.get(key) in (None, "")]
@@ -220,7 +252,7 @@ def export_blockers(project_dir: Path) -> tuple[list[dict], list[dict]]:
                     "id": master["id"],
                 }
             )
-    for master, result in _compatibility(state):
+    for master, result in _compatibility(state, masters):
         finding = {"id": master["id"], "rule_id": result["rule_id"], "message": f"{result['notes']} {result['confirm']}"}
         if result["status"] == "incompatible":
             errors.append({"code": "incompatible_production_method", **finding, "alternatives": result["alternatives"]})
@@ -261,7 +293,8 @@ def _template(name: str) -> Template:
 
 def _render_spec(state: dict, pack_version: str, copies: list[tuple[dict, str]], warnings: list[dict], now: str) -> str:
     answers = state.get("answers", {})
-    approvals = ", ".join(item["version"] for item in state.get("approvals", []))
+    latest = _latest_approval(state)
+    approvals = latest["version"] if latest else "None"
     garment = "\n".join(
         f"- {label}: {_value(answers, field)}"
         for label, field in (
@@ -302,7 +335,7 @@ def _render_spec(state: dict, pack_version: str, copies: list[tuple[dict, str]],
     )
     filenames = {master["id"]: filename for master, filename in copies}
     decoration_lines = []
-    for master, result in _compatibility(state):
+    for master, result in _compatibility(state, [master for master, _ in copies]):
         decoration_lines.append(
             f"- `{_cell(filenames[master['id']])}`: "
             f"{master.get('decoration_method') or _value(answers, 'decoration_method')} — "
@@ -327,7 +360,10 @@ def _render_spec(state: dict, pack_version: str, copies: list[tuple[dict, str]],
             f"{_cell(master.get('approved_version'))} | `{master['sha256'][:12]}…` |"
         )
     file_rows.append("| `handoff-checklist.md` | Factory checklist | — | — | see manifest.json |")
-    proofs = {PROOF_STEPS.get(result["decoration"], DEFAULT_PROOF) for _, result in _compatibility(state)} or {DEFAULT_PROOF}
+    proofs = {
+        PROOF_STEPS.get(result["decoration"], DEFAULT_PROOF)
+        for _, result in _compatibility(state, [master for master, _ in copies])
+    } or {DEFAULT_PROOF}
     unconfirmed = [item for item in warnings if item["code"] == "unconfirmed_assumption"]
     assumptions = "\n".join(f"- {item['message']}" for item in unconfirmed) or "- All recorded assumptions are confirmed."
     other = [item for item in warnings if item["code"] != "unconfirmed_assumption"]
@@ -351,14 +387,16 @@ def _render_spec(state: dict, pack_version: str, copies: list[tuple[dict, str]],
     )
 
 
-def _render_checklist(state: dict, pack_version: str, warnings: list[dict]) -> str:
+def _render_checklist(state: dict, pack_version: str, warnings: list[dict], masters: list[dict]) -> str:
     answers = state.get("answers", {})
-    proofs = sorted({PROOF_STEPS.get(result["decoration"], DEFAULT_PROOF) for _, result in _compatibility(state)})
+    proofs = sorted(
+        {PROOF_STEPS.get(result["decoration"], DEFAULT_PROOF) for _, result in _compatibility(state, masters)}
+    )
     open_items = "\n".join(f"- [ ] {item['message']}" for item in warnings) or "- [ ] None recorded at export."
     return _template("handoff-checklist-template.md").substitute(
         project_name=state["project_name"],
         pack_version=pack_version,
-        approved_versions=", ".join(item["version"] for item in state.get("approvals", [])),
+        approved_versions=_latest_approval(state)["version"],
         size_range=_value(answers, "size_range"),
         decoration=_value(answers, "decoration_method"),
         fabric=_fabric_text(answers) or "Not specified — confirm with the producer",
@@ -391,14 +429,16 @@ def export_production_pack(project_dir: Path, now: str | None = None) -> Path:
         (target / "masters").mkdir()
         used: set[str] = set()
         copies = []
-        for master in _masters(state):
+        latest = _latest_approval(state)
+        masters = _masters(state, latest["version"])
+        for master in masters:
             filename = _master_filename(state, master, version, used)
             shutil.copyfile(project / master["path"], target / "masters" / filename)
             if _sha256(target / "masters" / filename) != master["sha256"]:
                 raise ValidationError(f"`{master['id']}` changed while exporting.", recovery="Validate and export again.")
             copies.append((master, filename))
         write_atomic(target / "production-spec.md", _render_spec(state, version, copies, warnings, timestamp).encode("utf-8"))
-        write_atomic(target / "handoff-checklist.md", _render_checklist(state, version, warnings).encode("utf-8"))
+        write_atomic(target / "handoff-checklist.md", _render_checklist(state, version, warnings, masters).encode("utf-8"))
         files = [
             {"path": f"masters/{filename}", "role": "production_master", "source_id": master["id"], "sha256": _sha256(target / "masters" / filename)}
             for master, filename in copies
@@ -410,7 +450,7 @@ def export_production_pack(project_dir: Path, now: str | None = None) -> Path:
             "schema_version": 1,
             "project_name": state["project_name"],
             "pack_version": version,
-            "approved_versions": [item["version"] for item in state.get("approvals", [])],
+            "approved_versions": [latest["version"]],
             "exported_at": timestamp,
             "files": files,
             "warnings": warnings,

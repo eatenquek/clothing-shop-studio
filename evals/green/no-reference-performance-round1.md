@@ -1,6 +1,6 @@
 # GREEN evaluation: no-reference-performance
 
-- Workspace: `/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-ilywp17m`
+- Workspace: `/private/tmp/clothing-shop-studio-eval/css-eval-ilywp17m`
 - Harness: fresh headless `claude -p` session; skill installed as a project skill; user settings, hooks, plugins, and MCP servers excluded; Bash limited to the skill scripts.
 
 ## Turn 1
@@ -12,12 +12,12 @@
 **Tool calls:**
 
 - `Skill: clothing-shop-studio`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-ilywp17m/.claude/skills/clothing-shop-studio/references/workflow.md`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-ilywp17m/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-ilywp17m/.claude/skills/clothing-shop-studio && echo '{"name": "sg-running-club-tee"}' | python3 scripts/studio.py create_project`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-ilywp17m/projects/sg-running-club-tee", "field": "reference_image", "value": null}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-ilywp17m/projects/sg-running-club-tee", "field": "garment_category", "value": "tee", "source": "user", "evidence": "user said: create a dri-fit running-club tee"}' | python3 scripts/studio.py record_answer`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-ilywp17m/.claude/skills/clothing-shop-studio/references/garments-materials.md`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-ilywp17m/.claude/skills/clothing-shop-studio/references/workflow.md`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-ilywp17m/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-ilywp17m/.claude/skills/clothing-shop-studio && echo '{"name": "sg-running-club-tee"}' | python3 scripts/studio.py create_project`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-ilywp17m/projects/sg-running-club-tee", "field": "reference_image", "value": null}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-ilywp17m/projects/sg-running-club-tee", "field": "garment_category", "value": "tee", "source": "user", "evidence": "user said: create a dri-fit running-club tee"}' | python3 scripts/studio.py record_answer`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-ilywp17m/.claude/skills/clothing-shop-studio/references/garments-materials.md`
 
 **Assistant (verbatim):**
 
@@ -33,8 +33,8 @@
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-ilywp17m/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-ilywp17m/projects/sg-running-club-tee"}' | python3 scripts/studio.py status`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-ilywp17m/projects/sg-running-club-tee", "field": "fit", "value": "relaxed", "source": "user", "evidence": "user said: relaxed athletic fit"}' | python3 scripts/studio.py record_answer`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-ilywp17m/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-ilywp17m/projects/sg-running-club-tee"}' | python3 scripts/studio.py status`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-ilywp17m/projects/sg-running-club-tee", "field": "fit", "value": "relaxed", "source": "user", "evidence": "user said: relaxed athletic fit"}' | python3 scripts/studio.py record_answer`
 
 **Assistant (verbatim):**
 
@@ -50,8 +50,8 @@
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-ilywp17m/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-ilywp17m/projects/sg-running-club-tee", "field": "garment_subtype", "value": "crew neck, side-seamed body, set-in sleeves, self-fabric bound neckline", "source": "inferred", "evidence": "user sa`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-ilywp17m/projects/sg-running-club-tee", "field": "intended_use", "value": "recreational running club training wear, humid outdoor conditions", "source": "user", "evidence": "user said: dri-fit running-club tee for recreational runners in Singapore; garment must work for humid outdoor training"}' | python3 scri`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-ilywp17m/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-ilywp17m/projects/sg-running-club-tee", "field": "garment_subtype", "value": "crew neck, side-seamed body, set-in sleeves, self-fabric bound neckline", "source": "inferred", "evidence": "user sa`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-ilywp17m/projects/sg-running-club-tee", "field": "intended_use", "value": "recreational running club training wear, humid outdoor conditions", "source": "user", "evidence": "user said: dri-fit running-club tee for recreational runners in Singapore; garment must work for humid outdoor training"}' | python3 scri`
 
 **Assistant (verbatim):**
 

@@ -106,6 +106,52 @@ class ExportTests(unittest.TestCase):
             export_production_pack(project)
         self.assertIn("incompatible_production_method", blocker_codes(caught.exception))
 
+    def test_export_blocks_pending_japanese_text_confirmation(self):
+        project = ready_project(
+            self.tmp_path,
+            answers={"artwork_content": "Original dagger motif with Japanese text 判定"},
+        )
+        with self.assertRaises(ValidationError) as caught:
+            export_production_pack(project)
+        self.assertIn("required_confirmation_pending", blocker_codes(caught.exception))
+
+    def test_export_blocks_pending_heat_weight_confirmation(self):
+        project = ready_project(self.tmp_path, answers={"gsm": 260})
+        with self.assertRaises(ValidationError) as caught:
+            export_production_pack(project)
+        self.assertIn("required_confirmation_pending", blocker_codes(caught.exception))
+
+    def test_export_blocks_when_answers_changed_after_approval(self):
+        project = ready_project(self.tmp_path)
+        from scripts.studio_core.store import append_event
+        append_event(project, {"type": "answer", "field": "base_color", "value": "hot pink"})
+        with self.assertRaises(ValidationError) as caught:
+            export_production_pack(project)
+        self.assertIn("approval_answers_changed", blocker_codes(caught.exception))
+
+    def test_export_requires_master_for_latest_approval(self):
+        project = ready_project(self.tmp_path)
+        from scripts.studio_core.approval import approve_design
+        from tests.helpers import register_concepts
+        concepts = register_concepts(project)
+        approve_design(project, [concepts["B"]["id"]], "Approve revised B", now="2026-09-24T01:00:00Z")
+        with self.assertRaises(ValidationError) as caught:
+            export_production_pack(project)
+        self.assertIn("no_current_production_master", blocker_codes(caught.exception))
+
+    def test_export_includes_only_masters_for_latest_approval(self):
+        project = ready_project(self.tmp_path)
+        from scripts.studio_core.approval import approve_design
+        from tests.helpers import MASTER_SPEC, register_concepts, register_vector_master
+        concepts = register_concepts(project)
+        approve_design(project, [concepts["B"]["id"]], "Approve revised B", now="2026-09-24T01:00:00Z")
+        latest = register_vector_master(project, name="front-art_MASTER.svg", approved_version="v002", **MASTER_SPEC)
+        pack = export_production_pack(project)
+        manifest = json.loads((pack / "manifest.json").read_text("utf-8"))
+        masters = [item for item in manifest["files"] if item["role"] == "production_master"]
+        self.assertEqual([item["source_id"] for item in masters], [latest["id"]])
+        self.assertEqual(manifest["approved_versions"], ["v002"])
+
     def test_unicode_export_paths_and_required_sections(self):
         pack = export_production_pack(ready_project(self.tmp_path, name="鬼 KIKI KAKA"))
         self.assertEqual(pack.name, "pack-v001")

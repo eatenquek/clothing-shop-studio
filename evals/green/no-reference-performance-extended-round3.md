@@ -1,6 +1,6 @@
 # GREEN evaluation: no-reference-performance
 
-- Workspace: `/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi`
+- Workspace: `/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi`
 - Harness: fresh headless `claude -p` session; skill installed as a project skill; user settings, hooks, plugins, and MCP servers excluded; Bash limited to the skill scripts.
 
 ## Turn 1
@@ -12,15 +12,15 @@
 **Tool calls:**
 
 - `Skill: clothing-shop-studio`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio/references/workflow.md`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio/references/workflow.md`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
 - `Bash: cat ~/.config/clothing-shop-studio/config.json 2>/dev/null || echo "NO_CONFIG"`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"name": "sg-running-club-dri-fit-tee"}' | python3 scripts/studio.py create_project`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"name": "sg-running-club-dri-fit-tee"}' | python3 scripts/studio.py create_project`
 - `Bash: \
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "reference_image", "value": null, "source": "user", "evidence": "user said: I have no reference image, so continue without one"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "reference_image", "value": null, "source": "user", "evidence": "user said: I have no reference image, so continue without one"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "garment_category", "value": "tee", "source": "user", "evidence": "user said: Create a dri-fit running-club tee"}' | python3 scripts/studio.py record_answer`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio/references/garments-materials.md`
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "reference_image", "value": null, "source": "user", "evidence": "user said: I have no reference image, so continue without one"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "reference_image", "value": null, "source": "user", "evidence": "user said: I have no reference image, so continue without one"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "garment_category", "value": "tee", "source": "user", "evidence": "user said: Create a dri-fit running-club tee"}' | python3 scripts/studio.py record_answer`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio/references/garments-materials.md`
 - `Bash: true`
 
 **Assistant (verbatim):**
@@ -37,7 +37,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "fit", "value": "relaxed athletic", "source": "user", "evidence": "user said: Use a relaxed athletic fit."}' | python3 scripts/studio.py `
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "fit", "value": "relaxed athletic", "source": "user", "evidence": "user said: Use a relaxed athletic fit."}' | python3 scripts/studio.py `
 
 **Assistant (verbatim):**
 
@@ -51,10 +51,10 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "garment_subtype", "value": "raglan-sleeve crew neck running tee", "source": "default", "confirmed": false, "evidence": "raglan sleeves r`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "intended_use", "value": "running club training, humid outdoor conditions", "source": "user", "evidence": "user said: Create a dri-fit running-club tee for recreational runners in Singapore. The garment must work for humid outdoor training."}' | python3 `
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "audience", "value": "recreational runners, running club members, Singapore", "source": "user", "evidence": "user said: for recreational runners in Singapore"}' | python3 scripts/studio.py record_answer`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "climate", "value": "humid_tropical", "source": "user", "evidence": "user said: Singapore ... humid outdoor training"}' | python3 scripts/studio.py record_answer`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "garment_subtype", "value": "raglan-sleeve crew neck running tee", "source": "default", "confirmed": false, "evidence": "raglan sleeves r`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "intended_use", "value": "running club training, humid outdoor conditions", "source": "user", "evidence": "user said: Create a dri-fit running-club tee for recreational runners in Singapore. The garment must work for humid outdoor training."}' | python3 `
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "audience", "value": "recreational runners, running club members, Singapore", "source": "user", "evidence": "user said: for recreational runners in Singapore"}' | python3 scripts/studio.py record_answer`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "climate", "value": "humid_tropical", "source": "user", "evidence": "user said: Singapore ... humid outdoor training"}' | python3 scripts/studio.py record_answer`
 
 **Assistant (verbatim):**
 
@@ -68,7 +68,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "length", "value": "standard hip-length body, short sleeves ending mid-bicep", "source": "default", "confirmed": false, "evidence": "stan`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "length", "value": "standard hip-length body, short sleeves ending mid-bicep", "source": "default", "confirmed": false, "evidence": "stan`
 
 **Assistant (verbatim):**
 
@@ -82,7 +82,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "construction", "value": "flatlock seams throughout, underarm mesh ventilation panels, taped back neck, small reflective trim at back yok`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "construction", "value": "flatlock seams throughout, underarm mesh ventilation panels, taped back neck, small reflective trim at back yok`
 
 **Assistant (verbatim):**
 
@@ -96,7 +96,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "fiber_blend", "value": "100% polyester, moisture-wicking finish", "source": "default", "confirmed": false, "evidence": "100% polyester d`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "fiber_blend", "value": "100% polyester, moisture-wicking finish", "source": "default", "confirmed": false, "evidence": "100% polyester d`
 
 **Assistant (verbatim):**
 
@@ -110,7 +110,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "fabric_structure", "value": "birdseye pique knit body, mesh panels at underarm and back yoke", "source": "default", "confirmed": false, `
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "fabric_structure", "value": "birdseye pique knit body, mesh panels at underarm and back yoke", "source": "default", "confirmed": false, `
 
 **Assistant (verbatim):**
 
@@ -124,7 +124,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "gsm", "value": "130", "source": "default", "confirmed": false, "evidence": "130 GSM sits at the light end for maximum breathability in h`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "gsm", "value": "130", "source": "default", "confirmed": false, "evidence": "130 GSM sits at the light end for maximum breathability in h`
 
 **Assistant (verbatim):**
 
@@ -138,7 +138,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "handfeel", "value": "smooth and dry", "source": "default", "confirmed": false, "evidence": "a smooth, dry hand avoids the clammy stick o`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "handfeel", "value": "smooth and dry", "source": "default", "confirmed": false, "evidence": "a smooth, dry hand avoids the clammy stick o`
 
 **Assistant (verbatim):**
 
@@ -152,7 +152,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "stretch", "value": "mechanical stretch from knit structure, no elastane", "source": "default", "confirmed": false, "evidence": "the bird`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "stretch", "value": "mechanical stretch from knit structure, no elastane", "source": "default", "confirmed": false, "evidence": "the bird`
 
 **Assistant (verbatim):**
 
@@ -166,7 +166,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "opacity", "value": "breathability prioritized over full opacity; mitigate sweat show-through via mid-tone or accent colour choice rather`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "opacity", "value": "breathability prioritized over full opacity; mitigate sweat show-through via mid-tone or accent colour choice rather`
 
 **Assistant (verbatim):**
 
@@ -180,18 +180,18 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "care", "value": "cold machine wash, tumble dry low or line dry, no iron on print", "source": "default", "confirmed": false, "evidence": `
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio/references/visual-options.md`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "mode": "plan", "decision_id": "base_color", "axes": ["vibrant solid club colour", "heathered tonal colour with contrast panels", "muted heat-reflective solid", "two-tone colour-blocked body (wildcard)"], "constraints": {"garment": "raglan-sleeve crew neck runnin`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "care", "value": "cold machine wash, tumble dry low or line dry, no iron on print", "source": "default", "confirmed": false, "evidence": `
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio/references/visual-options.md`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "mode": "plan", "decision_id": "base_color", "axes": ["vibrant solid club colour", "heathered tonal colour with contrast panels", "muted heat-reflective solid", "two-tone colour-blocked body (wildcard)"], "constraints": {"garment": "raglan-sleeve crew neck runnin`
 - `ToolSearch: `
 - `Bash: ls scripts/ && python3 scripts/render-options.py --help 2>&1 | head -50`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/base_color_options.json`
-- `Bash: python3 scripts/render-options.py --input /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/base_color_options.json`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "mode": "register", "decision_id": "base_color", "contact_sheet": "concepts/generated/base_color/r01/contact-sheet.svg", "results": [{"label": "A", "axis": "vibrant solid club colour", "path": "concepts/generated/base_color/r01/option-A.svg", "renderer": "svg-fal`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee/concepts/generated/base_color/r01/contact-sheet.svg`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/base_color_options.json`
+- `Bash: python3 scripts/render-options.py --input /private/tmp/clothing-shop-studio-eval-scratch/css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/base_color_options.json`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "mode": "register", "decision_id": "base_color", "contact_sheet": "concepts/generated/base_color/r01/contact-sheet.svg", "results": [{"label": "A", "axis": "vibrant solid club colour", "path": "concepts/generated/base_color/r01/option-A.svg", "renderer": "svg-fal`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee/concepts/generated/base_color/r01/contact-sheet.svg`
 - `Skill: artifact-design`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/base_color_options.html`
-- `Artifact: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/base_color_options.html`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/base_color_options.html`
+- `Artifact: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/base_color_options.html`
 
 **Assistant (verbatim):**
 
@@ -215,7 +215,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "base_color", "value": "heather charcoal body (#4A4A4A) with lime-green (#C6FF00) contrast at underarm mesh and back-yoke panels", "sourc`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "base_color", "value": "heather charcoal body (#4A4A4A) with lime-green (#C6FF00) contrast at underarm mesh and back-yoke panels", "sourc`
 
 **Assistant (verbatim):**
 
@@ -231,7 +231,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "size_range", "value": "unisex XS-XXL", "source": "user", "evidence": "user said: Use your recommendation and continue, in reply to propo`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "size_range", "value": "unisex XS-XXL", "source": "user", "evidence": "user said: Use your recommendation and continue, in reply to propo`
 
 **Assistant (verbatim):**
 
@@ -245,7 +245,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "grading_strategy", "value": "grouped sizes: one artwork scale for XS-M, one scaled-up size for L-XXL", "source": "default", "confirmed":`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "grading_strategy", "value": "grouped sizes: one artwork scale for XS-M, one scaled-up size for L-XXL", "source": "default", "confirmed":`
 
 **Assistant (verbatim):**
 
@@ -259,7 +259,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "brand_assets", "value": null, "source": "default", "confirmed": false, "evidence": "no brand files have been shared in this session; pro`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "brand_assets", "value": null, "source": "default", "confirmed": false, "evidence": "no brand files have been shared in this session; pro`
 
 **Assistant (verbatim):**
 
@@ -273,11 +273,11 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "artwork_content", "value": "PLACEHOLDER club identity (no real club name supplied): wordmark \"SUNRISE RUNNERS SG\" plus a minimal sunbu`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "mode": "plan", "decision_id": "artwork_style", "axes": ["type-only wordmark lockup", "icon + wordmark combination mark", "illustrative sun/skyline motif", "oversized cropped type breaking the small-logo convention (wildcard)"], "constraints": {"content": "placeh`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/artwork_style_options.json`
-- `Bash: python3 scripts/render-options.py --input /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/artwork_style_options.json`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "mode": "register", "decision_id": "artwork_style", "contact_sheet": "concepts/generated/artwork_style/r01/contact-sheet.svg", "results": [{"label": "A", "axis": "type-only wordmark lockup", "path": "concepts/generated/artwork_style/r01/option-A.svg", "renderer":`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "artwork_content", "value": "PLACEHOLDER club identity (no real club name supplied): wordmark \"SUNRISE RUNNERS SG\" plus a minimal sunbu`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "mode": "plan", "decision_id": "artwork_style", "axes": ["type-only wordmark lockup", "icon + wordmark combination mark", "illustrative sun/skyline motif", "oversized cropped type breaking the small-logo convention (wildcard)"], "constraints": {"content": "placeh`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/artwork_style_options.json`
+- `Bash: python3 scripts/render-options.py --input /private/tmp/clothing-shop-studio-eval-scratch/css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/artwork_style_options.json`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "mode": "register", "decision_id": "artwork_style", "contact_sheet": "concepts/generated/artwork_style/r01/contact-sheet.svg", "results": [{"label": "A", "axis": "type-only wordmark lockup", "path": "concepts/generated/artwork_style/r01/option-A.svg", "renderer":`
 - `Bash: true`
 
 **Assistant (verbatim):**
@@ -302,11 +302,11 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "artwork_style", "value": "icon + wordmark combination mark, left chest, single colour lime", "source": "default", "confirmed": false, "e`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "mode": "plan", "decision_id": "typography", "axes": ["condensed athletic sans, all caps", "rounded friendly sans, mixed case", "technical monospace, all caps letterspaced", "hand-drawn marker script breaking the athletic-sans convention (wildcard)"], "constraint`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/typography_options.json`
-- `Bash: python3 scripts/render-options.py --input /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/typography_options.json`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "mode": "register", "decision_id": "typography", "contact_sheet": "concepts/generated/typography/r01/contact-sheet.svg", "results": [{"label": "A", "axis": "condensed athletic sans, all caps", "path": "concepts/generated/typography/r01/option-A.svg", "renderer": `
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "artwork_style", "value": "icon + wordmark combination mark, left chest, single colour lime", "source": "default", "confirmed": false, "e`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "mode": "plan", "decision_id": "typography", "axes": ["condensed athletic sans, all caps", "rounded friendly sans, mixed case", "technical monospace, all caps letterspaced", "hand-drawn marker script breaking the athletic-sans convention (wildcard)"], "constraint`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/typography_options.json`
+- `Bash: python3 scripts/render-options.py --input /private/tmp/clothing-shop-studio-eval-scratch/css-eval-d9umbmfi/295a2495-29ee-4f94-80b8-231faa9fba08/scratchpad/typography_options.json`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "mode": "register", "decision_id": "typography", "contact_sheet": "concepts/generated/typography/r01/contact-sheet.svg", "results": [{"label": "A", "axis": "condensed athletic sans, all caps", "path": "concepts/generated/typography/r01/option-A.svg", "renderer": `
 
 **Assistant (verbatim):**
 
@@ -330,7 +330,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "typography", "value": "condensed athletic sans, all caps", "source": "default", "confirmed": false, "evidence": "typography-r01-A: reads`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "typography", "value": "condensed athletic sans, all caps", "source": "default", "confirmed": false, "evidence": "typography-r01-A: reads`
 
 **Assistant (verbatim):**
 
@@ -344,8 +344,8 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "placement", "value": "icon+wordmark lockup on left chest, approx 8cm wide; back left plain except existing reflective trim at back yoke"`
-- `Bash: echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "scale", "value": "left chest lockup approx 8cm wide, one fixed print size for XS-M and a second slightly larger size for L-XXL per the grouped grading strategy", "source": "default", "confirmed": false, "evidence": "8cm sits in the standard left-chest r`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "placement", "value": "icon+wordmark lockup on left chest, approx 8cm wide; back left plain except existing reflective trim at back yoke"`
+- `Bash: echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "scale", "value": "left chest lockup approx 8cm wide, one fixed print size for XS-M and a second slightly larger size for L-XXL per the grouped grading strategy", "source": "default", "confirmed": false, "evidence": "8cm sits in the standard left-chest r`
 
 **Assistant (verbatim):**
 
@@ -359,7 +359,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "decoration_method", "value": "screen print, single colour (lime), low-bleed/dye-blocker ink for polyester", "source": "user", "evidence"`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "decoration_method", "value": "screen print, single colour (lime), low-bleed/dye-blocker ink for polyester", "source": "user", "evidence"`
 
 **Assistant (verbatim):**
 
@@ -373,7 +373,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "quantity", "value": 50, "source": "user", "evidence": "user said: Use your recommendation and continue, in reply to proposed working qua`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "quantity", "value": 50, "source": "user", "evidence": "user said: Use your recommendation and continue, in reply to proposed working qua`
 
 **Assistant (verbatim):**
 
@@ -387,7 +387,7 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "budget_tier", "value": "average", "source": "default", "confirmed": false, "evidence": "a recreational club order of 50 units benefits f`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/.claude/skills/clothing-shop-studio && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-d9umbmfi/projects/sg-running-club-dri-fit-tee", "field": "budget_tier", "value": "average", "source": "default", "confirmed": false, "evidence": "a recreational club order of 50 units benefits f`
 
 **Assistant (verbatim):**
 

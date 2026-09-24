@@ -145,7 +145,9 @@ class CliTests(unittest.TestCase):
         ]
         out_dir = project / "concepts/generated/back_typography/r01"
         brief_file = self.root / "briefs.json"
-        brief_file.write_text(json.dumps({"output_dir": str(out_dir), "briefs": briefs}), "utf-8")
+        brief_file.write_text(
+            json.dumps({"project_dir": str(project), "output_dir": str(out_dir), "briefs": briefs}), "utf-8"
+        )
         rendered = subprocess.run(
             [sys.executable, str(self.bundle / "scripts/render-options.py"), "--input", str(brief_file)],
             text=True, capture_output=True, check=False, cwd=self.root,
@@ -171,6 +173,43 @@ class CliTests(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertEqual(len(registered["data"]["entries"]), 4)
+
+    def test_render_options_requires_a_project_scoped_destination(self):
+        project = self.create()
+        briefs = [
+            {"label": label, "axis": axis, "title": label, "brief": axis, "garment": "tee",
+             "placement": "centre_chest", "colors": ["#111111", "#EEEEEE"]}
+            for label, axis in zip("ABCW", ("density", "alignment", "distress", "scale"))
+        ]
+        completed = subprocess.run(
+            [sys.executable, str(self.bundle / "scripts/render-options.py")],
+            input=json.dumps({"project_dir": str(project), "output_dir": str(self.root / "outside"), "briefs": briefs}),
+            text=True, capture_output=True, check=False, cwd=self.root,
+        )
+        self.assertEqual(completed.returncode, 3, completed.stderr)
+        response = json.loads(completed.stdout)
+        self.assertEqual(response["error"]["code"], "unsafe_path")
+
+    def test_render_options_refuses_implicit_overwrite(self):
+        project = self.create()
+        output = project / "concepts/generated/front_art/r01"
+        briefs = [
+            {"label": label, "axis": axis, "title": label, "brief": axis, "garment": "tee",
+             "placement": "centre_chest", "colors": ["#111111", "#EEEEEE"]}
+            for label, axis in zip("ABCW", ("density", "alignment", "distress", "scale"))
+        ]
+        payload = {"project_dir": str(project), "output_dir": str(output), "briefs": briefs}
+        first = subprocess.run(
+            [sys.executable, str(self.bundle / "scripts/render-options.py")], input=json.dumps(payload),
+            text=True, capture_output=True, check=False, cwd=self.root,
+        )
+        self.assertEqual(first.returncode, 0, first.stderr)
+        second = subprocess.run(
+            [sys.executable, str(self.bundle / "scripts/render-options.py")], input=json.dumps(payload),
+            text=True, capture_output=True, check=False, cwd=self.root,
+        )
+        self.assertEqual(second.returncode, 2, second.stderr)
+        self.assertEqual(json.loads(second.stdout)["error"]["field"], "overwrite")
 
     def test_approve_register_master_and_validate(self):
         project = self.create()
@@ -257,6 +296,69 @@ class CliTests(unittest.TestCase):
         self.assertEqual(response["error"]["code"], "validation_error")
         self.assertEqual(response["error"]["field"], "root")
         self.assertIn("recovery", response["error"])
+
+    def test_missing_input_file_returns_structured_error(self):
+        missing = self.root / "missing-input.json"
+        completed = subprocess.run(
+            [sys.executable, str(self.script), "status", "--input", str(missing)],
+            text=True,
+            capture_output=True,
+            check=False,
+            cwd=self.root,
+        )
+        self.assertEqual(completed.returncode, 2, completed.stderr)
+        response = json.loads(completed.stdout)
+        self.assertFalse(response["ok"])
+        self.assertEqual(response["error"]["code"], "validation_error")
+        self.assertEqual(response["error"]["path"], str(missing))
+
+    def test_unexpected_failure_returns_structured_internal_error(self):
+        project = self.root / "broken-project"
+        (project / "metadata").mkdir(parents=True)
+        (project / "metadata/state.json").write_text('{"schema_version": 1}\n', encoding="utf-8")
+        completed = subprocess.run(
+            [sys.executable, str(self.script), "status"],
+            input=json.dumps({"project_dir": str(project)}),
+            text=True,
+            capture_output=True,
+            check=False,
+            cwd=self.root,
+        )
+        self.assertEqual(completed.returncode, 5, completed.stderr)
+        response = json.loads(completed.stdout)
+        self.assertFalse(response["ok"])
+        self.assertEqual(response["error"]["code"], "internal_error")
+        self.assertNotIn("project_name", response["error"]["message"])
+
+    def test_validate_for_export_includes_export_blockers(self):
+        project = ready_project(self.root)
+        self.run_cli(
+            "record_answer", {"project_dir": str(project), "field": "base_color", "value": "hot pink"}
+        )
+        completed, response = self.run_cli(
+            "validate", {"project_dir": str(project), "for_export": True}
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertFalse(response["data"]["ok"])
+        self.assertIn("approval_answers_changed", [item["code"] for item in response["data"]["errors"]])
+
+    def test_render_options_missing_input_is_structured_error(self):
+        missing = self.root / "missing-render.json"
+        completed = subprocess.run(
+            [sys.executable, str(self.bundle / "scripts/render-options.py"), "--input", str(missing)],
+            text=True, capture_output=True, check=False, cwd=self.root,
+        )
+        self.assertEqual(completed.returncode, 2, completed.stderr)
+        self.assertEqual(json.loads(completed.stdout)["error"]["code"], "validation_error")
+
+    def test_create_rejects_payload_config_path_override(self):
+        completed, response = self.run_cli(
+            "create_project",
+            {"root": str(self.root / "projects"), "name": "Unsafe config", "remember_root": True,
+             "config_path": str(self.root / "arbitrary.json")},
+        )
+        self.assertEqual(completed.returncode, 2)
+        self.assertEqual(response["error"]["field"], "config_path")
 
 
 if __name__ == "__main__":

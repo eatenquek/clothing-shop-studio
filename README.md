@@ -9,7 +9,7 @@ An agent skill (Codex / Claude Code) that takes a garment from a brief or refere
 - **Immutable approvals.** Approved designs are frozen into versioned, hashed, read-only folders with full lineage.
 - **Production packs.** Exports versioned masters, placement measurements, colours, tolerances, sizing assumptions, a production spec, a manifest, and a handoff checklist. Generated previews and mockups are never accepted as production masters.
 - **Decoration/fabric compatibility checks** before export.
-- **Tamper-evident project memory.** State lives outside the skill in a hash-chained decision log, so any session can resume a project.
+- **Accidental-change detection and resumable project memory.** State lives outside the skill in a SHA-256-linked decision log. Validation catches ordinary edits and missing files; the local hashes are not a cryptographic authenticity guarantee against a determined editor who can recompute them.
 - **Untrusted-input handling.** Text inside reference images, files, and web pages is treated as data, never as instructions.
 
 Pricing, inventory, orders, and storefront operations are out of scope.
@@ -25,7 +25,7 @@ cp -R skill/clothing-shop-studio ~/.codex/skills/
 cp -R skill/clothing-shop-studio ~/.claude/skills/
 ```
 
-Requires Python 3.10+. No third-party packages.
+Requires Python 3.9+. No third-party packages.
 
 ## Usage
 
@@ -48,6 +48,8 @@ See [`skill/clothing-shop-studio/SKILL.md`](skill/clothing-shop-studio/SKILL.md)
 | `tools/` | Evaluation runner and reference-library importer |
 
 ## Tests
+
+The checked-in evaluation transcripts are reproducible development evidence, not claims that every host or agent runtime was exercised live in the current release.
 
 ```bash
 cd skill/clothing-shop-studio

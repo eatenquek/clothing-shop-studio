@@ -189,9 +189,18 @@ def register_options(project_dir: Path, payload: dict, now: str | None = None) -
             entry["convention_broken"] = by_label["W"]["convention_broken"].strip()
         entries.append(entry)
 
+    if len({entry["sha256"] for entry in entries}) != len(LABELS):
+        raise ValidationError(
+            "Each option must contain visibly distinct preview content.",
+            field="path",
+            recovery="Re-render A, B, C, and W as four materially different images.",
+        )
+
     contact_sheet = None
+    contact_sheet_sha256 = None
     if payload.get("contact_sheet"):
-        _, contact_sheet = _resolve_generated(project, payload["contact_sheet"], field="contact_sheet")
+        contact_sheet_path, contact_sheet = _resolve_generated(project, payload["contact_sheet"], field="contact_sheet")
+        contact_sheet_sha256 = _sha256(contact_sheet_path)
     append_event(
         project,
         {
@@ -200,6 +209,7 @@ def register_options(project_dir: Path, payload: dict, now: str | None = None) -
             "round": round_number,
             "entries": entries,
             "contact_sheet": contact_sheet,
+            "contact_sheet_sha256": contact_sheet_sha256,
         },
         timestamp,
     )
@@ -262,6 +272,23 @@ GARMENT_OUTLINES = {
     "L80 150 L45 265 L10 260 L30 150 Z",
     "hoodie": "M90 30 L110 0 Q150 -15 190 0 L210 30 L270 150 L290 260 L255 265 L220 150 L220 290 L80 290 "
     "L80 150 L45 265 L10 260 L30 150 Z",
+    "tank": "M105 20 L130 10 Q150 30 170 10 L195 20 L215 80 L205 290 L95 290 L85 80 Z",
+    "polo": "M90 20 L130 10 L150 55 L170 10 L210 20 L280 70 L250 110 L220 90 L220 290 L80 290 L80 90 L50 110 L20 70 Z",
+    "sweatshirt": "M90 20 L130 10 Q150 30 170 10 L210 20 L270 150 L250 245 L220 150 L220 290 L80 290 L80 150 L50 245 L30 150 Z",
+    "jacket": "M90 20 L130 10 Q150 30 170 10 L210 20 L270 150 L250 245 L220 150 L220 290 L80 290 L80 150 L50 245 L30 150 Z M150 30 V290",
+    "bottoms": "M80 20 H220 L205 290 H155 L150 125 L145 290 H95 Z",
+    "headwear": "M55 165 Q70 55 165 55 Q245 60 250 165 Z M40 165 Q170 145 285 185 Q170 215 40 180 Z",
+    "bag": "M55 80 H245 L265 290 H35 Z M95 85 Q95 10 150 10 Q205 10 205 85",
+}
+GARMENT_ALIASES = {
+    "performance_top": "tee",
+    "performance": "tee",
+    "t_shirt": "tee",
+    "crewneck": "sweatshirt",
+    "cap": "headwear",
+    "hat": "headwear",
+    "tote": "bag",
+    "tote_bag": "bag",
 }
 PLACEMENT_BOXES = {
     # x, y, width, height inside the 300×300 garment box.
@@ -299,15 +326,53 @@ def _validate_briefs(briefs) -> list[dict]:
     return ordered
 
 
+def _direction_geometry(label: str, box: tuple[int, int, int, int], ink: str) -> str:
+    """A deliberately different schematic mark for each fallback direction."""
+    bx, by, bw, bh = box
+    cx, cy = bx + bw / 2, by + bh / 2
+    stroke = max(1.5, min(bw, bh) / 10)
+    if label == "A":
+        return (
+            f'<ellipse cx="{cx:g}" cy="{cy:g}" rx="{bw * .34:g}" ry="{bh * .34:g}" '
+            f'fill="none" stroke="{ink}" stroke-width="{stroke:g}"/>'
+            f'<path d="M{cx:g} {by + bh * .12:g} V{by + bh * .88:g}" stroke="{ink}" stroke-width="{stroke:g}"/>'
+        )
+    if label == "B":
+        return (
+            f'<path d="M{cx:g} {by:g} L{bx + bw:g} {cy:g} L{cx:g} {by + bh:g} L{bx:g} {cy:g} Z" '
+            f'fill="none" stroke="{ink}" stroke-width="{stroke:g}"/>'
+            f'<circle cx="{cx:g}" cy="{cy:g}" r="{min(bw, bh) * .16:g}" fill="{ink}"/>'
+        )
+    if label == "C":
+        radius = min(bw, bh) * .13
+        return "".join(
+            f'<circle cx="{bx + bw * fraction:g}" cy="{cy:g}" r="{radius:g}" fill="{ink}"/>'
+            for fraction in (.2, .5, .8)
+        )
+    return (
+        f'<path d="M{bx:g} {by + bh * .82:g} C{bx + bw * .18:g} {by - bh * .25:g}, '
+        f'{bx + bw * .82:g} {by + bh * 1.25:g}, {bx + bw:g} {by + bh * .18:g}" '
+        f'fill="none" stroke="{ink}" stroke-width="{stroke * 1.25:g}" stroke-linecap="round"/>'
+    )
+
+
 def _card(brief: dict, x: int = 0, y: int = 0) -> str:
     label = brief["label"]
-    garment = GARMENT_OUTLINES.get(brief.get("garment"), GARMENT_OUTLINES["tee"])
+    garment_key = GARMENT_ALIASES.get(brief.get("garment"), brief.get("garment"))
+    garment = GARMENT_OUTLINES.get(garment_key, GARMENT_OUTLINES["tee"])
     placement = brief.get("placement")
-    box = PLACEMENT_BOXES.get(placement)
+    placement_key = re.sub(r"[^a-z0-9]+", "_", str(placement or "").lower()).strip("_")
+    placement_key = {
+        "upper_centre_chest": "centre_chest",
+        "upper_center_chest": "center_chest",
+        "centre_front": "centre_chest",
+        "center_front": "center_chest",
+    }.get(placement_key, placement_key)
+    box = PLACEMENT_BOXES.get(placement_key, (110, 55, 80, 80))
     colours = [colour for colour in brief.get("colors", []) if isinstance(colour, str) and HEX_COLOUR.match(colour)]
     body = colours[0] if colours else "#D9D9D9"
     ink = colours[1] if len(colours) > 1 else "#1A1A1A"
-    view = "Back view" if placement in BACK_PLACEMENTS else "Front view"
+    view = "Back view" if placement_key in BACK_PLACEMENTS else "Front view"
     parts = [
         f'<g transform="translate({x},{y})">',
         f'<rect x="8" y="8" width="{CARD_WIDTH - 16}" height="{CARD_HEIGHT - 16}" rx="18" fill="#FFFFFF" stroke="#222222" stroke-width="3"/>',
@@ -327,7 +392,11 @@ def _card(brief: dict, x: int = 0, y: int = 0) -> str:
     )
     if box:
         bx, by, bw, bh = box
-        parts.append(f'<rect x="{bx}" y="{by}" width="{bw}" height="{bh}" fill="{ink}" opacity="0.85"/>')
+        parts.append(
+            f'<rect x="{bx}" y="{by}" width="{bw}" height="{bh}" fill="#FFFFFF" opacity="0.12" '
+            f'stroke="{ink}" stroke-width="1"/>'
+        )
+        parts.append(_direction_geometry(label, box, ink))
     parts.append("</g>")
     parts.extend(
         [

@@ -12,7 +12,7 @@ from pathlib import Path
 
 from .errors import StorageError, ValidationError
 from .interview import is_delegation
-from .store import _utc_now, append_event, load_state, write_atomic
+from .store import _utc_now, append_event, canonical_json, load_state, write_atomic
 
 APPROVED_DIR = Path("designs/approved")
 VERSION_PATTERN = re.compile(r"^v(\d{3,})$")
@@ -74,6 +74,23 @@ def approve_design(project_dir: Path, concept_ids: list[str], statement: str, no
             )
         concepts.append(entry)
 
+    review_evidence = []
+    seen_sheets = set()
+    for group in state.get("concepts", []):
+        relative = group.get("contact_sheet")
+        if not relative or not set(group.get("ids", [])) & set(concept_ids) or relative in seen_sheets:
+            continue
+        source = project / relative
+        expected = group.get("contact_sheet_sha256")
+        if not source.is_file() or not expected or _sha256(source) != expected:
+            raise ValidationError(
+                "The contact sheet shown for this option changed or disappeared.",
+                path=relative,
+                recovery="Register and show a new option round before approving.",
+            )
+        seen_sheets.add(relative)
+        review_evidence.append((group, source, expected))
+
     timestamp = now or _utc_now()
     version = next_version(project, state)
     target = project / APPROVED_DIR / version
@@ -103,6 +120,27 @@ def approve_design(project_dir: Path, concept_ids: list[str], statement: str, no
                     "production_eligible": False,
                 }
             )
+        evidence_hashes = {}
+        for index, (group, source, expected) in enumerate(review_evidence, start=1):
+            suffix = source.suffix
+            name = f"review-contact-sheet{suffix}" if len(review_evidence) == 1 else f"review-contact-sheet-{index}{suffix}"
+            copy = target / name
+            shutil.copyfile(source, copy)
+            entry_id = f"{version}-review-evidence-{index:02d}"
+            entries.append(
+                {
+                    "id": entry_id,
+                    "origin": "approved_design",
+                    "role": "review_evidence",
+                    "version": version,
+                    "path": copy.relative_to(project).as_posix(),
+                    "sha256": _sha256(copy),
+                    "parents": [item for item in group.get("ids", []) if item in concept_ids],
+                    "registered_at": timestamp,
+                    "production_eligible": False,
+                }
+            )
+            evidence_hashes[group["decision_id"]] = expected
         approval = {
             "version": version,
             "concept_ids": list(concept_ids),
@@ -111,7 +149,11 @@ def approve_design(project_dir: Path, concept_ids: list[str], statement: str, no
             "source_hashes": {concept["id"]: concept["sha256"] for concept in concepts},
             "lineage": {concept["id"]: list(concept.get("parents") or []) for concept in concepts},
             "files": [entry["id"] for entry in entries],
+            "answers_sha256": hashlib.sha256(canonical_json(state.get("answers", {})).encode("utf-8")).hexdigest(),
+            "review_evidence_hashes": evidence_hashes,
         }
+        if len(evidence_hashes) == 1:
+            approval["contact_sheet_sha256"] = next(iter(evidence_hashes.values()))
         approval_bytes = (json.dumps(approval, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8")
         write_atomic(target / "approval.json", approval_bytes)
         record = {**approval, "approval_sha256": hashlib.sha256(approval_bytes).hexdigest()}

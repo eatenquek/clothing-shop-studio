@@ -10,9 +10,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # discoverable fro
 
 from scripts.studio_core.approval import approve_design
 from scripts.studio_core.errors import ValidationError
-from scripts.studio_core.options import merge_concept
+from scripts.studio_core.options import merge_concept, register_options
 from scripts.studio_core.store import load_state, status
-from tests.helpers import FIXED_NOW, hash_tree, make_project, register_concepts
+from tests.helpers import FIXED_NOW, four_results, hash_tree, make_project, register_concepts
 
 LATER = "2026-09-25T00:00:00Z"
 
@@ -57,7 +57,11 @@ class ApprovalTests(unittest.TestCase):
         self.assertEqual(list((self.project / "designs/approved").iterdir()), [])
 
     def test_delegation_is_not_an_approval(self):
-        for statement in ("Use your recommendation and continue.", "you decide", "Continue"):
+        for statement in (
+            "Use your recommendation and continue.", "you decide", "Continue",
+            "Do what you think is best", "Use your best judgment", "Surprise me",
+            "Sounds good, use your recommendation", "Whatever works", "OK go with your pick",
+        ):
             with self.assertRaises(ValidationError, msg=statement):
                 approve_design(self.project, [self.concepts["A"]["id"]], statement, now=FIXED_NOW)
         self.assertEqual(list((self.project / "designs/approved").iterdir()), [])
@@ -88,6 +92,17 @@ class ApprovalTests(unittest.TestCase):
     def test_status_lists_approved_versions(self):
         approve_design(self.project, [self.concepts["A"]["id"]], "Approve A", now=FIXED_NOW)
         self.assertEqual(status(self.project)["approved_versions"], ["v001"])
+
+    def test_approval_freezes_hashed_contact_sheet_review_evidence(self):
+        payload = four_results(self.project, decision_id="front_art")
+        sheet = self.project / "concepts/generated/front_art/r01/contact-sheet.png"
+        sheet.write_bytes(b"reviewed raster contact sheet")
+        payload["contact_sheet"] = str(sheet.relative_to(self.project))
+        entries = {item["label"]: item for item in register_options(self.project, payload, FIXED_NOW)}
+        version = approve_design(self.project, [entries["A"]["id"]], "Approve A", now=FIXED_NOW)
+        approval = load_state(self.project)["approvals"][-1]
+        self.assertEqual(list(approval["review_evidence_hashes"].values()), [approval["contact_sheet_sha256"]])
+        self.assertTrue((version / "review-contact-sheet.png").is_file())
 
 
 if __name__ == "__main__":

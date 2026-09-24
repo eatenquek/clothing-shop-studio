@@ -71,7 +71,9 @@ Payload examples (axes are plain strings):
 
 ## No image tool
 
-When no raster image tool is available, run `scripts/render-options.py` with the planned `output_dir` (the absolute folder of the slot destinations, for example `<project_dir>/concepts/generated/back_typography/r01`) and four briefs (`label`, `axis`, `title`, `brief`, `garment`, `placement`, `colors` as `#RRGGBB`). It writes `option-A.svg` through `option-W.svg` and `contact-sheet.svg`. Register the four option files with `"renderer": "svg-fallback"` and show the contact sheet.
+When no raster image tool is available, run `scripts/render-options.py` with `project_dir`, the planned `output_dir` (the absolute folder of the slot destinations, for example `<project_dir>/concepts/generated/back_typography/r01`), and four briefs (`label`, `axis`, `title`, `brief`, `garment`, `placement`, `colors` as `#RRGGBB`). It writes `option-A.svg` through `option-W.svg` and `contact-sheet.svg`. It refuses destinations outside that project's `concepts/generated/` and will not overwrite an existing round unless `overwrite: true` is explicit. Register the four option files with `"renderer": "svg-fallback"` and show the contact sheet.
+
+Registration hashes every option and refuses byte-identical previews. Free-text or missing placement still receives a visible default artwork area, so all four fallback cards remain visually distinct.
 
 ## Combining and revising
 

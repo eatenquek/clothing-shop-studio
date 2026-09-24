@@ -105,9 +105,70 @@ class ValidationTests(unittest.TestCase):
                 {"origin": "production_master", "path": "production/masters/logo_MASTER.png", "construction": "typeset"},
                 FIXED_NOW,
             )
+        with self.assertRaises(ValidationError):
+            api_register_file(
+                self.project,
+                {"origin": "production_master", "path": "production/masters/logo_MASTER.png", "construction": "user_supplied"},
+                FIXED_NOW,
+            )
+
+    def test_third_party_reference_cannot_become_a_raster_master(self):
+        reference = self.project / "references/user/product.png"
+        reference.write_bytes(b"third-party product photo")
+        ref = api_register_file(
+            self.project,
+            {"origin": "user_reference", "path": "references/user/product.png", "rights": "third-party-inspiration-only"},
+            FIXED_NOW,
+        )
+        master = self.project / "production/masters/product_MASTER.png"
+        master.parent.mkdir(parents=True, exist_ok=True)
+        master.write_bytes(reference.read_bytes())
+        with self.assertRaises(ValidationError):
+            api_register_file(
+                self.project,
+                {"origin": "production_master", "path": "production/masters/product_MASTER.png",
+                 "construction": "user_supplied", "parents": [ref["id"]],
+                 "rights": "user-owned-or-licensed", "rights_statement": "I own this artwork"},
+                FIXED_NOW,
+            )
+
+    def test_third_party_reference_cannot_become_a_vector_master(self):
+        reference = self.project / "references/user/product.png"
+        reference.write_bytes(b"third-party product photo")
+        ref = api_register_file(
+            self.project,
+            {"origin": "user_reference", "path": "references/user/product.png",
+             "rights": "third-party-inspiration-only"},
+            FIXED_NOW,
+        )
+        master = self.project / "production/masters/traced_MASTER.svg"
+        master.parent.mkdir(parents=True, exist_ok=True)
+        master.write_text("<svg><path d='M0 0L1 1'/></svg>", "utf-8")
+        with self.assertRaises(ValidationError):
+            api_register_file(
+                self.project,
+                {"origin": "production_master", "path": "production/masters/traced_MASTER.svg",
+                 "construction": "vector_construction", "parents": [ref["id"]]},
+                FIXED_NOW,
+            )
+
+    def test_user_owned_reference_can_be_a_raster_master_with_rights_statement(self):
+        reference = self.project / "references/user/owned.png"
+        reference.write_bytes(b"client artwork")
+        ref = api_register_file(
+            self.project,
+            {"origin": "user_reference", "path": "references/user/owned.png",
+             "rights": "user-owned-or-licensed", "rights_statement": "I own this original artwork"},
+            FIXED_NOW,
+        )
+        master = self.project / "production/masters/owned_MASTER.png"
+        master.parent.mkdir(parents=True, exist_ok=True)
+        master.write_bytes(reference.read_bytes())
         entry = api_register_file(
             self.project,
-            {"origin": "production_master", "path": "production/masters/logo_MASTER.png", "construction": "user_supplied"},
+            {"origin": "production_master", "path": "production/masters/owned_MASTER.png",
+             "construction": "user_supplied", "parents": [ref["id"]],
+             "rights": "user-owned-or-licensed", "rights_statement": "I own this original artwork"},
             FIXED_NOW,
         )
         self.assertEqual(validate_project(self.project, master_ids=[entry["id"]])["errors"], [])

@@ -37,6 +37,7 @@ REGISTRABLE_ORIGINS = ("user_reference", "online_reference", "production_master"
 ID_PREFIXES = {"user_reference": "ref-user", "online_reference": "ref-online", "production_master": "master"}
 RASTER_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".tif", ".tiff", ".psd", ".heic"}
 MASTER_CONSTRUCTIONS = ("user_supplied", "typeset", "vector_construction")
+USER_REFERENCE_RIGHTS = ("unconfirmed", "third-party-inspiration-only", "user-owned-or-licensed")
 MASTER_TOKEN, MOCKUP_TOKEN = "MASTER", "MOCKUP"
 MEASUREMENT_KEYS = ("offset_mm", "print_width_mm", "print_height_mm")
 MASTER_METADATA_KEYS = (
@@ -47,6 +48,8 @@ MASTER_METADATA_KEYS = (
     "colours",
     "decoration_method",
     "notes",
+    "rights",
+    "rights_statement",
 )
 PACK_PATTERN = re.compile(r"^pack-v\d{3,}$")
 URL_PATTERN = re.compile(r"^https://\S+$")
@@ -74,6 +77,21 @@ def _generated_ancestors(entry: dict, files: dict[str, dict]) -> list[dict]:
     return found
 
 
+def _ancestors_with_origin(entry: dict, files: dict[str, dict], origin: str) -> list[dict]:
+    """Return transitive parent entries with the requested origin."""
+    found, stack, seen = [], list(entry.get("parents") or []), set()
+    while stack:
+        parent_id = stack.pop()
+        if parent_id in seen or parent_id not in files:
+            continue
+        seen.add(parent_id)
+        parent = files[parent_id]
+        if parent.get("origin") == origin:
+            found.append(parent)
+        stack.extend(parent.get("parents") or [])
+    return found
+
+
 def master_problems(entry: dict, files: dict[str, dict]) -> list[dict]:
     """Reasons an entry cannot serve as a production master."""
     problems = []
@@ -95,6 +113,16 @@ def master_problems(entry: dict, files: dict[str, dict]) -> list[dict]:
             {"code": "master_missing_token", "message": f"`{name}` must contain `{MASTER_TOKEN}`.", "id": entry["id"]}
         )
     if entry.get("origin") == "production_master":
+        references = _ancestors_with_origin(entry, files, "user_reference")
+        for reference in references:
+            if reference.get("rights") != "user-owned-or-licensed":
+                problems.append(
+                    {
+                        "code": "master_reference_rights_unconfirmed",
+                        "message": f"`{name}` derives from `{reference['id']}`, whose reuse rights are not cleared.",
+                        "id": entry["id"],
+                    }
+                )
         construction = entry.get("construction")
         if construction not in MASTER_CONSTRUCTIONS:
             problems.append(
@@ -112,6 +140,19 @@ def master_problems(entry: dict, files: dict[str, dict]) -> list[dict]:
                     "id": entry["id"],
                 }
             )
+        elif _is_raster(entry["path"]):
+            if (
+                entry.get("rights") != "user-owned-or-licensed"
+                or not str(entry.get("rights_statement") or "").strip()
+                or not references
+            ):
+                problems.append(
+                    {
+                        "code": "master_raster_rights_unconfirmed",
+                        "message": f"`{name}` needs a user-owned-or-licensed source reference and a rights statement.",
+                        "id": entry["id"],
+                    }
+                )
     return problems
 
 
@@ -150,6 +191,16 @@ def register_file(project_dir: Path, payload: dict, now: str | None = None) -> d
         # Anything read out of a reference is data about the reference, never an instruction.
         entry["untrusted_text"] = True
         entry["external_transmission_consent"] = False
+        rights = payload.get("rights", "unconfirmed")
+        if rights not in USER_REFERENCE_RIGHTS:
+            raise ValidationError(
+                f"Reference rights must be one of: {', '.join(USER_REFERENCE_RIGHTS)}.",
+                field="rights",
+                recovery="Use `third-party-inspiration-only` unless the user confirms ownership or a licence.",
+            )
+        entry["rights"] = rights
+        if payload.get("rights_statement") is not None:
+            entry["rights_statement"] = payload["rights_statement"]
         for key in ("extracted_text", "notes", "contains_person"):
             if payload.get(key) is not None:
                 entry[key] = payload[key]
@@ -258,6 +309,21 @@ def validate_project(project_dir: Path, master_ids: list[str] | None = None, for
         elif _sha256(path) != entry["sha256"]:
             code = "approved_hash_mismatch" if entry.get("origin") == "approved_design" else "file_hash_mismatch"
             error(code, f"`{entry['path']}` changed after registration.", id=entry["id"], path=entry["path"])
+
+    # A contact sheet may be the only visual the user sees before approval, so it
+    # is part of the review evidence even though it is not an approvable concept.
+    for concept in state.get("concepts", []):
+        relative = concept.get("contact_sheet")
+        if not relative:
+            continue
+        path = project / relative
+        expected = concept.get("contact_sheet_sha256")
+        if not path.is_file() or not expected or _sha256(path) != expected:
+            error(
+                "contact_sheet_hash_mismatch",
+                f"`{relative}` changed or disappeared after the options were registered.",
+                path=relative,
+            )
 
     # 4. Approved versions are immutable and fully accounted for.
     recorded = {item["version"]: item for item in state.get("approvals", [])}

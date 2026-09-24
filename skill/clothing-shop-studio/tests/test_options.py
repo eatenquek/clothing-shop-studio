@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 import tempfile
 import unittest
@@ -11,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # discoverable fro
 
 from scripts.studio_core.errors import StudioError, ValidationError
 from scripts.studio_core.options import (
+    GARMENT_OUTLINES,
     merge_concept,
     plan_options,
     register_options,
@@ -18,6 +20,7 @@ from scripts.studio_core.options import (
     render_svg,
 )
 from scripts.studio_core.store import load_state
+from scripts.studio_core.validation import validate_project
 from tests.helpers import four_complete_briefs, four_results, make_project
 
 
@@ -61,6 +64,21 @@ class OptionTests(unittest.TestCase):
         state = load_state(self.project)
         self.assertEqual(state["concepts"][0]["decision_id"], "back_typography")
         self.assertEqual(state["concepts"][0]["ids"], [e["id"] for e in entries])
+
+    def test_contact_sheet_is_hashed_and_tampering_is_detected(self):
+        payload = four_results(self.project)
+        sheet = self.project / "concepts/generated/back_typography/r01/contact-sheet.svg"
+        sheet.write_text("<svg><text>A B C W</text></svg>", encoding="utf-8")
+        payload["contact_sheet"] = str(sheet.relative_to(self.project))
+        register_options(self.project, payload)
+
+        concept = load_state(self.project)["concepts"][0]
+        self.assertEqual(concept["contact_sheet"], str(sheet.relative_to(self.project)))
+        self.assertEqual(concept["contact_sheet_sha256"], hashlib.sha256(sheet.read_bytes()).hexdigest())
+
+        sheet.write_text("<svg><text>changed after user review</text></svg>", encoding="utf-8")
+        codes = [item["code"] for item in validate_project(self.project)["errors"]]
+        self.assertIn("contact_sheet_hash_mismatch", codes)
 
     def test_registered_entries_satisfy_manifest_schema(self):
         schema_path = Path(__file__).resolve().parents[1] / "schemas/manifest.schema.json"
@@ -147,6 +165,41 @@ class OptionTests(unittest.TestCase):
             self.assertIn(axis, svg)
         self.assertNotIn("http://", svg.replace("http://www.w3.org/2000/svg", ""))
         self.assertNotIn("https://", svg)
+
+    def test_svg_fallback_options_have_distinct_non_text_geometry(self):
+        paths = render_option_cards(self.tmp_path, four_complete_briefs())
+        geometries = {
+            re.sub(r"<text\b.*?</text>", "", path.read_text("utf-8"), flags=re.DOTALL)
+            for path in paths.values()
+        }
+        self.assertEqual(len(geometries), 4)
+
+    def test_svg_fallback_free_text_placement_still_has_four_geometries(self):
+        briefs = four_complete_briefs()
+        for brief in briefs:
+            brief["placement"] = "upper centre chest"
+        paths = render_option_cards(self.tmp_path, briefs)
+        geometries = {
+            re.sub(r"<text\b.*?</text>", "", path.read_text("utf-8"), flags=re.DOTALL)
+            for path in paths.values()
+        }
+        self.assertEqual(len(geometries), 4)
+
+    def test_register_rejects_byte_identical_previews(self):
+        payload = four_results(self.project)
+        identical = b"same raster preview"
+        for item in payload["results"]:
+            path = self.project / Path(item["path"]).with_suffix(".png")
+            path.write_bytes(identical)
+            item["path"] = str(path.relative_to(self.project))
+        with self.assertRaises(ValidationError):
+            register_options(self.project, payload)
+
+    def test_svg_fallback_has_distinct_accessory_outlines(self):
+        self.assertIn("headwear", GARMENT_OUTLINES)
+        self.assertIn("bag", GARMENT_OUTLINES)
+        self.assertNotEqual(GARMENT_OUTLINES["headwear"], GARMENT_OUTLINES["tee"])
+        self.assertNotEqual(GARMENT_OUTLINES["bag"], GARMENT_OUTLINES["tee"])
 
     def test_svg_fallback_escapes_user_text_and_rejects_unsafe_colours(self):
         briefs = four_complete_briefs()

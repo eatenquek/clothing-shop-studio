@@ -475,7 +475,7 @@
     {
       "id": "confirm_japanese_text_and_motif",
       "phase": "confirmation",
-      "prompt": "Please confirm the exact Japanese text (characters, meaning, and reading) and which yokai or motif to use.",
+      "prompt": "Please confirm the exact Japanese text (characters, meaning, and reading) and the intended motif or theme; name the yokai only when the design uses one.",
       "answer_type": "confirmation_with_corrections",
       "applies_when": {},
       "skip_if_known": [

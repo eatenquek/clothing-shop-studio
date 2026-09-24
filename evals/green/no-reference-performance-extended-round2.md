@@ -1,6 +1,6 @@
 # GREEN evaluation: no-reference-performance
 
-- Workspace: `/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k`
+- Workspace: `/private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k`
 - Harness: fresh headless `claude -p` session; skill installed as a project skill; user settings, hooks, plugins, and MCP servers excluded; Bash limited to the skill scripts.
 
 ## Turn 1
@@ -12,23 +12,23 @@
 **Tool calls:**
 
 - `Skill: clothing-shop-studio`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio/references/workflow.md`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && echo '{"name": "SG Running Club Dri-Fit Tee"}' | python3 scripts/studio.py create_project`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio/references/workflow.md`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && echo '{"name": "SG Running Club Dri-Fit Tee"}' | python3 scripts/studio.py create_project`
 - `Bash: \
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/projects/sg-running-club-dri-fit-tee", "field": "reference_image", "value": null, "source": "user"}' | python3 scripts/studio.py record_answer`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio
-PROJ="/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/projects/sg-running-club-dri-fit-tee"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/projects/sg-running-club-dri-fit-tee", "field": "reference_image", "value": null, "source": "user"}' | python3 scripts/studio.py record_answer`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio
+PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/projects/sg-running-club-dri-fit-tee"
 
 cat > /tmp_payload1.json <<'EOF'
 {"project_dir": "PROJDIR", "field": "reference_image", "value": null, "source": "user"}
 EOF
 sed -i '' "s#PROJDIR#$PROJ#" /tmp_payload`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload1.json`
-- `Bash: python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload1.json`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload2.json`
-- `Bash: python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload2.json`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio/references/garments-materials.md`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload1.json`
+- `Bash: python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload1.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload2.json`
+- `Bash: python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload2.json`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio/references/garments-materials.md`
 
 **Assistant (verbatim):**
 
@@ -44,8 +44,8 @@ sed -i '' "s#PROJDIR#$PROJ#" /tmp_payload`
 
 **Tool calls:**
 
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload3.json`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload3.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload3.json`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload3.json`
 
 **Assistant (verbatim):**
 
@@ -61,14 +61,14 @@ sed -i '' "s#PROJDIR#$PROJ#" /tmp_payload`
 
 **Tool calls:**
 
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload4.json`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload4.json`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload5.json`
-- `Bash: python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload5.json`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload6.json`
-- `Bash: python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload6.json`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload7.json`
-- `Bash: python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload7.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload4.json`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload4.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload5.json`
+- `Bash: python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload5.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload6.json`
+- `Bash: python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload6.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload7.json`
+- `Bash: python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload7.json`
 
 **Assistant (verbatim):**
 
@@ -84,8 +84,8 @@ sed -i '' "s#PROJDIR#$PROJ#" /tmp_payload`
 
 **Tool calls:**
 
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload8.json`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload8.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload8.json`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload8.json`
 
 **Assistant (verbatim):**
 
@@ -101,8 +101,8 @@ sed -i '' "s#PROJDIR#$PROJ#" /tmp_payload`
 
 **Tool calls:**
 
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload9.json`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload9.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload9.json`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload9.json`
 
 **Assistant (verbatim):**
 
@@ -116,8 +116,8 @@ sed -i '' "s#PROJDIR#$PROJ#" /tmp_payload`
 
 **Tool calls:**
 
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload10.json`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload10.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload10.json`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload10.json`
 
 **Assistant (verbatim):**
 
@@ -131,8 +131,8 @@ sed -i '' "s#PROJDIR#$PROJ#" /tmp_payload`
 
 **Tool calls:**
 
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload11.json`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload11.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload11.json`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload11.json`
 
 **Assistant (verbatim):**
 
@@ -146,8 +146,8 @@ sed -i '' "s#PROJDIR#$PROJ#" /tmp_payload`
 
 **Tool calls:**
 
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload12.json`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload12.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload12.json`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload12.json`
 
 **Assistant (verbatim):**
 
@@ -161,8 +161,8 @@ sed -i '' "s#PROJDIR#$PROJ#" /tmp_payload`
 
 **Tool calls:**
 
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload13.json`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload13.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload13.json`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload13.json`
 
 **Assistant (verbatim):**
 
@@ -176,8 +176,8 @@ sed -i '' "s#PROJDIR#$PROJ#" /tmp_payload`
 
 **Tool calls:**
 
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload14.json`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload14.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload14.json`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload14.json`
 
 **Assistant (verbatim):**
 
@@ -191,8 +191,8 @@ sed -i '' "s#PROJDIR#$PROJ#" /tmp_payload`
 
 **Tool calls:**
 
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload15.json`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload15.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload15.json`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload15.json`
 
 **Assistant (verbatim):**
 
@@ -206,29 +206,29 @@ sed -i '' "s#PROJDIR#$PROJ#" /tmp_payload`
 
 **Tool calls:**
 
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload16.json`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload16.json`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio/references/visual-options.md`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/plan_basecolor.json`
-- `Bash: python3 scripts/studio.py generate_options < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/plan_basecolor.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload16.json`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload16.json`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio/references/visual-options.md`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/plan_basecolor.json`
+- `Bash: python3 scripts/studio.py generate_options < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/plan_basecolor.json`
 - `Bash: python3 scripts/render-options.py --help 2>&1 | head -50`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/render_basecolor.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/render_basecolor.json`
 - `Bash: sed -n '1,80p' scripts/render-options.py`
-- `Edit: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/render_basecolor.json`
-- `Bash: python3 scripts/render-options.py --input /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/render_basecolor.json`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/register_basecolor.json`
-- `Bash: python3 scripts/studio.py generate_options < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/register_basecolor.json`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/projects/sg-running-club-dri-fit-tee/concepts/generated/base_color/r01/contact-sheet.svg`
+- `Edit: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/render_basecolor.json`
+- `Bash: python3 scripts/render-options.py --input /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/render_basecolor.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/register_basecolor.json`
+- `Bash: python3 scripts/studio.py generate_options < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/register_basecolor.json`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/projects/sg-running-club-dri-fit-tee/concepts/generated/base_color/r01/contact-sheet.svg`
 - `Skill: artifact-design`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/base_color_options.html`
-- `Artifact: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/base_color_options.html`
-- `Artifact: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/base_color_options.html`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/base_color_options.html`
+- `Artifact: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/base_color_options.html`
+- `Artifact: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/base_color_options.html`
 
 **Assistant (verbatim):**
 
 > I don't have permission to publish artifacts in this session, so I can't show the visual comparison as a live page. Per the workflow's fallback, here's the contact sheet on disk and a description of each option:
 >
-> **Contact sheet:** `/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/projects/sg-running-club-dri-fit-tee/concepts/generated/base_color/r01/contact-sheet.svg`
+> **Contact sheet:** `/private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/projects/sg-running-club-dri-fit-tee/concepts/generated/base_color/r01/contact-sheet.svg`
 >
 > - **A — Deep Navy:** solid navy body, tonal seams, charcoal mesh vent panels at underarms/back yoke, subtle reflective back-neck tab. Hides sweat completely, reads "serious club kit."
 > - **B — Charcoal Heather:** melange charcoal-blue body, self-tone mesh vents, subtle reflective hit at back yoke. Masks stains/salt lines even better than a flat solid, slightly less bold.
@@ -245,8 +245,8 @@ sed -i '' "s#PROJDIR#$PROJ#" /tmp_payload`
 
 **Tool calls:**
 
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload_basecolor_answer.json`
-- `Bash: cd /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload_basecolor_answer.json`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload_basecolor_answer.json`
+- `Bash: cd /private/tmp/clothing-shop-studio-eval/css-eval-scpnd99k/.claude/skills/clothing-shop-studio && python3 scripts/studio.py record_answer < /private/tmp/clothing-shop-studio-eval-scratch/css-eval-scpnd99k/6531267e-88b9-4676-912b-ebe8caad2b0c/scratchpad/payload_basecolor_answer.json`
 
 **Assistant (verbatim):**
 

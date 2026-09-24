@@ -127,7 +127,9 @@ class KikiKakaAcceptance(unittest.TestCase):
              "placement": "upper_back", "colors": ["#111111", "#EDEBE4"]}
             for slot in plan["slots"]
         ]
-        rendered = self.cli("", {"output_dir": str(out_dir), "briefs": briefs}, script=RENDER)
+        rendered = self.cli(
+            "", {"project_dir": project, "output_dir": str(out_dir), "briefs": briefs}, script=RENDER
+        )
         entries = self.cli(
             "generate_options",
             {"project_dir": project, "mode": "register", "decision_id": "back_typography",

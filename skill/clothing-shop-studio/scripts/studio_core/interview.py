@@ -82,9 +82,12 @@ GSM_PATTERN = re.compile(r"^\s*(\d{2,3}(?:\.\d+)?)\s*(?:gsm|g/m2|g/m²|g)?\s*$",
 CONFIRMATION_FIELDS = {"confirm_heat_weight_tradeoff", "confirm_japanese_text_and_motif", "confirm_assumptions"}
 # Culturally sensitive text cannot be confirmed by a hand-off such as "you decide".
 STRICT_CONFIRMATIONS = {"confirm_japanese_text_and_motif"}
+ASSUMPTION_CONFIRMATIONS = {"yes", "confirm", "confirmed", "correct", "all correct"}
 DELEGATION_PATTERN = re.compile(
-    r"^\s*(continue|go on|proceed|next|carry on|keep going|up to you|your call|whatever( you think)?"
-    r"|you (decide|choose|pick)|use your (recommendation|judgement|judgment|best judgement)( and continue)?)"
+    r"^\s*(sounds good[,;]?\s*)?(continue|go on|proceed|next|carry on|keep going|up to you|your call"
+    r"|whatever( you think| works)?|(?:ok|okay)[, ]+go with your pick"
+    r"|surprise me|do what you think( is best)?|you (decide|choose|pick)"
+    r"|use your (recommendation|judgement|judgment|best judgement|best judgment)( and continue)?)"
     r"\s*[.!]*\s*$",
     re.IGNORECASE,
 )
@@ -231,7 +234,7 @@ def triggered_confirmations(state: dict) -> list[str]:
 def assumption_confirmation(state: dict, node: dict | None = None) -> dict | None:
     """One grouped question listing every pending inferred or default value."""
     pending = [item for item in state.get("assumptions", []) if not item.get("confirmed")]
-    if not pending or "confirm_assumptions" in state.get("answers", {}):
+    if not pending:
         return None
     summary = "; ".join(f"{item['field']}: {item['value']}" for item in pending)
     question = public_question(node) if node else {
@@ -312,6 +315,14 @@ def record_answer(
                 field="user_quote",
                 recovery="Show the exact text and motif and ask the user to confirm or correct them.",
             )
+        if field == "confirm_assumptions":
+            reply = re.sub(r"\s+", " ", user_quote.strip().lower()).rstrip(".!?")
+            if reply not in ASSUMPTION_CONFIRMATIONS:
+                raise ValidationError(
+                    "Assumptions can only be confirmed with an explicit, unqualified confirmation.",
+                    field="user_quote",
+                    recovery="Record each correction first, show the revised assumption list, then ask for confirmation again.",
+                )
     concept_ids = {
         item.get("id")
         for item in state.get("files", [])
@@ -331,9 +342,8 @@ def record_answer(
         answers["reference_status"] = "none" if value in {None, "", False, "none"} else "supplied"
     elif field == "confirm_assumptions":
         answers[field] = value
-        if value not in {False, "no", "reject"}:
-            for item in updated.setdefault("assumptions", []):
-                item["confirmed"] = True
+        for item in updated.setdefault("assumptions", []):
+            item["confirmed"] = True
     else:
         answers[field] = value
     assumption = {

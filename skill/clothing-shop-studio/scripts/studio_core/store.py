@@ -245,6 +245,7 @@ def _apply_event(state: dict, event: dict) -> dict:
                 "round": event.get("round"),
                 "ids": [entry["id"] for entry in entries],
                 "contact_sheet": event.get("contact_sheet"),
+                "contact_sheet_sha256": event.get("contact_sheet_sha256"),
             }
         )
     elif event_type == "concept_merged":

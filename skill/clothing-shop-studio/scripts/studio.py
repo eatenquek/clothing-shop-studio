@@ -11,7 +11,7 @@ from studio_core import SCHEMA_VERSION
 from studio_core.config import resolve_storage_root, save_storage_root
 from studio_core.errors import StudioError, ValidationError
 from studio_core.approval import approve_design
-from studio_core.export import export_production_pack
+from studio_core.export import export_blockers, export_production_pack
 from studio_core.interview import load_graph, next_question
 from studio_core.options import merge_concept, next_round, plan_options, register_options
 from studio_core.store import append_event, create_project, load_state, status
@@ -37,8 +37,14 @@ def _required(payload: dict, field: str):
 
 
 def command_create_project(payload: dict) -> dict:
+    if "config_path" in payload:
+        raise ValidationError(
+            "The command payload cannot choose the application config path.",
+            field="config_path",
+            recovery="Remove `config_path`; provide `root` to choose this project's storage location.",
+        )
     requested = Path(payload["root"]) if payload.get("root") else None
-    config_path = Path(payload.get("config_path", DEFAULT_CONFIG))
+    config_path = DEFAULT_CONFIG
     root = resolve_storage_root(requested, BUNDLE_DIR, os.environ, config_path)
     if payload.get("remember_root"):
         save_storage_root(root, config_path)
@@ -125,11 +131,11 @@ def command_export_production_pack(payload: dict) -> dict:
 
 
 def command_validate(payload: dict) -> dict:
-    return validate_project(
-        Path(_required(payload, "project_dir")),
-        master_ids=payload.get("master_ids"),
-        for_export=bool(payload.get("for_export", False)),
-    )
+    project = Path(_required(payload, "project_dir"))
+    if payload.get("for_export"):
+        errors, warnings = export_blockers(project)
+        return {"ok": not errors, "errors": errors, "warnings": warnings}
+    return validate_project(project, master_ids=payload.get("master_ids"), for_export=False)
 
 
 def command_status(payload: dict) -> dict:
@@ -182,7 +188,15 @@ def main(argv=None) -> int:
     args = parse_args(argv)
     try:
         if args.input:
-            payload = json.loads(Path(args.input).read_text("utf-8"))
+            input_path = Path(args.input)
+            try:
+                payload = json.loads(input_path.read_text("utf-8"))
+            except OSError as exc:
+                raise ValidationError(
+                    "Command input file could not be read.",
+                    path=str(input_path),
+                    recovery="Provide a readable JSON input file or send the payload on stdin.",
+                ) from exc
         else:
             payload = json.load(sys.stdin)
         if not isinstance(payload, dict):
@@ -208,6 +222,15 @@ def main(argv=None) -> int:
         emit(error_response(args.command, wrapped))
         return wrapped.exit_code
     except StudioError as exc:
+        emit(error_response(args.command, exc))
+        return exc.exit_code
+    except Exception:
+        # Keep the JSON command contract even when an unexpected implementation
+        # defect occurs; do not expose internal paths or object names to callers.
+        exc = StudioError(
+            "The command failed unexpectedly.",
+            recovery="Retry once, then run the skill validator and report the command if it persists.",
+        )
         emit(error_response(args.command, exc))
         return exc.exit_code
 

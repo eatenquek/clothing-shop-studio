@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # discoverable from any cwd
 
 from scripts.studio_core.errors import ValidationError
-from scripts.studio_core.interview import load_graph, next_question, record_answer
+from scripts.studio_core.interview import assumption_confirmation, load_graph, next_question, record_answer
 from tests.helpers import blank_state, collect_question_ids, state_with_answers
 
 
@@ -136,6 +136,26 @@ class InterviewTests(unittest.TestCase):
             with self.assertRaises(ValidationError, msg=quote):
                 record_answer(state, "confirm_japanese_text_and_motif", "Tengu", source="user", user_quote=quote)
         record_answer(state, "confirm_japanese_text_and_motif", "Tengu", source="user", user_quote="Yes, Tengu is right")
+
+    def test_correction_cannot_confirm_all_assumptions(self):
+        state = record_answer(blank_state(), "fit", "oversized", source="inferred", confirmed=False)
+        with self.assertRaises(ValidationError):
+            record_answer(
+                state, "confirm_assumptions", "No, the fit should be slim", source="user",
+                user_quote="No, the fit should be slim",
+            )
+        self.assertFalse(state["assumptions"][0]["confirmed"])
+
+    def test_new_assumption_after_confirmation_is_asked_again(self):
+        state = state_with_answers(reference_status="none")
+        state = record_answer(state, "fit", "oversized", source="inferred", confirmed=False)
+        state = record_answer(
+            state, "confirm_assumptions", "confirmed", source="user", user_quote="confirmed"
+        )
+        state = record_answer(state, "gsm", 220, source="default", confirmed=False)
+        question = assumption_confirmation(state)
+        self.assertEqual(question["id"], "confirm_assumptions")
+        self.assertIn("gsm: 220", question["prompt"])
 
     def test_visual_choice_is_recorded_in_words_not_as_a_concept_id(self):
         state = state_with_answers(reference_status="none")

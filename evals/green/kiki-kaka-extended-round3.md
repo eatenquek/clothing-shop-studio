@@ -1,6 +1,6 @@
 # GREEN evaluation: kiki-kaka
 
-- Workspace: `/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v`
+- Workspace: `/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v`
 - Harness: fresh headless `claude -p` session; skill installed as a project skill; user settings, hooks, plugins, and MCP servers excluded; Bash limited to the skill scripts.
 
 ## Turn 1
@@ -12,19 +12,19 @@
 **Tool calls:**
 
 - `Skill: clothing-shop-studio`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio/references/workflow.md`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio" && echo '{"name": "kiki-kaka-oversized-longsleeve-yokai"}' | python3 scripts/studio.py create_project`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py --help 2>&1 | head -50`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio/references/garments-materials.md`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio" && echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "garment_family", "value": "long_sleeve", "source": "user", "evidence": "brief: oversized long-sleeve"}' | python3 scripts/stu`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
-PROJ="/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai"
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio/references/workflow.md`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio/references/adaptive-interview.md`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio" && echo '{"name": "kiki-kaka-oversized-longsleeve-yokai"}' | python3 scripts/studio.py create_project`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio" && python3 scripts/studio.py --help 2>&1 | head -50`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio/references/garments-materials.md`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio" && echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "garment_family", "value": "long_sleeve", "source": "user", "evidence": "brief: oversized long-sleeve"}' | python3 scripts/stu`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+PROJ="/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai"
 
 echo '{"project_dir": "'$PROJ'", "field": "fit", "value": "oversized", "source": "user", "evidence": "brief: oversized long-sleeve"}' | python3 scripts/stu`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "fit", "value": "oversized", "source": "user", "evidence": "brief: oversized long-sleeve"}' | python3 scripts/studio.py record_a`
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "fit", "value": "oversized", "source": "user", "evidence": "brief: oversized long-sleeve"}' | python3 scripts/studio.py record_a`
 
 **Assistant (verbatim):**
 
@@ -40,14 +40,14 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "reference_image", "value": null, "source": "user", "evidence": "user: I do not have a reference image for this evaluation. Cont`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "reference_image", "value": null, "source": "user", "evidence": "user: I do not have a reference image for this evaluation. Cont`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "garment_category", "value": "long-sleeve", "source": "user", "evidence": "brief: oversized long-sleeve"}' | python3 scripts/stu`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai"}' | python3 scripts/studio.py status | python3 -m json.tool | head -40`
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "garment_category", "value": "long-sleeve", "source": "user", "evidence": "brief: oversized long-sleeve"}' | python3 scripts/stu`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai"}' | python3 scripts/studio.py status | python3 -m json.tool | head -40`
 
 **Assistant (verbatim):**
 
@@ -63,21 +63,21 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "garment_subtype", "value": "crew neckline, drop-shoulder construction, hemmed cuffs, straight hem", "source": "default", "evide`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "garment_subtype", "value": "crew neckline, drop-shoulder construction, hemmed cuffs, straight hem", "source": "default", "evide`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "length", "value": "boxy hip-length body, full-length sleeves to wrist", "source": "default", "evidence": "standard for oversize`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "length", "value": "boxy hip-length body, full-length sleeves to wrist", "source": "default", "evidence": "standard for oversize`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "construction", "value": "side-seamed body, double-needle topstitched seams for utilitarian detailing, taped neck, no extra hard`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "construction", "value": "side-seamed body, double-needle topstitched seams for utilitarian detailing, taped neck, no extra hard`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "fiber_blend", "value": "heavyweight ring-spun cotton, garment-washed finish", "source": "default", "evidence": "balances user r`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "fiber_blend", "value": "heavyweight ring-spun cotton, garment-washed finish", "source": "default", "evidence": "balances user r`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "fabric_structure", "value": "heavyweight single jersey", "source": "default", "evidence": "heaviest single-layer knit option th`
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "fabric_structure", "value": "heavyweight single jersey", "source": "default", "evidence": "heaviest single-layer knit option th`
 
 **Assistant (verbatim):**
 
@@ -100,12 +100,12 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "gsm", "value": 260, "source": "user", "evidence": "user: Use your recommendation and continue. Recommendation given: option C, `
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "gsm", "value": 260, "source": "user", "evidence": "user: Use your recommendation and continue. Recommendation given: option C, `
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai"}' | python3 scripts/studio.py status 2>&1 | head -5`
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai"}' | python3 scripts/studio.py status 2>&1 | head -5`
 
 **Assistant (verbatim):**
 
@@ -121,42 +121,42 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "confirm_heat_weight_tradeoff", "value": "keep substantial weight (260 GSM heavyweight cotton) with garment-washed/enzyme finish`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "confirm_heat_weight_tradeoff", "value": "keep substantial weight (260 GSM heavyweight cotton) with garment-washed/enzyme finish`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "handfeel", "value": "soft, dry hand with a lived-in feel from garment washing", "source": "default", "evidence": "follows from `
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "handfeel", "value": "soft, dry hand with a lived-in feel from garment washing", "source": "default", "evidence": "follows from `
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "stretch", "value": "none", "source": "default", "evidence": "standard for heavyweight cotton streetwear long-sleeve, not perfor`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "stretch", "value": "none", "source": "default", "evidence": "standard for heavyweight cotton streetwear long-sleeve, not perfor`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "opacity", "value": "fully opaque", "source": "default", "evidence": "260 GSM heavyweight cotton is inherently opaque; monochrom`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "opacity", "value": "fully opaque", "source": "default", "evidence": "260 GSM heavyweight cotton is inherently opaque; monochrom`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "care", "value": "cold machine wash, tumble dry low or line dry, do not iron directly over printed areas", "source": "default", `
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio/references/visual-options.md`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "care", "value": "cold machine wash, tumble dry low or line dry, do not iron directly over printed areas", "source": "default", `
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio/references/visual-options.md`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "mode": "plan", "decision_id": "base_color", "axes": ["deep black solid", "charcoal grey heather", "bone off-white solid", "garment-dyed `
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio" && ls scripts/`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --help 2>&1 | head -60`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
-cat > /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-mt9s457v/81186113-a9ac-4315-8e14-277d82ceb96e/scratchpad/base_color_payload.json << 'EOF'
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "mode": "plan", "decision_id": "base_color", "axes": ["deep black solid", "charcoal grey heather", "bone off-white solid", "garment-dyed `
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio" && ls scripts/`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --help 2>&1 | head -60`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+cat > /private/tmp/clothing-shop-studio-eval-scratch/css-eval-mt9s457v/81186113-a9ac-4315-8e14-277d82ceb96e/scratchpad/base_color_payload.json << 'EOF'
 {
-  "output_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/proj`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-mt9s457v/81186113-a9ac-4315-8e14-277d82ceb96e/scratchpad/base_color_payload.json`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-mt9s457v/81186113-a9ac-4315-8e14-277d82ceb96e/scratchpad/base_color_payload.json`
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+  "output_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/proj`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-mt9s457v/81186113-a9ac-4315-8e14-277d82ceb96e/scratchpad/base_color_payload.json`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio" && python3 scripts/render-options.py --input /private/tmp/clothing-shop-studio-eval-scratch/css-eval-mt9s457v/81186113-a9ac-4315-8e14-277d82ceb96e/scratchpad/base_color_payload.json`
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "mode": "register", "decision_id": "base_color", "contact_sheet": "concepts/generated/base_color/r01/contact-sheet.svg", "results": [
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "mode": "register", "decision_id": "base_color", "contact_sheet": "concepts/generated/base_color/r01/contact-sheet.svg", "results": [
   {`
-- `Read: /private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai/concepts/generated/base_color/r01/contact-sheet.svg`
+- `Read: /private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai/concepts/generated/base_color/r01/contact-sheet.svg`
 - `Skill: artifact-design`
-- `Write: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-mt9s457v/81186113-a9ac-4315-8e14-277d82ceb96e/scratchpad/base_color_options.html`
-- `Artifact: /private/tmp/claude-501/-private-var-folders-l0-50szyhzx63s09gtkb8mx56mr0000gn-T-css-eval-mt9s457v/81186113-a9ac-4315-8e14-277d82ceb96e/scratchpad/base_color_options.html`
-- `Bash: echo "path check" && ls -la "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai/concepts/generated/base_color/r01/"`
+- `Write: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-mt9s457v/81186113-a9ac-4315-8e14-277d82ceb96e/scratchpad/base_color_options.html`
+- `Artifact: /private/tmp/clothing-shop-studio-eval-scratch/css-eval-mt9s457v/81186113-a9ac-4315-8e14-277d82ceb96e/scratchpad/base_color_options.html`
+- `Bash: echo "path check" && ls -la "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai/concepts/generated/base_color/r01/"`
 
 **Assistant (verbatim):**
 
@@ -179,9 +179,9 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "base_color", "value": "jet black", "source": "default", "evidence": "base_color-r01-A; recommended as the most versatile, class`
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "base_color", "value": "jet black", "source": "default", "evidence": "base_color-r01-A; recommended as the most versatile, class`
 
 **Assistant (verbatim):**
 
@@ -197,12 +197,12 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "size_range", "value": "S, M, L, XL, XXL", "source": "user", "evidence": "user: Use your recommendation and continue. Proposed: `
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "size_range", "value": "S, M, L, XL, XXL", "source": "user", "evidence": "user: Use your recommendation and continue. Proposed: `
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "grading_strategy", "value": "one artwork size across the full size range", "source": "default", "evidence": "oversized boxy sil`
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "grading_strategy", "value": "one artwork size across the full size range", "source": "default", "evidence": "oversized boxy sil`
 
 **Assistant (verbatim):**
 
@@ -216,9 +216,9 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "brand_assets", "value": null, "source": "user", "evidence": "user: Use your recommendation and continue (in reply to brand-asse`
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "brand_assets", "value": null, "source": "user", "evidence": "user: Use your recommendation and continue (in reply to brand-asse`
 
 **Assistant (verbatim):**
 
@@ -238,9 +238,9 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "artwork_content", "value": "Upper back: 百鬼夜行 (Hyakki Yagyo, \"Night Parade of One Hundred Demons\") + English \"NIGHT PARADE\",`
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "artwork_content", "value": "Upper back: 百鬼夜行 (Hyakki Yagyo, \"Night Parade of One Hundred Demons\") + English \"NIGHT PARADE\",`
 
 **Assistant (verbatim):**
 
@@ -262,9 +262,9 @@ echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/
 
 **Tool calls:**
 
-- `Bash: cd "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
+- `Bash: cd "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/.claude/skills/clothing-shop-studio"
 
-echo '{"project_dir": "/private/var/folders/l0/50szyhzx63s09gtkb8mx56mr0000gn/T/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "confirm_japanese_text_and_motif", "value": "Confirmed: characters 百鬼夜行, reading Hyakki Yagyo, meaning \"Night Parade of One Hun`
+echo '{"project_dir": "/private/tmp/clothing-shop-studio-eval/css-eval-mt9s457v/projects/kiki-kaka-oversized-longsleeve-yokai", "field": "confirm_japanese_text_and_motif", "value": "Confirmed: characters 百鬼夜行, reading Hyakki Yagyo, meaning \"Night Parade of One Hun`
 
 **Assistant (verbatim):**
 

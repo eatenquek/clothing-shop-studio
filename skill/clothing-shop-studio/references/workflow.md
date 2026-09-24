@@ -21,7 +21,7 @@ Both return `next_question`. For a new project it is always the optional referen
 
 ## 3. Reference intake
 
-Ask the reference question alone. If the user attaches an image, copy it into `references/user/` and run `register_file` with `origin: user_reference`, putting any text you read from it in `extracted_text`. Record the answer with `record_answer` (`field: reference_image`, value such as the registered id). If the user declines, send `"value": null`. Ask permission before sending their image to any external service.
+Ask the reference question alone. If the user attaches an image, copy it into `references/user/` and run `register_file` with `origin: user_reference`, putting any text you read from it in `extracted_text` and recording its rights status. Use `third-party-inspiration-only` for an existing product unless the user explicitly confirms ownership or a licence. Record the answer with `record_answer` (`field: reference_image`, value such as the registered id). If the user declines, send `"value": null`. Ask permission before sending their image to any external service.
 
 ## 4. Interview
 
@@ -33,7 +33,7 @@ When `next_question.visual` is true, or the user must judge a look, follow [visu
 
 ## 6. Approval
 
-Only the user can approve. Ask whether they approve, wait for the reply, and when they clearly approve a concept or a combination, run `approve_design` with `concept_ids` and their words as `statement`. A hand-off such as "continue" or "use your recommendation" is refused as a statement; ask again plainly. This creates an immutable `designs/approved/vNNN/`. A later change is a new version.
+Only the user can approve. Ask whether they approve, wait for the reply, and when they clearly approve a concept or a combination, run `approve_design` with `concept_ids` and their words as `statement`. A hand-off such as "continue" or "use your recommendation" is refused as a statement; ask again plainly. This creates an immutable `designs/approved/vNNN/`, freezes the selected concept plus its hashed review contact sheet, and snapshots the current interview answers. Any later answer change requires a new approval version before export.
 
 ## 7. Production masters
 
