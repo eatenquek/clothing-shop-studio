@@ -15,11 +15,6 @@ import re
 import sys
 from pathlib import Path
 
-REVIEW_DIR = Path(
-    "/Users/quekee/.codex/visualizations/2026/09/21/01a0c2de-4ae5-7490-90dc-d4f5a332f7ed/"
-    "clothing-shop-studio-reference-review"
-)
-DEFAULT_SOURCES = (REVIEW_DIR / "online-references.md", REVIEW_DIR / "online-references-21-70.md")
 FIRST_FILE_CATEGORY = "Core garments and techniques"
 RIGHTS = "third-party-inspiration-only"
 EXPECTED_IDS = [f"{number:02d}" for number in range(1, 71)]
@@ -103,7 +98,7 @@ def build(sources: list[Path]) -> list[dict]:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--sources", nargs="+", type=Path, default=list(DEFAULT_SOURCES))
+    parser.add_argument("--sources", nargs="+", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
         records = build(args.sources)

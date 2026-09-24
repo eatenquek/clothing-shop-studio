@@ -1,6 +1,6 @@
 # Installed-path smoke test (Codex)
 
-- Installed bundle: `/Users/quekee/.codex/skills/clothing-shop-studio` (44 files, byte-identical to the tracked bundle at `d8db0809bd04a49158ffa68c7e1e89f87e9217fb`)
+- Installed bundle: `~/.codex/skills/clothing-shop-studio` (44 files, byte-identical to the tracked bundle at `d8db0809bd04a49158ffa68c7e1e89f87e9217fb`)
 - Runtime: `codex exec` (codex-cli 0.154.0), fresh session, `workspace-write` sandbox, throwaway workspace; no `CLOTHING_SHOP_STUDIO_HOME` and no saved config.
 
 | Turn | User | Assistant (final message, verbatim) | Result |
