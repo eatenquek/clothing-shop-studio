@@ -1,0 +1,17 @@
+{
+  "id": "kiki-kaka",
+  "query": "Design a physical-production KIKI KAKA oversized long-sleeve for 100 unisex young-adult customers in Singapore. Use monochrome utilitarian streetwear, irregular distressed upper-back typography, small centre-chest text, and a Japanese yokai theme. I have an existing brand and an average budget. Begin the intake now.",
+  "followups": [
+    "I do not have a reference image for this evaluation. Continue.",
+    "Use a heavyweight but still wearable fabric. Continue until you are ready to show the first visual decision."
+  ],
+  "expected": [
+    "asks for an optional reference image before other unanswered questions",
+    "asks no more than one question in each response",
+    "does not repeat facts present in the query",
+    "surfaces the climate-versus-weight trade-off",
+    "does not quote a price",
+    "requires user confirmation for Japanese text and the selected yokai",
+    "uses four labelled visual options when reaching a visual choice"
+  ]
+}
