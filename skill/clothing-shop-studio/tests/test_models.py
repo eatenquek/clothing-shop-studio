@@ -115,5 +115,52 @@ class ModelTests(unittest.TestCase):
         result = install_defaults(self.project, bundle)
         self.assertEqual(sorted(result["installed"]), ["m-aria", "m-kai", "m-noor", "m-theo"])
 
+    def keep_round_one_candidate_a(self, project, seed):
+        plan = plan_models(project, {"range": {"gender_presentation": "feminine", "age_range": "20-30",
+                                                "build": "varied", "skin_tone": "varied", "hair": "varied"}})
+        results = []
+        for index, job in enumerate(plan["jobs"]):
+            target = project / job["destination"]
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(png(seed + index))
+            results.append({"label": job["label"], "path": job["destination"], "renderer": "host-image-tool",
+                            "prompt": job["prompt"]})
+        entries = register_models(project, {"kind": "candidates", "round": plan["round"], "results": results,
+                                            "identities": plan["identities"]}, FIXED_NOW)
+        candidate_a = next(entry for entry in entries if entry["identity"]["id"] == plan["identities"]["A"]["id"])
+        keep_models(project, {"ids": [candidate_a["id"]], "user_quote": "Keep A, yes"}, FIXED_NOW)
+        return plan, candidate_a
+
+    def test_custom_candidate_ids_are_project_scoped_in_the_shared_library(self):
+        root = Path(self.temp.name)
+        project_p = make_project(root, "Project P")
+        project_q = make_project(root, "Project Q")
+        self.assertEqual(project_p.parent, project_q.parent)
+        plan_p, kept_p = self.keep_round_one_candidate_a(project_p, 10)
+        plan_q, kept_q = self.keep_round_one_candidate_a(project_q, 60)
+        self.assertEqual((plan_p["round"], plan_q["round"]), (1, 1))
+        self.assertNotEqual(kept_p["id"], kept_q["id"])
+        for model_id in (kept_p["id"], kept_q["id"]):
+            self.assertRegex(model_id, r"^m-[0-9a-f]{8}-r01-a$")
+            self.assertNotIn(str(root), model_id)
+        library = library_models(project_p)
+        self.assertIn(kept_p["id"], library)
+        self.assertIn(kept_q["id"], library)
+        pinned = pin_model(project_p, kept_p["id"], FIXED_NOW)
+        self.assertEqual((project_p / pinned["path"]).read_bytes(), (project_p / kept_p["path"]).read_bytes())
+        self.assertNotEqual((project_p / pinned["path"]).read_bytes(), (project_q / kept_q["path"]).read_bytes())
+
+    def test_candidate_ids_are_deterministic_and_cannot_be_forged(self):
+        plan = plan_models(self.project, {"range": {"gender_presentation": "feminine", "age_range": "20-30",
+                                                     "build": "varied", "skin_tone": "varied", "hair": "varied"}})
+        again = plan_models(self.project, {"range": {"gender_presentation": "feminine", "age_range": "20-30",
+                                                      "build": "varied", "skin_tone": "varied", "hair": "varied"}})
+        self.assertEqual(plan["identities"]["A"]["id"], again["identities"]["A"]["id"])
+        results = [self.render(job, png(index)) for index, job in enumerate(plan["jobs"])]
+        forged = {**plan["identities"], "A": {**plan["identities"]["A"], "id": "m-00000000-r01-a"}}
+        with self.assertRaises(ValidationError):
+            register_models(self.project, {"kind": "candidates", "round": plan["round"], "results": results,
+                                           "identities": forged}, FIXED_NOW)
+
 if __name__ == "__main__":
     unittest.main()

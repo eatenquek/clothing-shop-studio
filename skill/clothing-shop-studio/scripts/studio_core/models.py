@@ -7,6 +7,7 @@ hash, so later library changes never alter an existing try-on.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import shutil
@@ -109,6 +110,17 @@ def _model_prompt(card: dict) -> str:
             "Front view, standing straight, arms relaxed at sides.")
 
 
+def _candidate_id(state: dict, round_number: int, label: str) -> str:
+    """Project-scoped candidate id, so kept candidates never collide in the shared library.
+
+    The namespace hashes the project's slug and creation time: stable for the project's
+    life, different across projects, and free of any filesystem path.
+    """
+    seed = f"{state['project_slug']}\n{state['created_at']}".encode("utf-8")
+    namespace = hashlib.sha256(seed).hexdigest()[:8]
+    return f"m-{namespace}-r{round_number:02d}-{label.lower()}"
+
+
 def plan_models(project: Path, payload: dict) -> dict:
     spec = payload.get("range")
     if not isinstance(spec, dict) or any(not isinstance(spec.get(key), str) or not spec[key].strip()
@@ -121,7 +133,7 @@ def plan_models(project: Path, payload: dict) -> dict:
     jobs, identities = [], {}
     for label in LABELS:
         identity = validate_identity({
-            "id": f"m-r{round_number:02d}-{label.lower()}", "display_name": f"Candidate {label}",
+            "id": _candidate_id(state, round_number, label), "display_name": f"Candidate {label}",
             "gender_presentation": spec["gender_presentation"], "age_range": spec["age_range"],
             "build": spec["build"], "height_impression": "average", "skin_tone": spec["skin_tone"],
             "hair": spec["hair"], "face_description": f"distinct face {label}, neutral expression",
@@ -163,6 +175,7 @@ def register_models(project: Path, payload: dict, now: str | None = None) -> lis
     if kind == "candidates":
         identities = payload.get("identities") or {}
         round_number = _round(payload.get("round"))
+        state = load_state(project)
         for result in results:
             label = result.get("label")
             expected = f"{FOLDER}candidates/r{round_number:02d}/model-{label}.png"
@@ -171,6 +184,10 @@ def register_models(project: Path, payload: dict, now: str | None = None) -> lis
                                       recovery=f"Save candidate {label} as {expected}.")
             absolute, relative = check_image(project, result["path"], FOLDER)
             identity = validate_identity(identities.get(label) or {})
+            if identity["id"] != _candidate_id(state, round_number, label):
+                raise ValidationError("Candidate identity does not match this project's planned id.",
+                                      field="identities",
+                                      recovery="Register the identities returned by this project's plan unchanged.")
             entries.append({"id": identity["id"], "origin": "synthetic_model", "path": relative,
                             "sha256": sha256(absolute), "parents": [], "registered_at": timestamp,
                             "production_eligible": False, "kind": "candidate", "round": round_number,
