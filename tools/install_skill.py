@@ -16,9 +16,11 @@ from pathlib import Path
 
 try:
     from tools import build_wrappers
+    from tools import install_transaction
     from tools.family_manifest import load_manifest, ordered_members
 except ModuleNotFoundError:  # Direct `python3 tools/install_skill.py` execution.
     import build_wrappers
+    import install_transaction
     from family_manifest import load_manifest, ordered_members
 
 IGNORED_NAMES = {"__pycache__", ".DS_Store", "INSTALLED_FROM.json"}
@@ -299,6 +301,41 @@ def verify_family_source(repo: Path, manifest: dict, validator: Path | str) -> s
     return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
 
 
+def install_family(repo: Path, skills_dir: Path, manifest: dict, validator: Path | str) -> dict:
+    """Recover, verify, stage, and commit the complete generated skill family."""
+    repo = Path(repo).resolve()
+    skills_dir = Path(skills_dir).expanduser().resolve(strict=False)
+    root = install_transaction.transaction_root(skills_dir)
+    root.mkdir(parents=True, exist_ok=True)
+    with install_transaction.install_lock(skills_dir):
+        install_transaction.recover_uncommitted(skills_dir)
+        commit = verify_family_source(repo, manifest, validator)
+        members = ordered_members(repo, manifest)
+        for member in members:
+            target = skills_dir / member["name"]
+            if not target.exists():
+                continue
+            marker = _read_marker(target)
+            if not (
+                (marker and marker.get("family") == manifest["family"])
+                or (marker and is_legacy_core_marker(member["name"], marker))
+            ):
+                raise RuntimeError(f"refusing unrelated existing skill: {member['name']}")
+        staged = install_transaction.stage_members(
+            members,
+            skills_dir,
+            lambda member, source_hash: member_marker(
+                member, source_hash, commit, manifest
+            ),
+        )
+        result = install_transaction.commit_staged(skills_dir, staged, [])
+        drift = family_drift(repo, skills_dir, manifest)
+        if drift:
+            raise RuntimeError("installed family verification failed: " + "; ".join(drift))
+        result.update({"skills_dir": str(skills_dir), "source_commit": commit})
+        return result
+
+
 def main(argv=None) -> int:
     repo = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
@@ -322,9 +359,12 @@ def main(argv=None) -> int:
             for item in drift:
                 print(f"DRIFT {item}")
             return 1 if drift else 0
-        target = args.target or (args.skills_dir / "clothing-shop-studio")
-        commit = verify_source(repo, args.source, args.validator)
-        print(json.dumps(install_verified(args.source, target, args.work_root, commit), sort_keys=True))
+        if args.target or args.core_only:
+            target = args.target or (args.skills_dir / "clothing-shop-studio")
+            commit = verify_source(repo, args.source, args.validator)
+            print(json.dumps(install_verified(args.source, target, args.work_root, commit), sort_keys=True))
+            return 0
+        print(json.dumps(install_family(repo, args.skills_dir, manifest, args.validator), sort_keys=True))
         return 0
     except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
         print(f"install failed: {exc}", file=sys.stderr)

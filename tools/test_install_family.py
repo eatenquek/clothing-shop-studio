@@ -129,6 +129,46 @@ class InstallFamilyTests(unittest.TestCase):
         self.assertEqual(run.call_count, 2)
         wrapper_check.assert_called_once_with(REPO.resolve(), check=True)
 
+    def test_default_install_recovers_before_preflight_then_stages_and_commits(self):
+        with tempfile.TemporaryDirectory() as folder:
+            skills = Path(folder) / "skills"
+            events = []
+
+            class Lock:
+                def __enter__(self):
+                    events.append("lock")
+
+                def __exit__(self, *_args):
+                    events.append("unlock")
+
+            staged = [{"name": "clothing-shop-studio"}]
+            with mock.patch(
+                "tools.install_skill.install_transaction.install_lock",
+                side_effect=lambda _path: Lock(),
+            ), mock.patch(
+                "tools.install_skill.install_transaction.recover_uncommitted",
+                side_effect=lambda _path: events.append("recover"),
+            ), mock.patch(
+                "tools.install_skill.verify_family_source",
+                side_effect=lambda *_args: events.append("preflight") or "abc123",
+            ), mock.patch(
+                "tools.install_skill.install_transaction.stage_members",
+                side_effect=lambda *_args: events.append("stage") or staged,
+            ), mock.patch(
+                "tools.install_skill.install_transaction.commit_staged",
+                side_effect=lambda *_args: events.append("commit") or {"committed": True, "members": []},
+            ), mock.patch(
+                "tools.install_skill.family_drift",
+                side_effect=lambda *_args: events.append("verify") or [],
+            ):
+                result = install_skill.install_family(REPO, skills, self.manifest, "fallback")
+
+            self.assertTrue(result["committed"])
+            self.assertEqual(
+                events,
+                ["lock", "recover", "preflight", "stage", "commit", "verify", "unlock"],
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
