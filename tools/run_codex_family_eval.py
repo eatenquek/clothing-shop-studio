@@ -108,8 +108,15 @@ def personal_smoke_environment(
     return env, codex_home, home / "Documents/Clothing-Shop-Studio"
 
 
-def redact(value: str, secrets: list[str] | tuple[str, ...] = ()) -> str:
+def redact(
+    value: str,
+    secrets: list[str] | tuple[str, ...] = (),
+    path_replacements: tuple[tuple[str, str], ...] = (),
+) -> str:
     result = str(value)
+    for path, label in sorted(path_replacements, key=lambda item: len(item[0]), reverse=True):
+        if path:
+            result = result.replace(path, label)
     for secret in secrets:
         if secret:
             result = result.replace(secret, "[REDACTED]")
@@ -327,6 +334,7 @@ def run_codex_turn(
     codex_bin: str,
     raw_path: Path,
     thread_id: str | None = None,
+    path_replacements: tuple[tuple[str, str], ...] = (),
 ) -> dict:
     command = _codex_turn_command(codex_bin, workspace, prompt, thread_id)
     completed = subprocess.run(
@@ -342,15 +350,20 @@ def run_codex_turn(
     secret = env.get("OPENAI_API_KEY", "")
     if completed.returncode:
         raise RuntimeError(
-            "Codex turn failed: " + redact((completed.stderr or completed.stdout)[-2000:], [secret])
+            "Codex turn failed: "
+            + redact(
+                (completed.stderr or completed.stdout)[-2000:],
+                [secret],
+                path_replacements,
+            )
         )
     new_thread, text, tools = _thread_and_turn(completed.stdout)
     if not text:
         raise RuntimeError("Codex turn completed without an assistant message")
     return {
         "thread_id": new_thread or thread_id,
-        "text": redact(text, [secret]),
-        "tools": [redact(tool, [secret]) for tool in tools],
+        "text": redact(text, [secret], path_replacements),
+        "tools": [redact(tool, [secret], path_replacements) for tool in tools],
     }
 
 
@@ -454,13 +467,19 @@ def evaluate_assertions(scenario: dict, turns: list[dict]) -> list[dict]:
 def _transcript(
     scenario: dict, mechanism: str, hashes: dict, turns: list[dict], results: list[dict]
 ) -> str:
+    isolation = (
+        "throwaway HOME and project-local skills; existing CODEX_HOME used only for "
+        "authentication; only this redacted transcript is durable."
+        if mechanism == "existing-chatgpt-login"
+        else "throwaway HOME and CODEX_HOME; only this redacted transcript is durable."
+    )
     lines = [
         f"# Codex family evaluation: {scenario['id']}",
         "",
         f"- Skill entry: `${scenario['skill']}`",
         f"- Authentication: `{mechanism}`",
         f"- Installed tree hashes: `{json.dumps(hashes, sort_keys=True)}`",
-        "- Isolation: throwaway HOME and CODEX_HOME; only this redacted transcript is durable.",
+        f"- Isolation: {isolation}",
         "",
     ]
     prompts = [scenario["query"], *scenario.get("followups", [])]
@@ -541,10 +560,20 @@ def run_isolated(
         seed_fixture(scenario, env, skills_dir / "clothing-shop-studio")
         turns = []
         thread_id = None
+        path_replacements = (
+            (str(workspace.resolve()), "[EVAL_WORKSPACE]"),
+            (str(Path(real_home).resolve()), "[REAL_HOME]"),
+        )
         prompts = [scenario["query"], *scenario.get("followups", [])]
         for index, prompt in enumerate(prompts, start=1):
             turn = run_codex_turn(
-                prompt, workspace, env, codex_bin, workspace / f"turn-{index}.jsonl", thread_id
+                prompt,
+                workspace,
+                env,
+                codex_bin,
+                workspace / f"turn-{index}.jsonl",
+                thread_id,
+                path_replacements,
             )
             thread_id = turn["thread_id"]
             turns.append(turn)

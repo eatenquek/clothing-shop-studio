@@ -163,6 +163,19 @@ class CodexFamilyEvalIsolationTests(unittest.TestCase):
         self.assertNotIn("sk-example", redacted)
         self.assertIn("[REDACTED]", redacted)
 
+    def test_redaction_replaces_known_paths_with_public_labels(self):
+        redacted = run_codex_family_eval.redact(
+            "project=/private/eval/home/project real=/private/real/Documents",
+            path_replacements=(
+                ("/private/eval", "[EVAL_WORKSPACE]"),
+                ("/private/real", "[REAL_HOME]"),
+            ),
+        )
+        self.assertEqual(
+            redacted,
+            "project=[EVAL_WORKSPACE]/home/project real=[REAL_HOME]/Documents",
+        )
+
     def test_seed_fixture_uses_studio_commands_in_throwaway_home(self):
         with tempfile.TemporaryDirectory() as folder:
             workspace = Path(folder) / "workspace"
@@ -464,6 +477,21 @@ class CodexFamilyScenarioTests(unittest.TestCase):
         )
         self.assertIn("## Assertions", text)
         self.assertIn("PASS `contains`", text)
+
+    def test_current_login_transcript_describes_mixed_isolation_accurately(self):
+        text = run_codex_family_eval._transcript(
+            {
+                "id": "personal-smoke", "skill": "clothing-new",
+                "query": "Use $clothing-new", "followups": []
+            },
+            "existing-chatgpt-login",
+            {"clothing-new": "hash"},
+            [{"text": "Next question?", "tools": []}],
+            [],
+        )
+        self.assertIn("throwaway HOME and project-local skills", text)
+        self.assertIn("existing CODEX_HOME used only for authentication", text)
+        self.assertNotIn("throwaway HOME and CODEX_HOME", text)
 
     def test_failed_assertion_raises_with_type_and_value(self):
         scenario = {"assertions": [{"type": "contains", "value": "approval required"}]}
