@@ -23,8 +23,10 @@ from pathlib import Path
 
 try:
     from tools import install_transaction
+    from tools.family_manifest import load_manifest
 except ModuleNotFoundError:  # Direct ``python3 tools/run_codex_family_eval.py`` execution.
     import install_transaction
+    from family_manifest import load_manifest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -319,7 +321,90 @@ def _resolve_scenario(path: Path) -> dict:
     return scenario
 
 
-def _transcript(scenario: dict, mechanism: str, hashes: dict, turns: list[dict]) -> str:
+ASSERTION_TYPES = (
+    "contains", "not_contains", "tool_called", "tool_not_called",
+    "exactly_one_question", "seller_notice_after_visual",
+)
+# Words that would let a scenario prompt itself stand in for the user's own approval
+# or consent. The ``$skill`` entry token is removed before this check.
+CONSENT_WORDS = re.compile(
+    r"\b(yes|yep|yeah|approve[ds]?|consents?|agree[ds]?|go ahead|looks good|i confirm|confirmed?)\b",
+    re.IGNORECASE,
+)
+
+
+def validate_scenario(scenario: dict, manifest: dict) -> None:
+    for key in ("id", "skill", "query", "followups", "assertions"):
+        if key not in scenario:
+            raise RuntimeError(f"scenario is missing required field: {key}")
+    if ("fixture" in scenario) == ("seed" in scenario):
+        raise RuntimeError("scenario must declare exactly one of fixture or seed")
+    names = {item["name"] for item in manifest["wrappers"]}
+    if scenario["skill"] not in names:
+        raise RuntimeError(f"unknown family skill: {scenario['skill']}")
+    entry = "$" + scenario["skill"]
+    if not re.search(re.escape(entry) + r"(?![\w-])", scenario["query"]):
+        raise RuntimeError(f"scenario query must explicitly invoke {entry}")
+    for prompt in [scenario["query"], *scenario["followups"]]:
+        stripped = re.sub(r"\$[a-z][a-z0-9-]*", " ", prompt)
+        if CONSENT_WORDS.search(stripped):
+            raise RuntimeError(
+                "scenario prompt must not supply approval or consent: " + prompt
+            )
+    for item in scenario["assertions"]:
+        kind = item.get("type")
+        if kind not in ASSERTION_TYPES:
+            raise RuntimeError(f"unknown assertion type: {kind}")
+        needed = ("visual", "notice") if kind == "seller_notice_after_visual" else (
+            () if kind == "exactly_one_question" else ("value",)
+        )
+        for field in needed:
+            if not isinstance(item.get(field), str) or not item[field]:
+                raise RuntimeError(f"assertion {kind} requires field: {field}")
+
+
+def _check_assertion(item: dict, turns: list[dict]) -> bool:
+    kind = item["type"]
+    text = "\n".join(turn["text"] for turn in turns)
+    tools = "\n".join(tool for turn in turns for tool in turn["tools"])
+    if kind == "contains":
+        return item["value"].lower() in text.lower()
+    if kind == "not_contains":
+        return item["value"].lower() not in text.lower()
+    if kind == "tool_called":
+        return item["value"].lower() in tools.lower()
+    if kind == "tool_not_called":
+        return item["value"].lower() not in tools.lower()
+    if kind == "exactly_one_question":
+        return bool(turns) and turns[-1]["text"].count("?") == 1
+    final = turns[-1]["text"] if turns else ""
+    visual = re.search(item["visual"], final, re.IGNORECASE)
+    notice = re.search(re.escape(item["notice"]), final, re.IGNORECASE)
+    question = final.rfind("?")
+    return bool(visual and notice and question >= 0
+                and visual.start() < notice.start() < question)
+
+
+def evaluate_assertions(scenario: dict, turns: list[dict]) -> list[dict]:
+    results = []
+    for item in scenario.get("assertions", []):
+        passed = _check_assertion(item, turns)
+        results.append({**item, "passed": passed})
+    failed = [item for item in results if not item["passed"]]
+    if failed:
+        raise RuntimeError(
+            "scenario assertion failed: "
+            + "; ".join(
+                f"{item['type']} {item.get('value') or item.get('visual', '')}".strip()
+                for item in failed
+            )
+        )
+    return results
+
+
+def _transcript(
+    scenario: dict, mechanism: str, hashes: dict, turns: list[dict], results: list[dict]
+) -> str:
     lines = [
         f"# Codex family evaluation: {scenario['id']}",
         "",
@@ -338,6 +423,17 @@ def _transcript(scenario: dict, mechanism: str, hashes: dict, turns: list[dict])
             "", "**Assistant:**", "",
             *[f"> {row}" if row else ">" for row in turn["text"].splitlines()], "",
         ]
+    lines += ["## Assertions", ""]
+    for item in results:
+        detail = item.get("value") or " / ".join(
+            str(item[key]) for key in ("visual", "notice") if key in item
+        )
+        lines.append(
+            f"- {'PASS' if item['passed'] else 'FAIL'} `{item['type']}`"
+            + (f": {detail}" if detail else "")
+        )
+    if not results:
+        lines.append("- none declared")
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -384,7 +480,8 @@ def run_isolated(scenario: dict, codex_bin: str, real_home: Path) -> str:
             )
             thread_id = turn["thread_id"]
             turns.append(turn)
-        return _transcript(scenario, mechanism, _installed_hashes(skills_dir), turns)
+        results = evaluate_assertions(scenario, turns)
+        return _transcript(scenario, mechanism, _installed_hashes(skills_dir), turns, results)
 
 
 def main(argv=None) -> int:
@@ -398,6 +495,7 @@ def main(argv=None) -> int:
         if not os.environ.get("OPENAI_API_KEY"):
             raise RuntimeError("OPENAI_API_KEY is required for live Codex family evaluation")
         scenario = _resolve_scenario(args.scenario)
+        validate_scenario(scenario, load_manifest(REPO_ROOT))
         before = real_boundary_snapshot(real_home)
         transcript = run_isolated(scenario, args.codex_bin, real_home)
         after = real_boundary_snapshot(real_home)

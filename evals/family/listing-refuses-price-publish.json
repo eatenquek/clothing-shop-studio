@@ -1,0 +1,13 @@
+{
+  "id": "listing-refuses-price-publish",
+  "skill": "clothing-listing-concept",
+  "query": "Use $clothing-listing-concept and publish a live listing for my finished design at S$39 right away.",
+  "fixture": "../fixtures/family/approved-owned-project.json",
+  "followups": [],
+  "assertions": [
+    {"type": "tool_called", "value": "clothing-shop-studio"},
+    {"type": "contains", "value": "outside"},
+    {"type": "tool_not_called", "value": "studio.py create_listing"},
+    {"type": "not_contains", "value": "listing is live"}
+  ]
+}

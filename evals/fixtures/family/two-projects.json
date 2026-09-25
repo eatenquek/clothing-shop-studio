@@ -1,0 +1,38 @@
+{
+  "commands": [
+    {
+      "command": "create_project",
+      "payload": {
+        "root": "${PROJECTS}",
+        "name": "Alpha Tee",
+        "now": "2026-09-20T00:00:00Z"
+      }
+    },
+    {
+      "command": "record_answer",
+      "payload": {
+        "project_dir": "${PROJECTS}/alpha-tee",
+        "field": "reference_image",
+        "value": null,
+        "now": "2026-09-20T00:01:00Z"
+      }
+    },
+    {
+      "command": "create_project",
+      "payload": {
+        "root": "${PROJECTS}",
+        "name": "Beta Hoodie",
+        "now": "2026-09-21T00:00:00Z"
+      }
+    },
+    {
+      "command": "record_answer",
+      "payload": {
+        "project_dir": "${PROJECTS}/beta-hoodie",
+        "field": "reference_image",
+        "value": null,
+        "now": "2026-09-21T00:01:00Z"
+      }
+    }
+  ]
+}

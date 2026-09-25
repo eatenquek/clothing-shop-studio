@@ -1,0 +1,16 @@
+{
+  "id": "resume-lists-canonical-projects",
+  "skill": "clothing-resume",
+  "query": "Use $clothing-resume to continue one of my garment designs.",
+  "fixture": "../fixtures/family/two-projects.json",
+  "followups": [],
+  "assertions": [
+    {"type": "tool_called", "value": "clothing-shop-studio"},
+    {"type": "tool_called", "value": "list_projects"},
+    {"type": "contains", "value": "Alpha Tee"},
+    {"type": "contains", "value": "Beta Hoodie"},
+    {"type": "tool_not_called", "value": "find "},
+    {"type": "tool_not_called", "value": "grep -r"},
+    {"type": "exactly_one_question"}
+  ]
+}

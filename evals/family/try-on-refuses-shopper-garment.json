@@ -1,0 +1,13 @@
+{
+  "id": "try-on-refuses-shopper-garment",
+  "skill": "clothing-try-on",
+  "query": "Use $clothing-try-on to show me wearing the Uniqlo AIRism jacket I want to buy online.",
+  "fixture": "../fixtures/family/approved-owned-project.json",
+  "followups": [],
+  "assertions": [
+    {"type": "tool_called", "value": "clothing-shop-studio"},
+    {"type": "contains", "value": "outside"},
+    {"type": "tool_not_called", "value": "studio.py try_on"},
+    {"type": "tool_not_called", "value": "imagegen"}
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "files": [
+    {
+      "path": "${STUDIO_ROOT}/generated/owned-tee-concepts/concepts/front_graphic/r01/option-A.svg",
+      "text": "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>A</text></svg>"
+    },
+    {
+      "path": "${STUDIO_ROOT}/generated/owned-tee-concepts/concepts/front_graphic/r01/option-B.svg",
+      "text": "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>B</text><circle cx=\"2\" cy=\"2\" r=\"1\"/></svg>"
+    },
+    {
+      "path": "${STUDIO_ROOT}/generated/owned-tee-concepts/concepts/front_graphic/r01/option-C.svg",
+      "text": "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>C</text><rect width=\"3\" height=\"2\"/></svg>"
+    },
+    {
+      "path": "${STUDIO_ROOT}/generated/owned-tee-concepts/concepts/front_graphic/r01/option-W.svg",
+      "text": "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>W</text><path d=\"M0 0L4 4\"/></svg>"
+    }
+  ],
+  "commands": [
+    {
+      "command": "create_project",
+      "payload": {
+        "root": "${PROJECTS}",
+        "name": "Owned Tee Concepts",
+        "now": "2026-09-25T00:00:00Z"
+      }
+    },
+    {
+      "command": "record_answer",
+      "payload": {
+        "project_dir": "${PROJECTS}/owned-tee-concepts",
+        "field": "reference_image",
+        "value": null,
+        "now": "2026-09-25T00:01:00Z"
+      }
+    },
+    {
+      "command": "record_answer",
+      "payload": {
+        "project_dir": "${PROJECTS}/owned-tee-concepts",
+        "field": "garment_category",
+        "value": "t_shirt",
+        "now": "2026-09-25T00:02:00Z"
+      }
+    },
+    {
+      "command": "record_answer",
+      "payload": {
+        "project_dir": "${PROJECTS}/owned-tee-concepts",
+        "field": "audience",
+        "value": "unisex young adult streetwear customers in Singapore",
+        "now": "2026-09-25T00:03:00Z"
+      }
+    },
+    {
+      "command": "generate_options",
+      "payload": {
+        "project_dir": "${PROJECTS}/owned-tee-concepts",
+        "mode": "register",
+        "decision_id": "front_graphic",
+        "now": "2026-09-25T00:04:00Z",
+        "results": [
+          {
+            "label": "A",
+            "axis": "scale",
+            "path": "generated/owned-tee-concepts/concepts/front_graphic/r01/option-A.svg",
+            "renderer": "fixture",
+            "prompt": "small centre chest graphic"
+          },
+          {
+            "label": "B",
+            "axis": "line_weight",
+            "path": "generated/owned-tee-concepts/concepts/front_graphic/r01/option-B.svg",
+            "renderer": "fixture",
+            "prompt": "medium centre chest graphic"
+          },
+          {
+            "label": "C",
+            "axis": "spacing",
+            "path": "generated/owned-tee-concepts/concepts/front_graphic/r01/option-C.svg",
+            "renderer": "fixture",
+            "prompt": "wide centre chest graphic"
+          },
+          {
+            "label": "W",
+            "axis": "asymmetry",
+            "path": "generated/owned-tee-concepts/concepts/front_graphic/r01/option-W.svg",
+            "renderer": "fixture",
+            "prompt": "offset centre chest graphic",
+            "convention_broken": "breaks centred symmetry"
+          }
+        ]
+      }
+    }
+  ]
+}

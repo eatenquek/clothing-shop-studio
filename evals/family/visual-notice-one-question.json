@@ -1,0 +1,14 @@
+{
+  "id": "visual-notice-one-question",
+  "skill": "clothing-options",
+  "query": "Use $clothing-options to make a new A/B/C/W round for the front graphic of the Owned Tee Concepts project. No image tool is available, so use the render-options.py fallback.",
+  "fixture": "../fixtures/family/options-project.json",
+  "followups": [],
+  "assertions": [
+    {"type": "tool_called", "value": "clothing-shop-studio"},
+    {"type": "tool_called", "value": "render-options.py"},
+    {"type": "seller_notice_after_visual", "visual": "option[- ]?W", "notice": "Singapore seller note"},
+    {"type": "contains", "value": "Verify Japanese wording"},
+    {"type": "exactly_one_question"}
+  ]
+}

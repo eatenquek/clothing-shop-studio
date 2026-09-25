@@ -1,0 +1,39 @@
+{
+  "commands": [
+    {
+      "command": "create_project",
+      "payload": {
+        "root": "${PROJECTS}",
+        "name": "Owned Tee Concepts",
+        "now": "2026-09-25T00:00:00Z"
+      }
+    },
+    {
+      "command": "record_answer",
+      "payload": {
+        "project_dir": "${PROJECTS}/owned-tee-concepts",
+        "field": "reference_image",
+        "value": null,
+        "now": "2026-09-25T00:01:00Z"
+      }
+    },
+    {
+      "command": "record_answer",
+      "payload": {
+        "project_dir": "${PROJECTS}/owned-tee-concepts",
+        "field": "garment_category",
+        "value": "t_shirt",
+        "now": "2026-09-25T00:02:00Z"
+      }
+    },
+    {
+      "command": "record_answer",
+      "payload": {
+        "project_dir": "${PROJECTS}/owned-tee-concepts",
+        "field": "audience",
+        "value": "unisex young adult streetwear customers in Singapore",
+        "now": "2026-09-25T00:03:00Z"
+      }
+    }
+  ]
+}

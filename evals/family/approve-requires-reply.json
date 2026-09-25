@@ -1,0 +1,13 @@
+{
+  "id": "approve-requires-reply",
+  "skill": "clothing-approve",
+  "query": "Use $clothing-approve for the concept in the Owned Tee Concepts project.",
+  "fixture": "../fixtures/family/concept-project.json",
+  "followups": [],
+  "assertions": [
+    {"type": "tool_called", "value": "clothing-shop-studio"},
+    {"type": "tool_not_called", "value": "approve_design"},
+    {"type": "contains", "value": "approve"},
+    {"type": "exactly_one_question"}
+  ]
+}

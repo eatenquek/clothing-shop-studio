@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest import mock
 
 from tools import run_codex_family_eval
+from tools.family_manifest import load_manifest
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -200,7 +201,7 @@ class CodexFamilyEvalIsolationTests(unittest.TestCase):
             scenario = root / "scenario.json"
             out = root / "evidence/result.md"
             scenario.write_text(json.dumps({
-                "id": "success", "skill": "clothing-resume", "query": "test",
+                "id": "success", "skill": "clothing-resume", "query": "Use $clothing-resume",
                 "seed": [], "followups": [], "assertions": []
             }), encoding="utf-8")
             with mock.patch.dict(
@@ -219,6 +220,149 @@ class CodexFamilyEvalIsolationTests(unittest.TestCase):
             self.assertEqual(
                 sorted(path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file()),
                 ["evidence/result.md", "scenario.json"],
+            )
+
+
+class CodexFamilyScenarioTests(unittest.TestCase):
+    def test_all_six_scenarios_validate_against_the_family_manifest(self):
+        manifest = load_manifest(REPO)
+        scenario_dir = REPO / "evals/family"
+        expected = {
+            "approve-requires-reply.json",
+            "extract-requires-consent.json",
+            "resume-lists-canonical-projects.json",
+            "try-on-refuses-shopper-garment.json",
+            "listing-refuses-price-publish.json",
+            "visual-notice-one-question.json",
+        }
+        self.assertEqual({path.name for path in scenario_dir.glob("*.json")}, expected)
+        for path in sorted(scenario_dir.glob("*.json")):
+            scenario = run_codex_family_eval._resolve_scenario(path)
+            run_codex_family_eval.validate_scenario(scenario, manifest)
+
+    def test_scenario_validation_rejects_unknown_skill_and_assertion(self):
+        manifest = load_manifest(REPO)
+        base = {
+            "id": "bad", "skill": "clothing-unknown", "query": "Use $clothing-unknown",
+            "seed": [], "followups": [], "assertions": [],
+        }
+        with self.assertRaisesRegex(RuntimeError, "unknown family skill"):
+            run_codex_family_eval.validate_scenario(base, manifest)
+        base["skill"] = "clothing-resume"
+        base["query"] = "Use $clothing-resume"
+        base["assertions"] = [{"type": "invented", "value": "x"}]
+        with self.assertRaisesRegex(RuntimeError, "unknown assertion"):
+            run_codex_family_eval.validate_scenario(base, manifest)
+
+    def test_all_assertion_types_are_evaluated(self):
+        scenario = {
+            "assertions": [
+                {"type": "contains", "value": "consent"},
+                {"type": "not_contains", "value": "forbidden"},
+                {"type": "tool_called", "value": "studio.py extract"},
+                {"type": "tool_not_called", "value": "imagegen"},
+                {"type": "exactly_one_question"},
+                {
+                    "type": "seller_notice_after_visual",
+                    "visual": "Option W",
+                    "notice": "Singapore seller note",
+                },
+            ]
+        }
+        turns = [{
+            "text": "Option W\nSingapore seller note\nDo you consent?",
+            "tools": ["python studio.py extract"],
+        }]
+        results = run_codex_family_eval.evaluate_assertions(scenario, turns)
+        self.assertTrue(all(item["passed"] for item in results), results)
+
+    def test_scenario_prompts_cannot_supply_approval_or_consent(self):
+        manifest = load_manifest(REPO)
+        for prompt in (
+            "Use $clothing-approve. Yes, approved.",
+            "Use $clothing-extract and I consent to sending it.",
+            "Use $clothing-approve, go ahead.",
+        ):
+            scenario = {
+                "id": "bad", "skill": prompt.split("$")[1].split()[0].rstrip(",."),
+                "query": prompt, "seed": [], "followups": [], "assertions": [],
+            }
+            with self.subTest(prompt=prompt):
+                with self.assertRaisesRegex(RuntimeError, "approval or consent"):
+                    run_codex_family_eval.validate_scenario(scenario, manifest)
+        followup = {
+            "id": "bad", "skill": "clothing-resume", "query": "Use $clothing-resume",
+            "seed": [], "followups": ["yes"], "assertions": [],
+        }
+        with self.assertRaisesRegex(RuntimeError, "approval or consent"):
+            run_codex_family_eval.validate_scenario(followup, manifest)
+
+    def test_scenario_must_name_its_own_skill_entry(self):
+        manifest = load_manifest(REPO)
+        scenario = {
+            "id": "bad", "skill": "clothing-resume", "query": "continue my design",
+            "seed": [], "followups": [], "assertions": [],
+        }
+        with self.assertRaisesRegex(RuntimeError, r"\$clothing-resume"):
+            run_codex_family_eval.validate_scenario(scenario, manifest)
+
+    def test_every_scenario_seeds_deterministically_in_throwaway_home(self):
+        for path in sorted((REPO / "evals/family").glob("*.json")):
+            with self.subTest(scenario=path.name), tempfile.TemporaryDirectory() as folder:
+                env, _codex_home, studio = run_codex_family_eval.evaluation_environment(
+                    Path(folder) / "workspace", dict(os.environ)
+                )
+                scenario = run_codex_family_eval._resolve_scenario(path)
+                run_codex_family_eval.seed_fixture(
+                    scenario, env, REPO / "skill/clothing-shop-studio"
+                )
+                self.assertTrue(any((studio / "projects").iterdir()))
+
+    def test_resume_fixture_has_two_projects_and_approve_fixture_is_unapproved(self):
+        with tempfile.TemporaryDirectory() as folder:
+            env, _codex_home, studio = run_codex_family_eval.evaluation_environment(
+                Path(folder) / "workspace", dict(os.environ)
+            )
+            run_codex_family_eval.seed_fixture(
+                run_codex_family_eval._resolve_scenario(
+                    REPO / "evals/family/resume-lists-canonical-projects.json"
+                ),
+                env, REPO / "skill/clothing-shop-studio",
+            )
+            self.assertEqual(
+                sorted(p.name for p in (studio / "projects").iterdir()),
+                ["alpha-tee", "beta-hoodie"],
+            )
+        with tempfile.TemporaryDirectory() as folder:
+            env, _codex_home, studio = run_codex_family_eval.evaluation_environment(
+                Path(folder) / "workspace", dict(os.environ)
+            )
+            project = run_codex_family_eval.seed_fixture(
+                run_codex_family_eval._resolve_scenario(
+                    REPO / "evals/family/approve-requires-reply.json"
+                ),
+                env, REPO / "skill/clothing-shop-studio",
+            )
+            state = json.loads((project / "metadata/state.json").read_text("utf-8"))
+            self.assertFalse(state["approvals"])
+            self.assertTrue(state["concepts"] if "concepts" in state else state["files"])
+
+    def test_transcript_records_assertion_results(self):
+        scenario = {"id": "x", "skill": "clothing-resume", "query": "Use $clothing-resume",
+                    "followups": []}
+        results = [{"type": "contains", "value": "a", "passed": True}]
+        text = run_codex_family_eval._transcript(
+            scenario, "environment", {"clothing-shop-studio": "h"},
+            [{"text": "a", "tools": []}], results,
+        )
+        self.assertIn("## Assertions", text)
+        self.assertIn("PASS `contains`", text)
+
+    def test_failed_assertion_raises_with_type_and_value(self):
+        scenario = {"assertions": [{"type": "contains", "value": "approval required"}]}
+        with self.assertRaisesRegex(RuntimeError, "contains.*approval required"):
+            run_codex_family_eval.evaluate_assertions(
+                scenario, [{"text": "No match", "tools": []}]
             )
 
 
