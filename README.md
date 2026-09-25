@@ -17,16 +17,20 @@ Pricing, inventory, orders, and storefront operations are out of scope; listing 
 
 ## Install
 
-Install with the installer, not by copying files. Commit the skill bundle first: it refuses uncommitted or untracked files under `skill/clothing-shop-studio/`. From the repository root:
+Install with the installer, not by copying files. Commit the skill family first: the installer refuses uncommitted or untracked source and generated-wrapper drift. From the repository root:
 
 ```bash
-# Codex (default target: ~/.codex/skills/clothing-shop-studio)
+# Codex: install the core plus all explicit `$clothing-*` workflow skills
 python3 tools/install_skill.py
-# Claude Code
+# Codex troubleshooting: install only the core
+python3 tools/install_skill.py --core-only
+# Claude Code: deprecated exact-target core-only form
 python3 tools/install_skill.py --target ~/.claude/skills/clothing-shop-studio
+# Read-only comparison; exits 0 only when the whole installed family agrees
+python3 tools/install_skill.py --check
 ```
 
-`tools/install_skill.py` runs the test suites and the skill validator, stages a copy without Python caches, compares tree hashes of the source, the stage, and the target, keeps a backup with rollback, and writes `INSTALLED_FROM.json` recording the commit it installed. Start a new agent session afterwards so the updated skill loads.
+`tools/install_skill.py` runs the test suites and skill validator, then installs from committed source through a same-filesystem, locked, journaled transaction. It swaps the core first, verifies the complete family before commit, rolls the entire family back after interruption or failure, and records provenance in each `INSTALLED_FROM.json`. Existing directories are accepted only when their marker identifies this family (plus the exact legacy two-key core marker); use `--adopt-unmarked` only when you intentionally want to replace an otherwise unrelated collision. Core-only modes refuse to run while family wrapper markers exist. Start a new agent session afterwards so the updated skills load.
 
 Requires Python 3.9+. No third-party packages at run time.
 

@@ -135,14 +135,17 @@ def _cleanup_journal(path: Path, journal: dict) -> None:
                     pass
     try:
         path.unlink()
-    except FileNotFoundError:
+    except OSError:
         pass
     for name in ("staging", "backups"):
         parent = path.parent / name
         if parent.is_dir():
             for child in list(parent.iterdir()):
                 if child.is_dir() and not any(child.iterdir()):
-                    child.rmdir()
+                    try:
+                        child.rmdir()
+                    except OSError:
+                        pass
 
 
 def recover_uncommitted(skills_dir: Path) -> None:
@@ -171,6 +174,10 @@ def recover_uncommitted(skills_dir: Path) -> None:
                     os.replace(backup, target)
                 elif not target.exists():
                     raise RuntimeError("target and backup are both missing")
+                elif raw.get("state") in {"pending", "backup_intent"}:
+                    # No backup exists, so the target move did not happen. Content may
+                    # legitimately equal the staged tree during an idempotent upgrade.
+                    continue
                 elif tree_hash(target) == raw.get("staged_hash"):
                     raise RuntimeError("new target exists but prior backup is missing")
             elif target.exists() or target.is_symlink():
@@ -193,6 +200,7 @@ def commit_staged(
     obsolete: list[dict],
     *,
     hook=None,
+    verify=None,
 ) -> dict:
     skills_dir = Path(skills_dir).expanduser().resolve(strict=False)
     skills_dir.mkdir(parents=True, exist_ok=True)
@@ -248,6 +256,8 @@ def commit_staged(
             record["state"] = "verified"
             write_journal(path, journal)
             _call(hook, "after_verified", entry)
+        if verify is not None:
+            verify()
         journal["committed"] = True
         write_journal(path, journal)
     except BaseException:

@@ -93,6 +93,41 @@ class InstallTransactionTests(unittest.TestCase):
                 install_transaction.commit_staged(skills, staged, [], hook=fail)
             self.assertFalse((skills / "clothing-shop-studio").exists())
 
+    def test_family_verifier_runs_before_commit_and_failure_rolls_back(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            skills = root / "home/.codex/skills"
+            target = self.old_target(skills)
+            staged = install_transaction.stage_members([self.source_member(root)], skills, marker)
+
+            def reject_family():
+                raise RuntimeError("family does not agree")
+
+            with self.assertRaisesRegex(RuntimeError, "family does not agree"):
+                install_transaction.commit_staged(skills, staged, [], verify=reject_family)
+            self.assertEqual((target / "SKILL.md").read_text("utf-8"), "old\n")
+
+    def test_cleanup_failure_after_commit_keeps_verified_new_target(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            skills = root / "home/.codex/skills"
+            target = self.old_target(skills)
+            staged = install_transaction.stage_members([self.source_member(root)], skills, marker)
+            backup = staged[0]["backup"]
+            real_remove = install_transaction._remove_path
+
+            def fail_backup_cleanup(path: Path) -> None:
+                if Path(path) == backup:
+                    raise OSError("cleanup failed")
+                real_remove(path)
+
+            with mock.patch(
+                "tools.install_transaction._remove_path", side_effect=fail_backup_cleanup
+            ):
+                result = install_transaction.commit_staged(skills, staged, [])
+            self.assertTrue(result["committed"])
+            self.assertEqual((target / "SKILL.md").read_text("utf-8"), "new\n")
+
     def test_recovery_failure_retains_actionable_journal(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

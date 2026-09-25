@@ -74,13 +74,19 @@ def _read_marker(path: Path) -> dict | None:
     return value if isinstance(value, dict) else None
 
 
-def family_drift(repo: Path, skills_dir: Path, manifest: dict) -> list[str]:
+def family_drift(
+    repo: Path,
+    skills_dir: Path,
+    manifest: dict,
+    *,
+    include_journal: bool = True,
+) -> list[str]:
     """Return deterministic family drift descriptions without changing the filesystem."""
     repo, skills_dir = Path(repo).resolve(), Path(skills_dir).expanduser().resolve(strict=False)
     drift = []
     expected_names = {member["name"] for member in ordered_members(repo, manifest)}
     journal = skills_dir.parent / ".clothing-shop-studio-install/journal.json"
-    if journal.is_file():
+    if include_journal and journal.is_file():
         try:
             content = json.loads(journal.read_text("utf-8"))
             if not content.get("committed"):
@@ -301,7 +307,58 @@ def verify_family_source(repo: Path, manifest: dict, validator: Path | str) -> s
     return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
 
 
-def install_family(repo: Path, skills_dir: Path, manifest: dict, validator: Path | str) -> dict:
+def classify_target(name: str, target: Path, manifest: dict) -> str:
+    target = Path(target)
+    if not target.exists() and not target.is_symlink():
+        return "absent"
+    marker = _read_marker(target)
+    if marker and marker.get("family") == manifest["family"]:
+        return "family"
+    if marker and is_legacy_core_marker(name, marker):
+        return "legacy_core"
+    return "unmarked"
+
+
+def obsolete_family_members(skills_dir: Path, manifest: dict) -> list[Path]:
+    skills_dir = Path(skills_dir)
+    if not skills_dir.is_dir():
+        return []
+    expected = {manifest["core"], *(wrapper["name"] for wrapper in manifest["wrappers"])}
+    obsolete = []
+    for target in sorted(skills_dir.iterdir(), key=lambda item: item.name):
+        if target.name in expected or not target.is_dir():
+            continue
+        marker = _read_marker(target)
+        if marker and marker.get("family") == manifest["family"]:
+            obsolete.append(target)
+    return obsolete
+
+
+def _require_owned_or_adopted(
+    members: list[dict], skills_dir: Path, manifest: dict, adopt_unmarked: bool
+) -> None:
+    refused = []
+    for member in members:
+        classification = classify_target(
+            member["name"], Path(skills_dir) / member["name"], manifest
+        )
+        if classification == "unmarked" and not adopt_unmarked:
+            refused.append(member["name"])
+    if refused:
+        raise RuntimeError(
+            "refusing unrelated existing skill: " + ", ".join(sorted(refused))
+            + "; use --adopt-unmarked to replace explicitly"
+        )
+
+
+def install_family(
+    repo: Path,
+    skills_dir: Path,
+    manifest: dict,
+    validator: Path | str,
+    *,
+    adopt_unmarked: bool = False,
+) -> dict:
     """Recover, verify, stage, and commit the complete generated skill family."""
     repo = Path(repo).resolve()
     skills_dir = Path(skills_dir).expanduser().resolve(strict=False)
@@ -311,16 +368,8 @@ def install_family(repo: Path, skills_dir: Path, manifest: dict, validator: Path
         install_transaction.recover_uncommitted(skills_dir)
         commit = verify_family_source(repo, manifest, validator)
         members = ordered_members(repo, manifest)
-        for member in members:
-            target = skills_dir / member["name"]
-            if not target.exists():
-                continue
-            marker = _read_marker(target)
-            if not (
-                (marker and marker.get("family") == manifest["family"])
-                or (marker and is_legacy_core_marker(member["name"], marker))
-            ):
-                raise RuntimeError(f"refusing unrelated existing skill: {member['name']}")
+        _require_owned_or_adopted(members, skills_dir, manifest, adopt_unmarked)
+        obsolete_targets = obsolete_family_members(skills_dir, manifest)
         staged = install_transaction.stage_members(
             members,
             skills_dir,
@@ -328,11 +377,103 @@ def install_family(repo: Path, skills_dir: Path, manifest: dict, validator: Path
                 member, source_hash, commit, manifest
             ),
         )
-        result = install_transaction.commit_staged(skills_dir, staged, [])
-        drift = family_drift(repo, skills_dir, manifest)
-        if drift:
-            raise RuntimeError("installed family verification failed: " + "; ".join(drift))
+        backup_root = staged[0]["backup"].parent
+        obsolete = [
+            {
+                "name": target.name,
+                "existed_before": True,
+                "target": target,
+                "backup": backup_root / target.name,
+            }
+            for target in obsolete_targets
+        ]
+
+        def verify_installed_family() -> None:
+            drift = family_drift(
+                repo, skills_dir, manifest, include_journal=False
+            )
+            if drift:
+                raise RuntimeError(
+                    "installed family verification failed: " + "; ".join(drift)
+                )
+
+        result = install_transaction.commit_staged(
+            skills_dir, staged, obsolete, verify=verify_installed_family
+        )
         result.update({"skills_dir": str(skills_dir), "source_commit": commit})
+        return result
+
+
+def _family_wrapper_names(skills_dir: Path, manifest: dict) -> list[str]:
+    skills_dir = Path(skills_dir)
+    if not skills_dir.is_dir():
+        return []
+    names = []
+    for target in sorted(skills_dir.iterdir(), key=lambda item: item.name):
+        if not target.is_dir():
+            continue
+        marker = _read_marker(target)
+        if (
+            marker
+            and marker.get("family") == manifest["family"]
+            and marker.get("role") == "wrapper"
+        ):
+            names.append(target.name)
+    return names
+
+
+def install_core(
+    repo: Path,
+    source: Path,
+    target: Path,
+    manifest: dict,
+    validator: Path | str,
+    *,
+    adopt_unmarked: bool = False,
+) -> dict:
+    """Install only the core skill while refusing to strand family wrappers."""
+    repo, source = Path(repo).resolve(), Path(source).resolve()
+    target = Path(target).expanduser().resolve(strict=False)
+    skills_dir = target.parent
+    root = install_transaction.transaction_root(skills_dir)
+    root.mkdir(parents=True, exist_ok=True)
+    with install_transaction.install_lock(skills_dir):
+        install_transaction.recover_uncommitted(skills_dir)
+        wrappers = _family_wrapper_names(skills_dir, manifest)
+        if wrappers:
+            raise RuntimeError(
+                "core-only install refused while family wrapper markers exist: "
+                + ", ".join(wrappers)
+            )
+        classification = classify_target(target.name, target, manifest)
+        if classification == "unmarked" and not adopt_unmarked:
+            raise RuntimeError(
+                f"refusing unrelated existing skill: {target.name}; "
+                "use --adopt-unmarked to replace explicitly"
+            )
+        commit = verify_source(repo, source, validator)
+        core = dict(ordered_members(repo, manifest)[0])
+        core["name"] = target.name
+        staged = install_transaction.stage_members(
+            [core],
+            skills_dir,
+            lambda member, source_hash: member_marker(
+                {**member, "role": "core"}, source_hash, commit, manifest
+            ),
+        )
+
+        def verify_installed_core() -> None:
+            if tree_hash(target) != tree_hash(source):
+                raise RuntimeError("installed core differs from source")
+            marker = _read_marker(target)
+            expected = member_marker(core, tree_hash(source), commit, manifest)
+            if marker != expected:
+                raise RuntimeError("installed core marker differs")
+
+        result = install_transaction.commit_staged(
+            skills_dir, staged, [], verify=verify_installed_core
+        )
+        result.update({"target": str(target), "source_commit": commit})
         return result
 
 
@@ -345,26 +486,41 @@ def main(argv=None) -> int:
     parser.add_argument("--core-only", action="store_true")
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--adopt-unmarked", action="store_true")
-    parser.add_argument("--work-root", type=Path,
-                        default=Path.home() / "Documents/Clothing-Shop-Studio/.work")
+    parser.add_argument("--work-root", type=Path)
     parser.add_argument("--validator",
                         default=str(Path.home() / ".codex/skills/.system/skill-creator/scripts/quick_validate.py"))
     args = parser.parse_args(argv)
     try:
         manifest = load_manifest(repo)
+        if args.check and (args.target or args.core_only or args.adopt_unmarked):
+            raise RuntimeError("--check cannot be combined with install modes")
+        if args.target and args.core_only:
+            raise RuntimeError("--target and --core-only are alternative core-only modes")
+        if not args.target and not args.core_only and args.work_root is not None:
+            raise RuntimeError("--work-root is deprecated and cannot be used for family installation")
         if args.check:
-            if args.target or args.core_only or args.adopt_unmarked:
-                raise RuntimeError("--check cannot be combined with install modes")
             drift = family_drift(repo, args.skills_dir, manifest)
             for item in drift:
                 print(f"DRIFT {item}")
             return 1 if drift else 0
         if args.target or args.core_only:
             target = args.target or (args.skills_dir / "clothing-shop-studio")
-            commit = verify_source(repo, args.source, args.validator)
-            print(json.dumps(install_verified(args.source, target, args.work_root, commit), sort_keys=True))
+            print(json.dumps(install_core(
+                repo,
+                args.source,
+                target,
+                manifest,
+                args.validator,
+                adopt_unmarked=args.adopt_unmarked,
+            ), sort_keys=True))
             return 0
-        print(json.dumps(install_family(repo, args.skills_dir, manifest, args.validator), sort_keys=True))
+        print(json.dumps(install_family(
+            repo,
+            args.skills_dir,
+            manifest,
+            args.validator,
+            adopt_unmarked=args.adopt_unmarked,
+        ), sort_keys=True))
         return 0
     except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
         print(f"install failed: {exc}", file=sys.stderr)
