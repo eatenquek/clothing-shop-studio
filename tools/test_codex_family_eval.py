@@ -176,6 +176,21 @@ class CodexFamilyEvalIsolationTests(unittest.TestCase):
             "project=[EVAL_WORKSPACE]/home/project real=[REAL_HOME]/Documents",
         )
 
+    def test_transcript_path_replacements_hide_home_directory_segments(self):
+        workspace = Path("eval-space").resolve()
+        real_home = Path("account-space").resolve()
+        redacted = run_codex_family_eval.redact(
+            str(workspace / "home/Documents/Clothing-Shop-Studio/projects/demo"),
+            path_replacements=run_codex_family_eval.transcript_path_replacements(
+                workspace, real_home
+            ),
+        )
+        self.assertEqual(
+            redacted,
+            "[EVAL_HOME]/Documents/Clothing-Shop-Studio/projects/demo",
+        )
+        self.assertNotIn("/home/", redacted)
+
     def test_seed_fixture_uses_studio_commands_in_throwaway_home(self):
         with tempfile.TemporaryDirectory() as folder:
             workspace = Path(folder) / "workspace"

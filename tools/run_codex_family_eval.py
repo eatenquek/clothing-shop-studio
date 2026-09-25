@@ -129,6 +129,17 @@ def redact(
     return result
 
 
+def transcript_path_replacements(
+    workspace: Path, real_home: Path
+) -> tuple[tuple[str, str], ...]:
+    workspace = Path(workspace).resolve()
+    return (
+        (str(workspace / "home"), "[EVAL_HOME]"),
+        (str(workspace), "[EVAL_WORKSPACE]"),
+        (str(Path(real_home).resolve()), "[REAL_HOME]"),
+    )
+
+
 def _auth_probe_command(codex_bin: str) -> list[str]:
     return [
         codex_bin,
@@ -560,10 +571,7 @@ def run_isolated(
         seed_fixture(scenario, env, skills_dir / "clothing-shop-studio")
         turns = []
         thread_id = None
-        path_replacements = (
-            (str(workspace.resolve()), "[EVAL_WORKSPACE]"),
-            (str(Path(real_home).resolve()), "[REAL_HOME]"),
-        )
+        path_replacements = transcript_path_replacements(workspace, real_home)
         prompts = [scenario["query"], *scenario.get("followups", [])]
         for index, prompt in enumerate(prompts, start=1):
             turn = run_codex_turn(
