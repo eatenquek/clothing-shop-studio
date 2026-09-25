@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -100,6 +101,54 @@ class InstallSkillTests(unittest.TestCase):
                     install_verified(source, target, root / "work", "abc123")
             self.assertEqual((target / "SKILL.md").read_text("utf-8"), "old skill\n")
             self.assertFalse((root / "work/install-staging/test").exists())
+
+    def test_failed_backup_move_preserves_previous_target(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            source = root / "source"
+            source.mkdir()
+            (source / "SKILL.md").write_text("new skill\n", encoding="utf-8")
+            target = root / "home/.codex/skills/test"
+            target.mkdir(parents=True)
+            (target / "SKILL.md").write_text("old skill\n", encoding="utf-8")
+
+            with mock.patch("tools.install_skill.os.replace", side_effect=OSError("backup move failed")):
+                with self.assertRaisesRegex(OSError, "backup move failed"):
+                    install_verified(source, target, root / "work", "abc123")
+
+            self.assertTrue(target.is_dir(), "the previous install must survive a failed backup move")
+            self.assertEqual((target / "SKILL.md").read_text("utf-8"), "old skill\n")
+            self.assertFalse((root / "work/install-staging/test").exists())
+
+    def test_failed_backup_cleanup_keeps_verified_new_target(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            source = root / "source"
+            source.mkdir()
+            (source / "SKILL.md").write_text("new skill\n", encoding="utf-8")
+            target = root / "home/.codex/skills/test"
+            target.mkdir(parents=True)
+            (target / "SKILL.md").write_text("old skill\n", encoding="utf-8")
+            work = root / "work"
+            real_rmtree = shutil.rmtree
+
+            def fail_partway_through_backup_cleanup(path, *args, **kwargs):
+                path = Path(path)
+                if path.parent == work.resolve() / "install-backups":
+                    (path / "SKILL.md").unlink()
+                    raise OSError("backup cleanup failed")
+                return real_rmtree(path, *args, **kwargs)
+
+            with mock.patch(
+                "tools.install_skill.shutil.rmtree",
+                side_effect=fail_partway_through_backup_cleanup,
+            ):
+                result = install_verified(source, target, work, "abc123")
+
+            self.assertEqual((target / "SKILL.md").read_text("utf-8"), "new skill\n")
+            self.assertEqual(result["bundle_tree_sha256"], tree_hash(source))
+            marker = json.loads((target / "INSTALLED_FROM.json").read_text("utf-8"))
+            self.assertEqual(marker["source_commit"], "abc123")
 
 
 if __name__ == "__main__":

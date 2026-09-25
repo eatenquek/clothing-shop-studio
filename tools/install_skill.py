@@ -61,19 +61,21 @@ def install_verified(source: Path, target: Path, work_root: Path, source_commit:
     copy_bundle(stage, incoming)
     shutil.copy2(stage / "INSTALLED_FROM.json", incoming / "INSTALLED_FROM.json")
     had_target = target.exists()
+    backup_created = False
+    installed_new = False
     try:
         if had_target:
             backup.parent.mkdir(parents=True, exist_ok=True)
             os.replace(target, backup)
+            backup_created = True
         os.replace(incoming, target)
+        installed_new = True
         if tree_hash(target) != bundle_hash:
             raise RuntimeError("installed skill differs from its verified source bundle")
-        if backup.exists():
-            shutil.rmtree(backup)
     except BaseException:
-        if target.exists():
+        if installed_new and target.exists():
             shutil.rmtree(target)
-        if backup.exists():
+        if backup_created and backup.exists():
             os.replace(backup, target)
         if incoming.exists():
             shutil.rmtree(incoming)
@@ -81,6 +83,11 @@ def install_verified(source: Path, target: Path, work_root: Path, source_commit:
     finally:
         if stage.exists():
             shutil.rmtree(stage)
+    if backup.exists():
+        try:
+            shutil.rmtree(backup)
+        except OSError:
+            pass
     return {"target": str(target), "source_commit": source_commit, "bundle_tree_sha256": bundle_hash}
 
 
