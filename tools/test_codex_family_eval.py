@@ -46,6 +46,22 @@ class CodexFamilyEvalIsolationTests(unittest.TestCase):
             (studio / "projects/demo/state.json").write_text("two", encoding="utf-8")
             self.assertNotEqual(run_codex_family_eval.real_boundary_snapshot(home), before)
 
+    def test_real_boundary_snapshot_detects_empty_root_and_data_folder_creation(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home = Path(folder)
+            before = run_codex_family_eval.real_boundary_snapshot(home)
+            studio = home / "Documents/Clothing-Shop-Studio"
+            studio.mkdir(parents=True)
+            after_root = run_codex_family_eval.real_boundary_snapshot(home)
+            self.assertNotEqual(after_root, before)
+            for name in run_codex_family_eval.STUDIO_DATA_FOLDERS:
+                with self.subTest(folder=name):
+                    previous = run_codex_family_eval.real_boundary_snapshot(home)
+                    (studio / name).mkdir()
+                    self.assertNotEqual(
+                        run_codex_family_eval.real_boundary_snapshot(home), previous
+                    )
+
     def test_prepare_auth_requires_environment_key_without_subprocess(self):
         with tempfile.TemporaryDirectory() as folder, mock.patch(
             "tools.run_codex_family_eval.subprocess.run"

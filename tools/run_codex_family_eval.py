@@ -65,8 +65,13 @@ def real_boundary_snapshot(home: Path) -> dict:
     return {
         "home_top_level": _top_level_names(home),
         "skills_top_level": _top_level_names(home / ".codex/skills"),
+        "studio_root_exists": studio.is_dir(),
         "studio_data": {
-            name: _folder_hashes(studio / name) for name in STUDIO_DATA_FOLDERS
+            name: {
+                "exists": (studio / name).is_dir(),
+                "files": _folder_hashes(studio / name),
+            }
+            for name in STUDIO_DATA_FOLDERS
         },
     }
 
