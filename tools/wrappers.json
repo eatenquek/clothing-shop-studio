@@ -1,0 +1,159 @@
+{
+  "family": "clothing-shop-studio",
+  "family_version": 1,
+  "family_interface": 1,
+  "core": "clothing-shop-studio",
+  "wrappers": [
+    {
+      "name": "clothing-new",
+      "description": "Use only when the user explicitly invokes $clothing-new to start a new garment-design project.",
+      "display_name": "Clothing New",
+      "short_description": "Start a garment-design project",
+      "default_prompt": "Use $clothing-new to start a new garment-design project.",
+      "core_interface_min": 1,
+      "core_interface_max": 1,
+      "operations": [
+        {"command": "create_project", "modes": []},
+        {"command": "register_file", "modes": []},
+        {"command": "record_answer", "modes": []}
+      ],
+      "scripts": [],
+      "references": [{"path": "references/workflow.md", "sections": ["2. Create or resume", "3. Reference intake"]}],
+      "gates": ["Register an attached reference before asking the first question.", "Ask exactly one question per response."],
+      "scope": ["Do not create a project from a vague presentation request."],
+      "visual": false
+    },
+    {
+      "name": "clothing-resume",
+      "description": "Use only when the user explicitly invokes $clothing-resume to select and continue an existing garment project.",
+      "display_name": "Clothing Resume",
+      "short_description": "Resume an existing garment project",
+      "default_prompt": "Use $clothing-resume to find and continue an existing garment project.",
+      "core_interface_min": 1,
+      "core_interface_max": 1,
+      "operations": [
+        {"command": "list_projects", "modes": []},
+        {"command": "resume_project", "modes": []},
+        {"command": "status", "modes": []},
+        {"command": "migrate_layout", "modes": ["inventory", "apply"]}
+      ],
+      "scripts": [],
+      "references": [{"path": "references/workflow.md", "sections": ["2. Create or resume", "Migrating a legacy project (migrate_layout)", "Status at any time"]}],
+      "gates": ["A listed project is not selected until the user confirms it.", "Migration apply requires a separate affirmative user reply."],
+      "scope": ["Never search the home directory or unrelated folders."],
+      "visual": false
+    },
+    {
+      "name": "clothing-options",
+      "description": "Use only when the user explicitly invokes $clothing-options to create or revise an A/B/C/W garment visual round.",
+      "display_name": "Clothing Options",
+      "short_description": "Create an A/B/C/W visual round",
+      "default_prompt": "Use $clothing-options to create or revise four garment design directions.",
+      "core_interface_min": 1,
+      "core_interface_max": 1,
+      "operations": [
+        {"command": "generate_options", "modes": ["plan", "register", "merge"]},
+        {"command": "record_answer", "modes": []}
+      ],
+      "scripts": ["scripts/render-options.py"],
+      "references": [{"path": "references/visual-options.md", "sections": ["Workflow", "Combining and revising"]}, {"path": "references/safety-scope.md", "sections": ["Singapore seller generation notice"]}],
+      "gates": ["Show all four labelled visuals before asking for a choice.", "Record the selected look in production-readable words, not as a concept id alone."],
+      "scope": ["A generated preview is never approval or a production master."],
+      "visual": true
+    },
+    {
+      "name": "clothing-approve",
+      "description": "Use only when the user explicitly invokes $clothing-approve to review a registered garment concept for possible approval.",
+      "display_name": "Clothing Approve",
+      "short_description": "Review a concept for approval",
+      "default_prompt": "Use $clothing-approve to review a registered garment concept for possible approval.",
+      "core_interface_min": 1,
+      "core_interface_max": 1,
+      "operations": [{"command": "approve_design", "modes": []}],
+      "scripts": [],
+      "references": [{"path": "references/workflow.md", "sections": ["6. Approval"]}],
+      "gates": ["Invocation text is never the approval statement.", "Show the exact candidate and wait for a separate affirmative user reply."],
+      "scope": ["A conditional reply or edit request returns to options instead of approving."],
+      "visual": false
+    },
+    {
+      "name": "clothing-production-pack",
+      "description": "Use only when the user explicitly invokes $clothing-production-pack to validate and export a factory handoff for an approved garment design.",
+      "display_name": "Clothing Production Pack",
+      "short_description": "Prepare a factory handoff",
+      "default_prompt": "Use $clothing-production-pack to validate and export a factory handoff.",
+      "core_interface_min": 1,
+      "core_interface_max": 1,
+      "operations": [
+        {"command": "register_file", "modes": []},
+        {"command": "validate", "modes": []},
+        {"command": "export_production_pack", "modes": []}
+      ],
+      "scripts": [],
+      "references": [{"path": "references/workflow.md", "sections": ["7. Production masters", "8. Validate and export"]}, {"path": "references/production-pack.md", "sections": ["Masters"]}],
+      "gates": ["Validate for export and resolve every blocker before export."],
+      "scope": ["Generated concepts, mockups, cut-outs, try-ons, and listing visuals are never production masters."],
+      "visual": false
+    },
+    {
+      "name": "clothing-extract",
+      "description": "Use only when the user explicitly invokes $clothing-extract to make catalogue cut-outs from garment imagery they own or license.",
+      "display_name": "Clothing Extract",
+      "short_description": "Create garment catalogue cut-outs",
+      "default_prompt": "Use $clothing-extract to create catalogue cut-outs from my garment image.",
+      "core_interface_min": 1,
+      "core_interface_max": 1,
+      "operations": [{"command": "extract", "modes": ["inventory", "confirm", "consent", "plan", "register", "decide"]}],
+      "scripts": [],
+      "references": [{"path": "references/presentation.md", "sections": ["Consent", "Extract"]}, {"path": "references/safety-scope.md", "sections": ["Singapore seller generation notice"]}],
+      "gates": ["External image transmission requires a separate affirmative consent reply.", "Confirm the garment inventory before planning cut-outs."],
+      "scope": ["Produce garment cut-outs rather than OCR or general photo edits."],
+      "visual": true
+    },
+    {
+      "name": "clothing-ai-models",
+      "description": "Use only when the user explicitly invokes $clothing-ai-models to create or manage fictional presentation models for their garments.",
+      "display_name": "Clothing AI Models",
+      "short_description": "Create fictional garment models",
+      "default_prompt": "Use $clothing-ai-models to create fictional presentation models for my garments.",
+      "core_interface_min": 1,
+      "core_interface_max": 1,
+      "operations": [{"command": "create_models", "modes": ["install_defaults", "plan", "plan_reference", "register", "keep"]}],
+      "scripts": [],
+      "references": [{"path": "references/presentation.md", "sections": ["AI models"]}, {"path": "references/safety-scope.md", "sections": ["Singapore seller generation notice"]}],
+      "gates": ["Keep decisions require the user's own affirmative reply."],
+      "scope": ["Create fictional people only; refuse real people, celebrities, influencers, and lookalikes."],
+      "visual": true
+    },
+    {
+      "name": "clothing-try-on",
+      "description": "Use only when the user explicitly invokes $clothing-try-on to put an owned approved design on a fictional presentation model.",
+      "display_name": "Clothing Try-On",
+      "short_description": "Create fictional-model garment try-ons",
+      "default_prompt": "Use $clothing-try-on to place my approved garment design on a fictional model.",
+      "core_interface_min": 1,
+      "core_interface_max": 1,
+      "operations": [{"command": "try_on", "modes": ["plan", "register", "decide"]}],
+      "scripts": [],
+      "references": [{"path": "references/presentation.md", "sections": ["Try-on"]}, {"path": "references/safety-scope.md", "sections": ["Singapore seller generation notice"]}],
+      "gates": ["Keep decisions require the user's own affirmative reply."],
+      "scope": ["Refuse shopper try-on and third-party branded garments; use approved owned designs and fictional models only."],
+      "visual": true
+    },
+    {
+      "name": "clothing-listing-concept",
+      "description": "Use only when the user explicitly invokes $clothing-listing-concept to create a non-live marketplace-style visual for their approved garment.",
+      "display_name": "Clothing Listing Concept",
+      "short_description": "Create a non-live listing visual",
+      "default_prompt": "Use $clothing-listing-concept to create a non-live marketplace-style visual for my approved garment.",
+      "core_interface_min": 1,
+      "core_interface_max": 1,
+      "operations": [{"command": "create_listing", "modes": ["build", "decide"]}],
+      "scripts": [],
+      "references": [{"path": "references/presentation.md", "sections": ["Listing concept"]}, {"path": "references/safety-scope.md", "sections": ["Singapore seller generation notice"]}],
+      "gates": ["Keep decisions require the user's own affirmative reply."],
+      "scope": ["Create a labelled non-live concept with no prices, sizes, unconfirmed claims, or publishing."],
+      "visual": true
+    }
+  ]
+}
