@@ -29,7 +29,7 @@
 - `/bin/zsh -lc "rg -n '\"id\": \"(garment|audience|fit)|garment_category' . --glob '*.json'"`
 - `/bin/zsh -lc "python3 - <<'PY'
 import json, subprocess
-project='[EVAL_WORKSPACE]/home/Documents/Clothing-Shop-Studio/projects/personal-gate-smoke'
+project='[EVAL_HOME]/Documents/Clothing-Shop-Studio/projects/personal-gate-smoke'
 for field,value in [('reference_image',None),('garment_category','long_sleeve'),('audience','unisex, young adults'),('fit','oversized')]:
  p=subprocess.run(['python3','scripts/studio.py','record_answer'],input=json.dumps({'project_dir':project,'field':field,'value':value,'source':'user'}),text=True,capture_output=True)
  result=json.loads(p.stdout)
@@ -39,7 +39,7 @@ for field,value in [('reference_image',None),('garment_category','long_sleeve'),
 PY"`
 - `/bin/zsh -lc "python3 - <<'PY'
 import json, subprocess
-project='[EVAL_WORKSPACE]/home/Documents/Clothing-Shop-Studio/projects/personal-gate-smoke'
+project='[EVAL_HOME]/Documents/Clothing-Shop-Studio/projects/personal-gate-smoke'
 for field,value in [('reference_image',None),('garment_category','long_sleeve'),('audience','unisex, young adults'),('fit','oversized')]:
  p=subprocess.run(['python3','scripts/studio.py','record_answer'],input=json.dumps({'project_dir':project,'field':field,'value':value,'source':'user'}),text=True,capture_output=True)
  result=json.loads(p.stdout)
