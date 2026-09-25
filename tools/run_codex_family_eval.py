@@ -479,8 +479,9 @@ def _transcript(
     scenario: dict, mechanism: str, hashes: dict, turns: list[dict], results: list[dict]
 ) -> str:
     isolation = (
-        "throwaway HOME and project-local skills; existing CODEX_HOME used only for "
-        "authentication; only this redacted transcript is durable."
+        "throwaway HOME and project-local skills; existing CODEX_HOME supplies "
+        "authentication and may receive ordinary CLI state updates; only the redacted "
+        "evaluation transcript is written to the repository."
         if mechanism == "existing-chatgpt-login"
         else "throwaway HOME and CODEX_HOME; only this redacted transcript is durable."
     )

@@ -505,7 +505,10 @@ class CodexFamilyScenarioTests(unittest.TestCase):
             [],
         )
         self.assertIn("throwaway HOME and project-local skills", text)
-        self.assertIn("existing CODEX_HOME used only for authentication", text)
+        self.assertIn("existing CODEX_HOME supplies authentication", text)
+        self.assertIn("may receive ordinary CLI state updates", text)
+        self.assertIn("only the redacted evaluation transcript is written to the repository", text)
+        self.assertNotIn("used only for authentication", text)
         self.assertNotIn("throwaway HOME and CODEX_HOME", text)
 
     def test_failed_assertion_raises_with_type_and_value(self):
