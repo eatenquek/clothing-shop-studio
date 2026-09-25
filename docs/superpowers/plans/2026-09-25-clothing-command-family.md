@@ -612,7 +612,7 @@ git commit -m "feat: add isolated Codex family evaluation"
 
 ---
 
-### Task 8: Six explicit-entry scenarios and release transcript gate
+### Task 8: Explicit-entry scenarios and optional extended transcript suite
 
 **Files:**
 - Create: `evals/family/approve-requires-reply.json`
@@ -622,11 +622,11 @@ git commit -m "feat: add isolated Codex family evaluation"
 - Create: `evals/family/listing-refuses-price-publish.json`
 - Create: `evals/family/visual-notice-one-question.json`
 - Modify: `tools/test_codex_family_eval.py`
-- Create after live run: `evals/green/family-*.md`
+- Optional after live runs: `evals/green/family-*.md`
 
 **Interfaces:**
 - Consumes: Task 7 harness and deterministic fixtures.
-- Produces: six redacted transcripts with tested tree hashes and explicit pass/fail assertions.
+- Produces: six reusable scenarios; their redacted API-key transcripts are optional post-release hardening.
 
 - [ ] **Step 1: Add scenario-schema and assertion tests**
 
@@ -646,9 +646,9 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tools.test_codex_family_eval tools
 
 Expected: PASS without invoking a model.
 
-- [ ] **Step 4: Run all six live Codex evaluations**
+- [ ] **Step 4: Optionally run all six live Codex evaluations**
 
-With `OPENAI_API_KEY` already present, run each scenario into `evals/green/`. A scenario failure is release-blocking. Confirm each transcript records `$` discovery, sibling-core load, the expected gate/refusal, auth mechanism, core hash, and all wrapper hashes.
+With `OPENAI_API_KEY` already present, the release operator may run each scenario into `evals/green/` as post-release hardening. A failing transcript is actionable evidence, but missing transcripts do not block the personal release. Confirm each produced transcript records `$` discovery, sibling-core load, the expected gate/refusal, auth mechanism, core hash, and all wrapper hashes.
 
 - [ ] **Step 5: Freeze evidence and prove source trees did not change afterward**
 
@@ -663,13 +663,26 @@ git commit -m "test: record explicit clothing command workflows"
 
 ---
 
-### Task 9: Dual-Python release validation and publishability review
+### Task 9: Personal smoke, dual-Python validation, and publishability review
 
 **Files:**
-- Modify only if a deterministic release blocker is found; any fix returns to the owning task's RED/GREEN cycle and requires regenerating Task 8 evidence when core or wrapper trees change.
+- Add the one-turn personal smoke scenario and current-login runner mode. Modify other files only if a deterministic release blocker is found; any core or wrapper fix requires regenerating the personal smoke evidence.
 
 **Interfaces:**
-- Produces: a clean branch with installer `--check` success and no uncommitted generated drift.
+- Produces: a current-login personal smoke transcript plus a clean branch with installer `--check` success and no uncommitted generated drift.
+
+- [ ] **Step 0: Run the personal release smoke with the existing Codex login**
+
+From a clean committed tree, run:
+
+```bash
+python3 tools/run_codex_family_eval.py \
+  evals/personal/new-project-smoke.json \
+  --auth-mode current-login \
+  --out evals/green/personal-smoke-codex.md
+```
+
+Expected: PASS assertions for project creation, fact recording, canonical-root behavior, and exactly one closing question. The run uses project-local skills and a throwaway garment-data home; it does not copy `auth.json` or require an API key.
 
 - [ ] **Step 1: Run current-Python gates**
 
@@ -715,8 +728,8 @@ Expected: no uncommitted changes, no generated drift, and task commits present.
 
 - [ ] **Step 5: Request an independent whole-branch blocker review**
 
-The reviewer compares the branch to the approved spec and reports only release blockers with file-and-line evidence. Implement only verified blockers through the owning task's tests. If core or wrapper bytes change, rerun both complete suites and all six live evaluations before the final verdict.
+The reviewer compares the branch to the approved spec and reports only release blockers with file-and-line evidence. Implement only verified blockers through the owning task's tests. If core or wrapper bytes change, rerun both complete suites and the personal smoke before the final verdict.
 
 - [ ] **Step 6: Declare the branch publishable or not publishable**
 
-PUBLISHABLE requires all nine spec acceptance items, including exact transcript hashes and a clean `--check`. Do not push, merge, or install unless the user separately requests that action after reviewing the completed implementation.
+PUBLISHABLE requires all nine amended spec acceptance items, including the personal-smoke tree hashes and a clean `--check`. The six API-key transcripts are optional post-release evidence. Do not push, merge, or install unless the user separately requests that action after reviewing the completed implementation.

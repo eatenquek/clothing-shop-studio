@@ -1,5 +1,16 @@
 # Release record — clothing-shop-studio
 
+## Current personal-release gate
+
+The user explicitly replaced the six-transcript release requirement with a pragmatic personal-skill gate. Deterministic dual-Python suites, wrapper generation, hygiene, installer checks, and independent review remain mandatory. One current-login `$clothing-new` smoke transcript at `evals/green/personal-smoke-codex.md` is the model-backed release evidence. The six `evals/family/*.json` API-key scenarios remain available as optional post-release hardening and no longer block publication.
+
+Run the smoke only from a clean committed tree:
+
+```bash
+python3 tools/run_codex_family_eval.py evals/personal/new-project-smoke.json \
+  --auth-mode current-login --out evals/green/personal-smoke-codex.md
+```
+
 `feature/presentation-commands` carries the presentation commands (`extract`, `create_models`, `try_on`, `create_listing`), the move to one canonical studio root, and the release follow-up described below. The branch is not merged. The earlier installed baseline was `dd4a007`; use `git log -1` and the installed `INSTALLED_FROM.json` for the current published revision.
 
 ## Follow-up implementation

@@ -92,11 +92,20 @@ See [`skill/clothing-shop-studio/SKILL.md`](skill/clothing-shop-studio/SKILL.md)
 
 ## Tests
 
-The checked-in evaluation transcripts are reproducible development evidence, not claims that every host or agent runtime was exercised live in the current release.
+The deterministic suites are the mandatory automated gate. A personal release also records one model-backed `$clothing-new` smoke test using the operator's existing Codex login; it installs the committed family project-locally and isolates garment data under a throwaway home. The six API-key-backed explicit-entry scenarios remain optional post-release hardening.
 
 ```bash
 cd skill/clothing-shop-studio
 python3 -m unittest discover -s tests -p 'test_*.py'
+```
+
+From the repository root, after committing the exact source under test:
+
+```bash
+python3 tools/run_codex_family_eval.py \
+  evals/personal/new-project-smoke.json \
+  --auth-mode current-login \
+  --out evals/green/personal-smoke-codex.md
 ```
 
 ## License

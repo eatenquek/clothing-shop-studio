@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Run one Clothing Shop Studio command-family scenario in an isolated Codex home.
+"""Run one Clothing Shop Studio command-family scenario through Codex.
 
-Authentication strategy: probe ``codex exec`` with ``OPENAI_API_KEY`` in the
-throwaway environment. If this Codex build reports an authentication failure,
-pipe the same key to ``codex login --with-api-key`` so any ``auth.json`` exists
-only inside the throwaway ``CODEX_HOME``. Every transcript records which of the
-two mechanisms succeeded. No live mechanism is assumed ahead of the probe.
+The default optional evaluation mode probes ``codex exec`` with
+``OPENAI_API_KEY`` in a throwaway environment, falling back to a throwaway
+``codex login --with-api-key`` when required. Personal release smoke mode uses
+the operator's existing Codex login, removes API credentials from the child
+environment, installs the committed family project-locally, and keeps garment
+data under a throwaway ``HOME``. Every transcript records the selected mode and
+the exact installed tree hashes.
 """
 
 from __future__ import annotations
@@ -85,6 +87,22 @@ def evaluation_environment(
     codex_home.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ if base_env is None else base_env)
     env.pop("CLOTHING_SHOP_STUDIO_HOME", None)
+    env["HOME"] = str(home)
+    env["CODEX_HOME"] = str(codex_home)
+    return env, codex_home, home / "Documents/Clothing-Shop-Studio"
+
+
+def personal_smoke_environment(
+    workspace: Path, current_codex_home: Path, base_env: dict | None = None
+) -> tuple[dict, Path, Path]:
+    """Reuse an existing Codex login while isolating all garment project data."""
+    workspace = Path(workspace).resolve()
+    home = workspace / "home"
+    codex_home = Path(current_codex_home).expanduser().resolve()
+    home.mkdir(parents=True, exist_ok=True)
+    env = dict(os.environ if base_env is None else base_env)
+    for name in ("CLOTHING_SHOP_STUDIO_HOME", "OPENAI_API_KEY", "CODEX_API_KEY", "CODEX_ACCESS_TOKEN"):
+        env.pop(name, None)
     env["HOME"] = str(home)
     env["CODEX_HOME"] = str(codex_home)
     return env, codex_home, home / "Documents/Clothing-Shop-Studio"
@@ -173,6 +191,25 @@ def prepare_auth(env: dict, codex_bin: str, codex_home: Path) -> str:
             + redact((retry.stderr or retry.stdout)[-1000:], [key])
         )
     return "throwaway-auth-json"
+
+
+def prepare_current_login(env: dict, codex_bin: str) -> str:
+    """Confirm that the selected real CODEX_HOME already has usable ChatGPT auth."""
+    completed = subprocess.run(
+        [codex_bin, "login", "status"],
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=30,
+    )
+    diagnostic = (completed.stdout + completed.stderr).strip()
+    if completed.returncode or "logged in" not in diagnostic.lower():
+        raise RuntimeError(
+            "existing Codex login is required for the personal smoke test: "
+            + redact(diagnostic[-1000:])
+        )
+    return "existing-chatgpt-login"
 
 
 def _expand(value, replacements: dict[str, str]):
@@ -266,6 +303,23 @@ def _thread_and_turn(raw: str) -> tuple[str | None, str, list[str]]:
     return thread_id, "\n".join(messages).strip(), tools
 
 
+def _codex_turn_command(
+    codex_bin: str,
+    workspace: Path,
+    prompt: str,
+    thread_id: str | None,
+) -> list[str]:
+    if thread_id:
+        return [
+            codex_bin, "exec", "resume", "--skip-git-repo-check", "--ignore-user-config",
+            "--ignore-rules", "--json", thread_id, prompt,
+        ]
+    return [
+        codex_bin, "exec", "--skip-git-repo-check", "--ignore-user-config", "--ignore-rules",
+        "--approve-for-me", "--color", "never", "--json", "-C", str(workspace), prompt,
+    ]
+
+
 def run_codex_turn(
     prompt: str,
     workspace: Path,
@@ -274,17 +328,7 @@ def run_codex_turn(
     raw_path: Path,
     thread_id: str | None = None,
 ) -> dict:
-    if thread_id:
-        command = [
-            codex_bin, "exec", "resume", "--skip-git-repo-check", "--ignore-user-config",
-            "--ignore-rules", "--json", thread_id, prompt,
-        ]
-    else:
-        command = [
-            codex_bin, "exec", "--skip-git-repo-check", "--ignore-user-config", "--ignore-rules",
-            "--approve-for-me", "--sandbox", "workspace-write", "--color", "never", "--json",
-            "-C", str(workspace), prompt,
-        ]
+    command = _codex_turn_command(codex_bin, workspace, prompt, thread_id)
     completed = subprocess.run(
         command,
         cwd=workspace,
@@ -442,16 +486,31 @@ def _transcript(
     return "\n".join(lines).rstrip() + "\n"
 
 
-def run_isolated(scenario: dict, codex_bin: str, real_home: Path) -> str:
+def run_isolated(
+    scenario: dict,
+    codex_bin: str,
+    real_home: Path,
+    *,
+    auth_mode: str = "api-key",
+    current_codex_home: Path | None = None,
+) -> str:
     key = os.environ.get("OPENAI_API_KEY", "")
-    if not key:
+    if auth_mode == "api-key" and not key:
         raise RuntimeError("OPENAI_API_KEY is required for live Codex family evaluation")
+    if auth_mode == "current-login" and current_codex_home is None:
+        raise RuntimeError("current CODEX_HOME is required for the personal smoke test")
     work_parent = REPO_ROOT.parent / ".work"
     work_parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="codex-family-", dir=work_parent) as folder:
         workspace = Path(folder)
-        env, codex_home, _studio_root = evaluation_environment(workspace, dict(os.environ))
-        skills_dir = codex_home / "skills"
+        if auth_mode == "current-login":
+            env, codex_home, _studio_root = personal_smoke_environment(
+                workspace, Path(current_codex_home), dict(os.environ)
+            )
+            skills_dir = workspace / ".agents/skills"
+        else:
+            env, codex_home, _studio_root = evaluation_environment(workspace, dict(os.environ))
+            skills_dir = codex_home / "skills"
         install = subprocess.run(
             [
                 sys.executable,
@@ -474,7 +533,11 @@ def run_isolated(scenario: dict, codex_bin: str, real_home: Path) -> str:
                 "isolated family install failed: "
                 + redact((install.stderr or install.stdout)[-2000:], [key])
             )
-        mechanism = prepare_auth(env, codex_bin, codex_home)
+        mechanism = (
+            prepare_current_login(env, codex_bin)
+            if auth_mode == "current-login"
+            else prepare_auth(env, codex_bin, codex_home)
+        )
         seed_fixture(scenario, env, skills_dir / "clothing-shop-studio")
         turns = []
         thread_id = None
@@ -494,15 +557,30 @@ def main(argv=None) -> int:
     parser.add_argument("scenario", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--codex-bin", default="codex")
+    parser.add_argument(
+        "--auth-mode",
+        choices=("api-key", "current-login"),
+        default="api-key",
+        help="Use an isolated API key run, or one personal smoke run with the existing Codex login.",
+    )
     args = parser.parse_args(argv)
     real_home = Path.home().resolve(strict=False)
     try:
-        if not os.environ.get("OPENAI_API_KEY"):
+        if args.auth_mode == "api-key" and not os.environ.get("OPENAI_API_KEY"):
             raise RuntimeError("OPENAI_API_KEY is required for live Codex family evaluation")
         scenario = _resolve_scenario(args.scenario)
         validate_scenario(scenario, load_manifest(REPO_ROOT))
         before = real_boundary_snapshot(real_home)
-        transcript = run_isolated(scenario, args.codex_bin, real_home)
+        current_codex_home = Path(
+            os.environ.get("CODEX_HOME", str(real_home / ".codex"))
+        ).expanduser().resolve(strict=False)
+        transcript = run_isolated(
+            scenario,
+            args.codex_bin,
+            real_home,
+            auth_mode=args.auth_mode,
+            current_codex_home=current_codex_home,
+        )
         after = real_boundary_snapshot(real_home)
         if after != before:
             raise RuntimeError("real home, installed skills, or Clothing Shop Studio data changed")

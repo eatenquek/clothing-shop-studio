@@ -1,0 +1,24 @@
+{
+  "id": "personal-new-project-smoke",
+  "skill": "clothing-new",
+  "query": "Use $clothing-new to create a garment project named Personal Gate Smoke. I have no reference image. It is an oversized unisex long-sleeve for young adults. Record those facts and ask only the next interview question.",
+  "seed": [],
+  "followups": [],
+  "assertions": [
+    {
+      "type": "tool_called",
+      "value": "create_project"
+    },
+    {
+      "type": "tool_called",
+      "value": "record_answer"
+    },
+    {
+      "type": "not_contains",
+      "value": "Where would you like me to store"
+    },
+    {
+      "type": "exactly_one_question"
+    }
+  ]
+}

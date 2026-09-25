@@ -31,6 +31,34 @@ class CodexFamilyEvalIsolationTests(unittest.TestCase):
             )
             self.assertEqual(env["KEEP"], "yes")
 
+    def test_personal_smoke_environment_reuses_login_but_isolates_garment_data(self):
+        with tempfile.TemporaryDirectory() as folder:
+            workspace = Path(folder) / "workspace"
+            real_codex_home = Path(folder) / "real-codex"
+            env, codex_home, studio_root = (
+                run_codex_family_eval.personal_smoke_environment(
+                    workspace,
+                    real_codex_home,
+                    {
+                        "HOME": "real-home",
+                        "CODEX_HOME": "old-codex",
+                        "OPENAI_API_KEY": "must-not-leak",
+                        "CODEX_ACCESS_TOKEN": "must-not-leak",
+                        "KEEP": "yes",
+                    },
+                )
+            )
+            self.assertEqual(Path(env["HOME"]), workspace.resolve() / "home")
+            self.assertEqual(Path(env["CODEX_HOME"]), real_codex_home.resolve())
+            self.assertEqual(codex_home, real_codex_home.resolve())
+            self.assertEqual(
+                studio_root,
+                workspace.resolve() / "home/Documents/Clothing-Shop-Studio",
+            )
+            self.assertNotIn("OPENAI_API_KEY", env)
+            self.assertNotIn("CODEX_ACCESS_TOKEN", env)
+            self.assertEqual(env["KEEP"], "yes")
+
     def test_real_boundary_snapshot_hashes_only_six_studio_data_folders(self):
         with tempfile.TemporaryDirectory() as folder:
             home = Path(folder)
@@ -69,6 +97,25 @@ class CodexFamilyEvalIsolationTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "OPENAI_API_KEY"):
                 run_codex_family_eval.prepare_auth({}, "codex", Path(folder))
             run.assert_not_called()
+
+    def test_prepare_current_login_accepts_existing_chatgpt_auth_without_api_key(self):
+        completed = mock.Mock(returncode=0, stdout="Logged in using ChatGPT\n", stderr="")
+        with mock.patch(
+            "tools.run_codex_family_eval.subprocess.run", return_value=completed
+        ) as run:
+            mechanism = run_codex_family_eval.prepare_current_login(
+                {"HOME": "isolated-home", "CODEX_HOME": "existing-codex-home"},
+                "codex",
+            )
+            self.assertEqual(mechanism, "existing-chatgpt-login")
+            self.assertEqual(run.call_args.args[0], ["codex", "login", "status"])
+
+    def test_codex_turn_command_does_not_combine_approve_and_sandbox_flags(self):
+        command = run_codex_family_eval._codex_turn_command(
+            "codex", Path("workspace"), "Prompt", None
+        )
+        self.assertIn("--approve-for-me", command)
+        self.assertNotIn("--sandbox", command)
 
     def test_prepare_auth_prefers_environment_only_success(self):
         completed = mock.Mock(returncode=0, stdout="ok", stderr="")
@@ -175,6 +222,39 @@ class CodexFamilyEvalIsolationTests(unittest.TestCase):
             self.assertFalse(out.exists())
             self.assertFalse(any(path.name == "auth.json" for path in root.rglob("auth.json")))
 
+    def test_main_current_login_mode_does_not_require_api_key(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            scenario = root / "scenario.json"
+            out = root / "evidence/result.md"
+            scenario.write_text(json.dumps({
+                "id": "personal-smoke", "skill": "clothing-resume",
+                "query": "Use $clothing-resume", "seed": [],
+                "followups": [], "assertions": []
+            }), encoding="utf-8")
+            with mock.patch.dict(
+                os.environ,
+                {"HOME": str(root / "real-home"), "CODEX_HOME": str(root / "real-codex")},
+                clear=True,
+            ), mock.patch(
+                "tools.run_codex_family_eval.real_boundary_snapshot", return_value={"same": True}
+            ), mock.patch(
+                "tools.run_codex_family_eval.run_isolated", return_value="evidence\n"
+            ) as run:
+                self.assertEqual(
+                    run_codex_family_eval.main([
+                        str(scenario), "--out", str(out),
+                        "--auth-mode", "current-login",
+                    ]),
+                    0,
+                )
+            self.assertEqual(out.read_text("utf-8"), "evidence\n")
+            self.assertEqual(run.call_args.kwargs["auth_mode"], "current-login")
+            self.assertEqual(
+                run.call_args.kwargs["current_codex_home"],
+                (root / "real-codex").resolve(),
+            )
+
     def test_run_isolated_removes_throwaway_workspace_on_success_and_failure(self):
         scenario = {
             "id": "cleanup", "skill": "clothing-resume", "query": "test",
@@ -240,6 +320,17 @@ class CodexFamilyEvalIsolationTests(unittest.TestCase):
 
 
 class CodexFamilyScenarioTests(unittest.TestCase):
+    def test_personal_release_smoke_is_one_turn_new_project_workflow(self):
+        path = REPO / "evals/personal/new-project-smoke.json"
+        scenario = run_codex_family_eval._resolve_scenario(path)
+        run_codex_family_eval.validate_scenario(scenario, load_manifest(REPO))
+        self.assertEqual(scenario["skill"], "clothing-new")
+        self.assertEqual(scenario["followups"], [])
+        self.assertEqual(
+            {item["type"] for item in scenario["assertions"]},
+            {"tool_called", "not_contains", "exactly_one_question"},
+        )
+
     def test_all_six_scenarios_validate_against_the_family_manifest(self):
         manifest = load_manifest(REPO)
         scenario_dir = REPO / "evals/family"
