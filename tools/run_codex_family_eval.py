@@ -1,0 +1,416 @@
+#!/usr/bin/env python3
+"""Run one Clothing Shop Studio command-family scenario in an isolated Codex home.
+
+Authentication strategy: probe ``codex exec`` with ``OPENAI_API_KEY`` in the
+throwaway environment. If this Codex build reports an authentication failure,
+pipe the same key to ``codex login --with-api-key`` so any ``auth.json`` exists
+only inside the throwaway ``CODEX_HOME``. Every transcript records which of the
+two mechanisms succeeded. No live mechanism is assumed ahead of the probe.
+"""
+
+from __future__ import annotations
+
+import argparse
+import base64
+import hashlib
+import json
+import os
+import re
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+try:
+    from tools import install_transaction
+except ModuleNotFoundError:  # Direct ``python3 tools/run_codex_family_eval.py`` execution.
+    import install_transaction
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+STUDIO_DATA_FOLDERS = ("projects", "references", "generated", "approved", "production", "exports")
+AUTH_FAILURE_MARKERS = (
+    "not logged in", "authentication", "unauthorized", "api key", "api_key", "401",
+)
+KEY_SHAPE = re.compile(r"\bsk-[A-Za-z0-9_-]{10,}\b")
+
+
+def _top_level_names(path: Path) -> list[str]:
+    try:
+        return sorted(item.name for item in Path(path).iterdir())
+    except (FileNotFoundError, NotADirectoryError, PermissionError):
+        return []
+
+
+def _folder_hashes(path: Path) -> dict[str, str]:
+    result = {}
+    if not path.is_dir():
+        return result
+    for item in sorted(path.rglob("*")):
+        if not item.is_file() or item.is_symlink():
+            continue
+        try:
+            result[item.relative_to(path).as_posix()] = hashlib.sha256(item.read_bytes()).hexdigest()
+        except (OSError, PermissionError) as exc:
+            result[item.relative_to(path).as_posix()] = f"unreadable:{type(exc).__name__}"
+    return result
+
+
+def real_boundary_snapshot(home: Path) -> dict:
+    """Snapshot only the real boundaries the isolated evaluation must not change."""
+    home = Path(home).expanduser().resolve(strict=False)
+    studio = home / "Documents/Clothing-Shop-Studio"
+    return {
+        "home_top_level": _top_level_names(home),
+        "skills_top_level": _top_level_names(home / ".codex/skills"),
+        "studio_data": {
+            name: _folder_hashes(studio / name) for name in STUDIO_DATA_FOLDERS
+        },
+    }
+
+
+def evaluation_environment(
+    workspace: Path, base_env: dict | None = None
+) -> tuple[dict, Path, Path]:
+    workspace = Path(workspace).resolve()
+    home = workspace / "home"
+    codex_home = home / ".codex"
+    codex_home.mkdir(parents=True, exist_ok=True)
+    env = dict(os.environ if base_env is None else base_env)
+    env.pop("CLOTHING_SHOP_STUDIO_HOME", None)
+    env["HOME"] = str(home)
+    env["CODEX_HOME"] = str(codex_home)
+    return env, codex_home, home / "Documents/Clothing-Shop-Studio"
+
+
+def redact(value: str, secrets: list[str] | tuple[str, ...] = ()) -> str:
+    result = str(value)
+    for secret in secrets:
+        if secret:
+            result = result.replace(secret, "[REDACTED]")
+    result = KEY_SHAPE.sub("[REDACTED]", result)
+    result = re.sub(
+        r"(?im)\b(OPENAI_API_KEY|CODEX_ACCESS_TOKEN)\s*=\s*[^\s]+",
+        r"\1=[REDACTED]",
+        result,
+    )
+    return result
+
+
+def _auth_probe_command(codex_bin: str) -> list[str]:
+    return [
+        codex_bin,
+        "exec",
+        "--ephemeral",
+        "--skip-git-repo-check",
+        "--ignore-user-config",
+        "--ignore-rules",
+        "--sandbox",
+        "read-only",
+        "--color",
+        "never",
+        "Reply exactly AUTH_OK.",
+    ]
+
+
+def prepare_auth(env: dict, codex_bin: str, codex_home: Path) -> str:
+    key = env.get("OPENAI_API_KEY", "")
+    if not key:
+        raise RuntimeError("OPENAI_API_KEY is required for live Codex family evaluation")
+    codex_home = Path(codex_home)
+    codex_home.mkdir(parents=True, exist_ok=True)
+    probe = subprocess.run(
+        _auth_probe_command(codex_bin),
+        cwd=codex_home.parent,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=180,
+    )
+    if probe.returncode == 0:
+        return "environment"
+    diagnostic = (probe.stdout + "\n" + probe.stderr).lower()
+    if not any(marker in diagnostic for marker in AUTH_FAILURE_MARKERS):
+        raise RuntimeError(
+            "Codex authentication probe failed for a non-authentication reason: "
+            + redact((probe.stderr or probe.stdout)[-1000:], [key])
+        )
+    login = subprocess.run(
+        [codex_bin, "login", "--with-api-key"],
+        input=key + "\n",
+        cwd=codex_home.parent,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=180,
+    )
+    if login.returncode:
+        raise RuntimeError(
+            "throwaway Codex login failed: "
+            + redact((login.stderr or login.stdout)[-1000:], [key])
+        )
+    retry = subprocess.run(
+        _auth_probe_command(codex_bin),
+        cwd=codex_home.parent,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=180,
+    )
+    if retry.returncode:
+        raise RuntimeError(
+            "Codex remained unauthenticated after throwaway login: "
+            + redact((retry.stderr or retry.stdout)[-1000:], [key])
+        )
+    return "throwaway-auth-json"
+
+
+def _expand(value, replacements: dict[str, str]):
+    if isinstance(value, str):
+        for token, replacement in replacements.items():
+            value = value.replace(token, replacement)
+        return value
+    if isinstance(value, list):
+        return [_expand(item, replacements) for item in value]
+    if isinstance(value, dict):
+        return {key: _expand(item, replacements) for key, item in value.items()}
+    return value
+
+
+def seed_fixture(scenario: dict, env: dict, core_dir: Path) -> Path:
+    """Seed project state only through deterministic ``studio.py`` commands."""
+    home = Path(env["HOME"])
+    studio_root = home / "Documents/Clothing-Shop-Studio"
+    fixture_value = scenario.get("fixture")
+    if fixture_value:
+        fixture = json.loads(Path(fixture_value).read_text("utf-8"))
+        commands = fixture.get("commands", [])
+    else:
+        commands = scenario.get("seed", [])
+    replacements = {
+        "${HOME}": str(home),
+        "${STUDIO_ROOT}": str(studio_root),
+        "${PROJECTS}": str(studio_root / "projects"),
+        "${CORE_DIR}": str(Path(core_dir).resolve()),
+    }
+    for file_spec in fixture.get("files", []) if fixture_value else []:
+        path = Path(_expand(file_spec["path"], replacements)).resolve(strict=False)
+        try:
+            path.relative_to(studio_root.resolve(strict=False))
+        except ValueError as exc:
+            raise RuntimeError("fixture file must stay inside the throwaway studio root") from exc
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if "base64" in file_spec:
+            path.write_bytes(base64.b64decode(file_spec["base64"], validate=True))
+        else:
+            path.write_text(file_spec.get("text", ""), encoding="utf-8")
+    first_project = None
+    script = Path(core_dir) / "scripts/studio.py"
+    for step in commands:
+        command = step.get("command")
+        payload = _expand(step.get("payload", {}), replacements)
+        completed = subprocess.run(
+            [sys.executable, str(script), command],
+            input=json.dumps(payload, ensure_ascii=False),
+            cwd=home,
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        try:
+            response = json.loads(completed.stdout)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"fixture command produced invalid JSON: {command}") from exc
+        if completed.returncode or not response.get("ok"):
+            raise RuntimeError(
+                f"fixture command failed: {command}: "
+                + redact(completed.stdout + completed.stderr, [env.get("OPENAI_API_KEY", "")])
+            )
+        project_dir = response.get("data", {}).get("project_dir")
+        if project_dir and first_project is None:
+            first_project = Path(project_dir)
+    return first_project or studio_root / "projects"
+
+
+def _thread_and_turn(raw: str) -> tuple[str | None, str, list[str]]:
+    thread_id = None
+    messages = []
+    tools = []
+    for line in raw.splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        thread_id = event.get("thread_id") or thread_id
+        item = event.get("item") if isinstance(event.get("item"), dict) else {}
+        kind = item.get("type", "")
+        if kind in {"agent_message", "assistant_message"} and item.get("text"):
+            messages.append(item["text"])
+        if kind in {"command_execution", "mcp_tool_call", "tool_call"}:
+            detail = item.get("command") or item.get("name") or json.dumps(item, sort_keys=True)
+            tools.append(str(detail))
+        message = event.get("message")
+        if isinstance(message, str) and event.get("type") in {"agent_message", "assistant_message"}:
+            messages.append(message)
+    return thread_id, "\n".join(messages).strip(), tools
+
+
+def run_codex_turn(
+    prompt: str,
+    workspace: Path,
+    env: dict,
+    codex_bin: str,
+    raw_path: Path,
+    thread_id: str | None = None,
+) -> dict:
+    if thread_id:
+        command = [
+            codex_bin, "exec", "resume", "--skip-git-repo-check", "--ignore-user-config",
+            "--ignore-rules", "--json", thread_id, prompt,
+        ]
+    else:
+        command = [
+            codex_bin, "exec", "--skip-git-repo-check", "--ignore-user-config", "--ignore-rules",
+            "--approve-for-me", "--sandbox", "workspace-write", "--color", "never", "--json",
+            "-C", str(workspace), prompt,
+        ]
+    completed = subprocess.run(
+        command,
+        cwd=workspace,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=900,
+    )
+    raw_path.write_text(completed.stdout, encoding="utf-8")
+    secret = env.get("OPENAI_API_KEY", "")
+    if completed.returncode:
+        raise RuntimeError(
+            "Codex turn failed: " + redact((completed.stderr or completed.stdout)[-2000:], [secret])
+        )
+    new_thread, text, tools = _thread_and_turn(completed.stdout)
+    if not text:
+        raise RuntimeError("Codex turn completed without an assistant message")
+    return {
+        "thread_id": new_thread or thread_id,
+        "text": redact(text, [secret]),
+        "tools": [redact(tool, [secret]) for tool in tools],
+    }
+
+
+def _installed_hashes(skills_dir: Path) -> dict[str, str]:
+    return {
+        path.name: install_transaction.tree_hash(path)
+        for path in sorted(Path(skills_dir).iterdir(), key=lambda item: item.name)
+        if path.is_dir() and path.name.startswith("clothing-")
+    }
+
+
+def _resolve_scenario(path: Path) -> dict:
+    scenario = json.loads(Path(path).read_text("utf-8"))
+    fixture = scenario.get("fixture")
+    if fixture:
+        scenario["fixture"] = str((Path(path).parent / fixture).resolve())
+    return scenario
+
+
+def _transcript(scenario: dict, mechanism: str, hashes: dict, turns: list[dict]) -> str:
+    lines = [
+        f"# Codex family evaluation: {scenario['id']}",
+        "",
+        f"- Skill entry: `${scenario['skill']}`",
+        f"- Authentication: `{mechanism}`",
+        f"- Installed tree hashes: `{json.dumps(hashes, sort_keys=True)}`",
+        "- Isolation: throwaway HOME and CODEX_HOME; only this redacted transcript is durable.",
+        "",
+    ]
+    prompts = [scenario["query"], *scenario.get("followups", [])]
+    for index, (prompt, turn) in enumerate(zip(prompts, turns), start=1):
+        lines += [
+            f"## Turn {index}", "", "**User:**", "",
+            *[f"> {row}" for row in prompt.splitlines()], "", "**Tool calls:**", "",
+            *([f"- `{tool}`" for tool in turn["tools"]] or ["- none"]),
+            "", "**Assistant:**", "",
+            *[f"> {row}" if row else ">" for row in turn["text"].splitlines()], "",
+        ]
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def run_isolated(scenario: dict, codex_bin: str, real_home: Path) -> str:
+    key = os.environ.get("OPENAI_API_KEY", "")
+    if not key:
+        raise RuntimeError("OPENAI_API_KEY is required for live Codex family evaluation")
+    work_parent = REPO_ROOT.parent / ".work"
+    work_parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="codex-family-", dir=work_parent) as folder:
+        workspace = Path(folder)
+        env, codex_home, _studio_root = evaluation_environment(workspace, dict(os.environ))
+        skills_dir = codex_home / "skills"
+        install = subprocess.run(
+            [
+                sys.executable,
+                str(REPO_ROOT / "tools/install_skill.py"),
+                "--skills-dir",
+                str(skills_dir),
+                "--validator",
+                "fallback",
+            ],
+            cwd=REPO_ROOT,
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=900,
+        )
+        (workspace / "install.stdout").write_text(install.stdout, encoding="utf-8")
+        if install.returncode:
+            raise RuntimeError(
+                "isolated family install failed: "
+                + redact((install.stderr or install.stdout)[-2000:], [key])
+            )
+        mechanism = prepare_auth(env, codex_bin, codex_home)
+        seed_fixture(scenario, env, skills_dir / "clothing-shop-studio")
+        turns = []
+        thread_id = None
+        prompts = [scenario["query"], *scenario.get("followups", [])]
+        for index, prompt in enumerate(prompts, start=1):
+            turn = run_codex_turn(
+                prompt, workspace, env, codex_bin, workspace / f"turn-{index}.jsonl", thread_id
+            )
+            thread_id = turn["thread_id"]
+            turns.append(turn)
+        return _transcript(scenario, mechanism, _installed_hashes(skills_dir), turns)
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("scenario", type=Path)
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--codex-bin", default="codex")
+    args = parser.parse_args(argv)
+    real_home = Path.home().resolve(strict=False)
+    try:
+        if not os.environ.get("OPENAI_API_KEY"):
+            raise RuntimeError("OPENAI_API_KEY is required for live Codex family evaluation")
+        scenario = _resolve_scenario(args.scenario)
+        before = real_boundary_snapshot(real_home)
+        transcript = run_isolated(scenario, args.codex_bin, real_home)
+        after = real_boundary_snapshot(real_home)
+        if after != before:
+            raise RuntimeError("real home, installed skills, or Clothing Shop Studio data changed")
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(transcript, encoding="utf-8")
+        print(f"wrote {args.out}")
+        return 0
+    except (OSError, RuntimeError, subprocess.SubprocessError, json.JSONDecodeError) as exc:
+        print(f"evaluation failed: {redact(str(exc), [os.environ.get('OPENAI_API_KEY', '')])}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

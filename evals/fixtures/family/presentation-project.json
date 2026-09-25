@@ -1,0 +1,38 @@
+{
+  "files": [
+    {
+      "path": "${STUDIO_ROOT}/references/presentation-project/user/reference.png",
+      "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ],
+  "commands": [
+    {
+      "command": "create_project",
+      "payload": {
+        "root": "${PROJECTS}",
+        "name": "Presentation Project",
+        "now": "2026-09-25T01:00:00Z"
+      }
+    },
+    {
+      "command": "register_file",
+      "payload": {
+        "project_dir": "${PROJECTS}/presentation-project",
+        "origin": "user_reference",
+        "path": "references/presentation-project/user/reference.png",
+        "rights": "user-owned-or-licensed",
+        "rights_statement": "Fixture image created for evaluation.",
+        "now": "2026-09-25T01:01:00Z"
+      }
+    },
+    {
+      "command": "record_answer",
+      "payload": {
+        "project_dir": "${PROJECTS}/presentation-project",
+        "field": "reference_image",
+        "value": "ref-user-001",
+        "now": "2026-09-25T01:02:00Z"
+      }
+    }
+  ]
+}
