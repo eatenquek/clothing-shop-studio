@@ -91,7 +91,7 @@ def validate_manifest(repo: Path, manifest: dict) -> None:
         _require(isinstance(name, str) and len(name) <= 64 and NAME.fullmatch(name), f"{name!r}: invalid name")
         _require(name not in names, f"duplicate wrapper name: {name}")
         names.add(name)
-        for field in ("description", "display_name", "short_description", "default_prompt"):
+        for field in ("description", "display_name", "short_description", "starts", "default_prompt"):
             _require(isinstance(wrapper.get(field), str) and wrapper[field].strip(), f"{name}: missing {field}")
         minimum = wrapper.get("core_interface_min")
         maximum = wrapper.get("core_interface_max")

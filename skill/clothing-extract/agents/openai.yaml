@@ -1,0 +1,6 @@
+interface:
+  display_name: "Clothing Extract"
+  short_description: "Create garment catalogue cut-outs"
+  default_prompt: "Use $clothing-extract to create catalogue cut-outs from my garment image."
+policy:
+  allow_implicit_invocation: false

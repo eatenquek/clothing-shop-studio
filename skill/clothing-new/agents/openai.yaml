@@ -1,0 +1,6 @@
+interface:
+  display_name: "Clothing New"
+  short_description: "Start a garment-design project"
+  default_prompt: "Use $clothing-new to start a new garment-design project."
+policy:
+  allow_implicit_invocation: false

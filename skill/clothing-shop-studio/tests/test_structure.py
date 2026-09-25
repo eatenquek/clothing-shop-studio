@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import unittest
 
 
@@ -11,6 +12,16 @@ class StructureTests(unittest.TestCase):
         self.assertTrue((ROOT / "agents" / "openai.yaml").is_file())
         for name in ("references", "data", "schemas", "scripts", "assets", "evals"):
             self.assertTrue((ROOT / name).is_dir(), name)
+
+    def test_explicit_wrapper_sources_are_minimal_and_explicit_only(self):
+        repo = ROOT.parents[1]
+        manifest = json.loads((repo / "tools/wrappers.json").read_text("utf-8"))
+        for wrapper in manifest["wrappers"]:
+            folder = repo / "skill" / wrapper["name"]
+            files = sorted(path.relative_to(folder).as_posix() for path in folder.rglob("*") if path.is_file())
+            self.assertEqual(files, ["SKILL.md", "agents/openai.yaml"], wrapper["name"])
+            policy = (folder / "agents/openai.yaml").read_text("utf-8")
+            self.assertIn("allow_implicit_invocation: false", policy, wrapper["name"])
 
     def test_description_is_trigger_only_and_scoped_to_own_designs(self):
         text = (ROOT / "SKILL.md").read_text(encoding="utf-8")

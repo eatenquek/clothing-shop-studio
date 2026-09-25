@@ -1,0 +1,6 @@
+interface:
+  display_name: "Clothing Listing Concept"
+  short_description: "Create a non-live listing visual"
+  default_prompt: "Use $clothing-listing-concept to create a non-live marketplace-style visual for my approved garment."
+policy:
+  allow_implicit_invocation: false

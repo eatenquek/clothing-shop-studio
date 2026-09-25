@@ -1,0 +1,6 @@
+interface:
+  display_name: "Clothing Production Pack"
+  short_description: "Prepare a factory handoff"
+  default_prompt: "Use $clothing-production-pack to validate and export a factory handoff."
+policy:
+  allow_implicit_invocation: false

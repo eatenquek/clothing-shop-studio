@@ -50,6 +50,22 @@ Everything the skill creates lives in one canonical studio root, `~/Documents/Cl
 
 Projects created before this layout (layout v1, with assets inside the project folder) still open and validate, but every write is refused with `migration_required` until they are migrated. The agent runs `migrate_layout` for you: `inventory` writes a hash-verified plan and changes nothing, the agent shows you which files will move where, and `apply` runs only after you clearly say yes (your words are recorded as `user_quote`). Each file is copied and verified before any old file is removed, and an interrupted migration can be rerun safely.
 
+## Explicit workflow commands
+
+<!-- BEGIN GENERATED CLOTHING COMMANDS -->
+| Command | Starts |
+|---|---|
+| `$clothing-new` | A new garment-design project |
+| `$clothing-resume` | Selection and resumption of an existing project |
+| `$clothing-options` | An A/B/C/W visual decision round |
+| `$clothing-approve` | Review of one registered concept for approval |
+| `$clothing-production-pack` | Validation and export of a factory handoff |
+| `$clothing-extract` | Catalogue cut-outs from owned or licensed garment imagery |
+| `$clothing-ai-models` | Creation and selection of fictional presentation models |
+| `$clothing-try-on` | An approved owned design on a kept fictional model |
+| `$clothing-listing-concept` | A non-live marketplace-style listing visual |
+<!-- END GENERATED CLOTHING COMMANDS -->
+
 ## Usage
 
 Ask your agent to design a garment, for example:

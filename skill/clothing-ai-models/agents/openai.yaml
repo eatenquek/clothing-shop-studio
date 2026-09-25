@@ -1,0 +1,6 @@
+interface:
+  display_name: "Clothing AI Models"
+  short_description: "Create fictional garment models"
+  default_prompt: "Use $clothing-ai-models to create fictional presentation models for my garments."
+policy:
+  allow_implicit_invocation: false

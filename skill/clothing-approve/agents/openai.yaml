@@ -1,0 +1,6 @@
+interface:
+  display_name: "Clothing Approve"
+  short_description: "Review a concept for approval"
+  default_prompt: "Use $clothing-approve to review a registered garment concept for possible approval."
+policy:
+  allow_implicit_invocation: false

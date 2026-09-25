@@ -1,0 +1,6 @@
+interface:
+  display_name: "Clothing Try-On"
+  short_description: "Create fictional-model garment try-ons"
+  default_prompt: "Use $clothing-try-on to place my approved garment design on a fictional model."
+policy:
+  allow_implicit_invocation: false

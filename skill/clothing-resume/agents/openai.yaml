@@ -1,0 +1,6 @@
+interface:
+  display_name: "Clothing Resume"
+  short_description: "Resume an existing garment project"
+  default_prompt: "Use $clothing-resume to find and continue an existing garment project."
+policy:
+  allow_implicit_invocation: false
