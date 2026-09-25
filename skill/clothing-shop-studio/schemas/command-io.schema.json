@@ -9,6 +9,7 @@
     "ok": {"type": "boolean"},
     "command": {
       "enum": [
+        "list_projects",
         "create_project",
         "resume_project",
         "record_answer",

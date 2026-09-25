@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # discoverable from any cwd
 
-from tests.helpers import make_project, ready_project
+from tests.helpers import hash_tree, make_project, ready_project
 
 
 class CliTests(unittest.TestCase):
@@ -43,6 +43,9 @@ class CliTests(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         return Path(response["data"]["project_dir"])
+
+    def list_projects(self, payload: dict | None = None) -> tuple[subprocess.CompletedProcess, dict]:
+        return self.run_cli("list_projects", {} if payload is None else payload)
 
     def asset_dir(self, project: Path, area: str, relative: str) -> Path:
         return self.studio / area / project.name / relative
@@ -305,10 +308,94 @@ class CliTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 2)
         self.assertEqual(response["error"]["field"], "mode")
 
+    def test_list_projects_absent_root_is_empty_and_read_only(self):
+        before = hash_tree(self.root)
+        completed, response = self.list_projects()
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(response["data"], {"projects": [], "skipped": []})
+        self.assertEqual(hash_tree(self.root), before)
+        self.assertFalse(self.studio.exists())
+
+    def test_list_projects_filters_and_sorts_direct_children(self):
+        newest = self.create("Newest")
+        alpha = self.create("Alpha")
+        zulu = self.create("Zulu")
+        for project, timestamp in (
+            (newest, "2026-09-25T12:00:00Z"),
+            (alpha, "2026-09-25T10:00:00Z"),
+            (zulu, "2026-09-25T10:00:00Z"),
+        ):
+            state_path = project / "metadata/state.json"
+            state = json.loads(state_path.read_text("utf-8"))
+            state["updated_at"] = timestamp
+            state_path.write_text(json.dumps(state), encoding="utf-8")
+        legacy_path = zulu / "metadata/state.json"
+        legacy = json.loads(legacy_path.read_text("utf-8"))
+        legacy["schema_version"] = 1
+        legacy.pop("layout_version", None)
+        legacy.pop("path_base", None)
+        legacy_path.write_text(json.dumps(legacy), encoding="utf-8")
+
+        projects = self.studio / "projects"
+        broken = projects / "broken/metadata"
+        broken.mkdir(parents=True)
+        (broken / "state.json").write_text("{not-json", encoding="utf-8")
+        future = projects / "future/metadata"
+        future.mkdir(parents=True)
+        (future / "state.json").write_text(json.dumps({"schema_version": 999}), encoding="utf-8")
+        (projects / "missing").mkdir()
+        (projects / "ordinary-file.txt").write_text("ignored", encoding="utf-8")
+        (projects / "link").symlink_to(newest, target_is_directory=True)
+
+        before = hash_tree(self.studio)
+        completed, response = self.list_projects()
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(
+            [item["project_slug"] for item in response["data"]["projects"]],
+            ["newest", "alpha", "zulu"],
+        )
+        self.assertEqual(
+            response["data"]["skipped"],
+            [
+                {"name": "broken", "code": "invalid_state"},
+                {"name": "future", "code": "unsupported_schema"},
+                {"name": "link", "code": "symlink_refused"},
+                {"name": "missing", "code": "missing_state"},
+            ],
+        )
+        item = {entry["project_slug"]: entry for entry in response["data"]["projects"]}
+        self.assertEqual(item["newest"]["name"], "Newest")
+        self.assertEqual(Path(item["newest"]["project_dir"]), newest.resolve())
+        self.assertFalse(item["newest"]["migration_required"])
+        self.assertEqual(item["newest"]["layout_version"], 2)
+        self.assertTrue(item["zulu"]["migration_required"])
+        self.assertEqual(item["zulu"]["layout_version"], 1)
+        self.assertEqual(hash_tree(self.studio), before)
+
+    def test_list_projects_rejects_input_keys(self):
+        completed, response = self.list_projects({"project_dir": str(self.studio / "projects/example")})
+        self.assertEqual(completed.returncode, 2)
+        self.assertEqual(response["error"]["field"], "project_dir")
+        self.assertFalse(self.studio.exists())
+
+    def test_list_projects_rejects_path_like_child_name(self):
+        source = self.create("Source")
+        unsafe = self.studio / "projects/..-escape"
+        (unsafe / "metadata").mkdir(parents=True)
+        state = json.loads((source / "metadata/state.json").read_text("utf-8"))
+        state["project_name"] = "Looks like a path"
+        state["project_slug"] = "..-escape"
+        (unsafe / "metadata/state.json").write_text(json.dumps(state), encoding="utf-8")
+
+        completed, response = self.list_projects()
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertNotIn("..-escape", [item["project_slug"] for item in response["data"]["projects"]])
+        self.assertIn({"name": "..-escape", "code": "invalid_state"}, response["data"]["skipped"])
+
     def test_every_schema_command_dispatches(self):
         schema = json.loads((self.bundle / "schemas/command-io.schema.json").read_text("utf-8"))
         commands = set(schema["properties"]["command"]["enum"]) - {"render_options", "command_error"}
-        for command in sorted(commands):
+        for command in sorted(commands - {"list_projects"}):
             completed, response = self.run_cli(command, {})
             self.assertEqual(response["command"], command)
             self.assertFalse(response["ok"], command)  # an empty payload is always incomplete

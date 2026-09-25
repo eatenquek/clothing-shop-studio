@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 from studio_core import SCHEMA_VERSION
-from studio_core.errors import StudioError, ValidationError
+from studio_core.errors import StorageError, StudioError, ValidationError
 from studio_core.paths import StudioPaths, project_area
 from studio_core.approval import approve_design
 from studio_core.export import export_blockers, export_production_pack
@@ -82,6 +82,67 @@ def _asset_folders(project: Path) -> dict:
             name: path.relative_to(STUDIO.root).as_posix() for name, path in folders.items()
         },
     }
+
+
+def command_list_projects(payload: dict) -> dict:
+    """List valid direct-child projects without creating or repairing storage."""
+    if payload:
+        field = sorted(payload)[0]
+        raise ValidationError(
+            "Project listing does not accept input fields.",
+            field=field,
+            recovery="Send an empty JSON object.",
+        )
+    root = STUDIO.projects_dir
+    if not root.exists():
+        return {"projects": [], "skipped": []}
+
+    projects, skipped = [], []
+    for entry in sorted(root.iterdir(), key=lambda path: path.name):
+        if entry.is_symlink():
+            skipped.append({"name": entry.name, "code": "symlink_refused"})
+            continue
+        if not entry.is_dir():
+            continue
+        state_path = entry / "metadata/state.json"
+        if not state_path.is_file():
+            skipped.append({"name": entry.name, "code": "missing_state"})
+            continue
+        try:
+            state = load_state(entry)
+        except StorageError:
+            skipped.append({"name": entry.name, "code": "invalid_state"})
+            continue
+        except ValidationError:
+            skipped.append({"name": entry.name, "code": "unsupported_schema"})
+            continue
+        required = ("project_name", "project_slug", "phase", "updated_at")
+        if any(not isinstance(state.get(key), str) or not state[key] for key in required):
+            skipped.append({"name": entry.name, "code": "invalid_state"})
+            continue
+        try:
+            expected_project = STUDIO.project(state["project_slug"])
+        except StudioError:
+            skipped.append({"name": entry.name, "code": "invalid_state"})
+            continue
+        if expected_project != entry.resolve():
+            skipped.append({"name": entry.name, "code": "invalid_state"})
+            continue
+        layout_version = state.get("layout_version", 1)
+        projects.append({
+            "name": state["project_name"],
+            "project_slug": state["project_slug"],
+            "project_dir": str(entry.resolve()),
+            "phase": state["phase"],
+            "updated_at": state["updated_at"],
+            "layout_version": layout_version,
+            "migration_required": layout_version != 2,
+        })
+
+    projects.sort(key=lambda item: item["project_slug"])
+    projects.sort(key=lambda item: item["updated_at"], reverse=True)
+    skipped.sort(key=lambda item: item["name"])
+    return {"projects": projects, "skipped": skipped}
 
 
 def command_create_project(payload: dict) -> dict:
@@ -277,6 +338,7 @@ def command_migrate_layout(payload: dict) -> dict:
 
 
 COMMANDS = {
+    "list_projects": command_list_projects,
     "create_project": command_create_project,
     "resume_project": command_resume_project,
     "record_answer": command_record_answer,
