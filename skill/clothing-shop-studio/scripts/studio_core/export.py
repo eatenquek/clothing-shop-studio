@@ -12,6 +12,7 @@ from pathlib import Path
 from string import Template
 
 from .errors import StorageError, ValidationError
+from .paths import project_area, resolve_stored, stored_relative
 from .interview import CRITICAL_FIELDS, triggered_confirmations
 from .store import _utc_now, append_event, canonical_json, load_state, write_atomic
 from .validation import validate_project
@@ -269,7 +270,7 @@ def export_blockers(
 
 def next_pack_version(project_dir: Path, state: dict) -> str:
     numbers = [int(pack["version"].split("pack-v")[1]) for pack in state.get("production", {}).get("packs", [])]
-    root = Path(project_dir) / PRODUCTION_DIR
+    root = project_area(Path(project_dir), PRODUCTION_DIR.as_posix()) / "packs"
     if root.is_dir():
         numbers += [int(match.group(1)) for path in root.iterdir() if (match := PACK_PATTERN.match(path.name))]
     return f"pack-v{max(numbers, default=0) + 1:03d}"
@@ -422,7 +423,7 @@ def export_production_pack(project_dir: Path, now: str | None = None) -> Path:
     state = load_state(project)
     timestamp = now or _utc_now()
     version = next_pack_version(project, state)
-    target = project / PRODUCTION_DIR / version
+    target = project_area(project, PRODUCTION_DIR.as_posix()) / "packs" / version
     try:
         target.mkdir(parents=True, exist_ok=False)
     except FileExistsError as exc:
@@ -435,7 +436,7 @@ def export_production_pack(project_dir: Path, now: str | None = None) -> Path:
         masters = _masters(state, latest["version"])
         for master in masters:
             filename = _master_filename(state, master, version, used)
-            shutil.copyfile(project / master["path"], target / "masters" / filename)
+            shutil.copyfile(resolve_stored(project, master["path"]), target / "masters" / filename)
             if _sha256(target / "masters" / filename) != master["sha256"]:
                 raise ValidationError(f"`{master['id']}` changed while exporting.", recovery="Validate and export again.")
             copies.append((master, filename))
@@ -461,7 +462,7 @@ def export_production_pack(project_dir: Path, now: str | None = None) -> Path:
         write_atomic(target / "manifest.json", manifest_bytes)
         record = {
             "version": version,
-            "path": target.relative_to(project).as_posix(),
+            "path": stored_relative(project, target, category="production"),
             "files": files,
             "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
             "approved_versions": manifest["approved_versions"],

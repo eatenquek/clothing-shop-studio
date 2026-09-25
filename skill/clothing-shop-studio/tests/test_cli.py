@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import os
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # discoverable from any cwd
@@ -16,6 +17,7 @@ class CliTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
+        self.studio = self.root / "Documents/Clothing-Shop-Studio"
         self.bundle = Path(__file__).resolve().parents[1]
         self.script = self.bundle / "scripts/studio.py"
 
@@ -31,18 +33,22 @@ class CliTests(unittest.TestCase):
             capture_output=True,
             check=False,
             cwd=self.root,
+            env={**os.environ, "HOME": str(self.root)},
         )
         return completed, json.loads(completed.stdout)
 
     def create(self, name: str = "KIKI KAKA") -> Path:
         completed, response = self.run_cli(
-            "create_project", {"root": str(self.root / "projects"), "name": name}
+            "create_project", {"root": str(self.studio / "projects"), "name": name}
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         return Path(response["data"]["project_dir"])
 
+    def asset_dir(self, project: Path, area: str, relative: str) -> Path:
+        return self.studio / area / project.name / relative
+
     def test_create_resume_and_status(self):
-        root = self.root / "projects"
+        root = self.studio / "projects"
         completed, response = self.run_cli(
             "create_project", {"root": str(root), "name": "KIKI KAKA"}
         )
@@ -62,7 +68,7 @@ class CliTests(unittest.TestCase):
 
     def test_create_and_resume_return_first_unanswered_question(self):
         completed, response = self.run_cli(
-            "create_project", {"root": str(self.root / "projects"), "name": "KIKI KAKA"}
+            "create_project", {"root": str(self.studio / "projects"), "name": "KIKI KAKA"}
         )
         self.assertEqual(response["data"]["next_question"]["id"], "reference_image")
         _, resumed = self.run_cli(
@@ -143,7 +149,7 @@ class CliTests(unittest.TestCase):
              "placement": "upper_back", "colors": ["#111111", "#EEEEEE"]}
             for slot in slots
         ]
-        out_dir = project / "concepts/generated/back_typography/r01"
+        out_dir = self.asset_dir(project, "generated", "concepts/back_typography/r01")
         brief_file = self.root / "briefs.json"
         brief_file.write_text(
             json.dumps({"project_dir": str(project), "output_dir": str(out_dir), "briefs": briefs}), "utf-8"
@@ -164,7 +170,7 @@ class CliTests(unittest.TestCase):
                 "decision_id": "back_typography",
                 "results": [
                     {"label": slot["label"], "axis": slot["axis"],
-                     "path": str(Path(cards[slot["label"]]).relative_to(project)),
+                     "path": str(Path(cards[slot["label"]]).resolve().relative_to(self.studio.resolve())),
                      "renderer": "svg-fallback", "prompt": "Condensed distressed type",
                      "convention_broken": "Type crosses the shoulder seam" if slot["wildcard"] else None}
                     for slot in slots
@@ -192,7 +198,7 @@ class CliTests(unittest.TestCase):
 
     def test_render_options_refuses_implicit_overwrite(self):
         project = self.create()
-        output = project / "concepts/generated/front_art/r01"
+        output = self.asset_dir(project, "generated", "concepts/front_art/r01")
         briefs = [
             {"label": label, "axis": axis, "title": label, "brief": axis, "garment": "tee",
              "placement": "centre_chest", "colors": ["#111111", "#EEEEEE"]}
@@ -213,13 +219,13 @@ class CliTests(unittest.TestCase):
 
     def test_approve_register_master_and_validate(self):
         project = self.create()
-        concept_dir = project / "concepts/generated/back_typography/r01"
+        concept_dir = self.asset_dir(project, "generated", "concepts/back_typography/r01")
         concept_dir.mkdir(parents=True)
         results = []
         for label, axis in zip("ABCW", ("density", "alignment", "distress", "scale")):
             (concept_dir / f"option-{label}.svg").write_text(f"<svg><text>{label}</text></svg>", "utf-8")
             results.append({"label": label, "axis": axis, "renderer": "svg-fallback",
-                            "path": f"concepts/generated/back_typography/r01/option-{label}.svg",
+                            "path": f"generated/{project.name}/concepts/back_typography/r01/option-{label}.svg",
                             "convention_broken": "Crosses the seam" if label == "W" else None})
         _, registered = self.run_cli(
             "generate_options",
@@ -234,13 +240,13 @@ class CliTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertEqual(approved["data"]["version"], "v001")
 
-        master = project / "production/masters/back_MASTER.svg"
-        master.parent.mkdir(parents=True)
+        master = self.asset_dir(project, "production", "masters/back_MASTER.svg")
+        master.parent.mkdir(parents=True, exist_ok=True)
         master.write_text("<svg><text>KIKI KAKA</text></svg>", "utf-8")
         completed, registered_master = self.run_cli(
             "register_file",
             {"project_dir": str(project), "origin": "production_master",
-             "path": "production/masters/back_MASTER.svg", "construction": "typeset",
+             "path": f"production/{project.name}/masters/back_MASTER.svg", "construction": "typeset",
              "approved_version": "v001"},
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
@@ -256,12 +262,14 @@ class CliTests(unittest.TestCase):
         self.assertEqual(state["data"]["blockers"], [])
 
     def test_export_production_pack_reports_pack_or_blockers(self):
-        blocked_project = ready_project(self.root / "blocked", assumptions={"quantity": {"confirmed": False}})
+        blocked_project = ready_project(
+            self.studio, name="Blocked project", assumptions={"quantity": {"confirmed": False}}
+        )
         completed, blocked = self.run_cli("export_production_pack", {"project_dir": str(blocked_project)})
         self.assertEqual(completed.returncode, 2)
         self.assertIn("unconfirmed_critical_assumption", [item["code"] for item in blocked["error"]["details"]])
 
-        project = ready_project(self.root / "ready")
+        project = ready_project(self.studio, name="Ready project")
         completed, response = self.run_cli("export_production_pack", {"project_dir": str(project)})
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertEqual(response["data"]["pack_version"], "pack-v001")
@@ -290,7 +298,9 @@ class CliTests(unittest.TestCase):
         self.assertEqual(listed, commands)
 
     def test_structured_validation_error(self):
-        completed, response = self.run_cli("create_project", {"name": "Missing root"})
+        completed, response = self.run_cli(
+            "create_project", {"root": str(self.root / "projects"), "name": "Wrong root"}
+        )
         self.assertEqual(completed.returncode, 2)
         self.assertFalse(response["ok"])
         self.assertEqual(response["error"]["code"], "validation_error")
@@ -313,7 +323,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(response["error"]["path"], str(missing))
 
     def test_unexpected_failure_returns_structured_internal_error(self):
-        project = self.root / "broken-project"
+        project = self.studio / "projects/broken-project"
         (project / "metadata").mkdir(parents=True)
         (project / "metadata/state.json").write_text('{"schema_version": 1}\n', encoding="utf-8")
         completed = subprocess.run(
@@ -323,6 +333,7 @@ class CliTests(unittest.TestCase):
             capture_output=True,
             check=False,
             cwd=self.root,
+            env={**os.environ, "HOME": str(self.root)},
         )
         self.assertEqual(completed.returncode, 5, completed.stderr)
         response = json.loads(completed.stdout)
@@ -331,7 +342,7 @@ class CliTests(unittest.TestCase):
         self.assertNotIn("project_name", response["error"]["message"])
 
     def test_validate_for_export_includes_export_blockers(self):
-        project = ready_project(self.root)
+        project = ready_project(self.studio, name="Changed answers project")
         self.run_cli(
             "record_answer", {"project_dir": str(project), "field": "base_color", "value": "hot pink"}
         )
@@ -343,7 +354,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("approval_answers_changed", [item["code"] for item in response["data"]["errors"]])
 
     def test_validate_for_export_honours_requested_master_ids(self):
-        project = ready_project(self.root)
+        project = ready_project(self.studio, name="Missing master project")
         completed, response = self.run_cli(
             "validate",
             {
@@ -407,7 +418,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(response["error"]["field"], "arguments")
 
     def test_presentation_commands_are_wired_and_structured(self):
-        project = ready_project(self.root / "p")
+        project = ready_project(self.studio, name="Presentation project")
         completed, response = self.run_cli("create_models", {"project_dir": str(project), "mode": "install_defaults"})
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertEqual(len(response["data"]["installed"]), 4)
@@ -426,7 +437,7 @@ class CliTests(unittest.TestCase):
             self.assertIn(command, names)
 
     def test_create_listing_cli_uses_the_recorded_project_name(self):
-        project = ready_project(self.root / "names")
+        project = ready_project(self.studio, name="Names project")
         completed, response = self.run_cli("create_listing", {"project_dir": str(project), "mode": "build",
                                                               "version": "v001",
                                                               "design_name": "Silk Luxe Premium Cashmere Blend"})
@@ -436,8 +447,8 @@ class CliTests(unittest.TestCase):
         completed, response = self.run_cli("create_listing", {"project_dir": str(project), "mode": "build",
                                                               "version": "v001"})
         self.assertEqual(completed.returncode, 0, completed.stderr)
-        html = (project / response["data"]["files"]["html"]).read_text("utf-8")
-        self.assertIn("Test project", html)
+        html = (self.studio / response["data"]["files"]["html"]).read_text("utf-8")
+        self.assertIn("Names project", html)
 
 if __name__ == "__main__":
     unittest.main()

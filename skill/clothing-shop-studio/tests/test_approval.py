@@ -46,7 +46,7 @@ class ApprovalTests(unittest.TestCase):
         self.assertEqual(len(approved), 1)
         self.assertEqual(approved[0]["parents"], [self.concepts["B"]["id"]])
         self.assertTrue((self.project / approved[0]["path"]).is_file())
-        self.assertTrue(approved[0]["path"].startswith(f"designs/approved/{version.name}/"))
+        self.assertTrue(approved[0]["path"].startswith(f"approved/{self.project.name}/{version.name}/"))
         self.assertEqual(state["phase"], "approved")
 
     def test_approval_rejects_unknown_ids_and_empty_statement(self):

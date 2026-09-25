@@ -4,9 +4,11 @@
   "title": "Clothing Shop Studio file manifest",
   "description": "Generated view of metadata/state.json `files`. Every file records where it came from; folder and origin must agree.",
   "type": "object",
-  "required": ["schema_version", "files"],
+  "required": ["schema_version", "layout_version", "path_base", "files"],
   "properties": {
-    "schema_version": {"const": 1},
+    "schema_version": {"const": 2},
+    "layout_version": {"const": 2},
+    "path_base": {"const": "studio_root"},
     "files": {"type": "array", "items": {"$ref": "#/$defs/file"}}
   },
   "$defs": {
@@ -17,9 +19,9 @@
         "id": {"type": "string", "minLength": 1},
         "origin": {
           "enum": ["user_reference", "online_reference", "generated_concept", "approved_design", "production_master"],
-          "description": "user_reference: references/user/; online_reference: references/online/; generated_concept: concepts/generated/; approved_design: designs/approved/vNNN/; production_master: production/."
+          "description": "Origins map to the matching project-scoped directory under references/, generated/, approved/, or production/."
         },
-        "path": {"type": "string", "description": "POSIX path relative to the project directory."},
+        "path": {"type": "string", "description": "POSIX path relative to the Clothing Studio root."},
         "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "registered_at": {"type": "string", "format": "date-time"},
         "production_eligible": {"type": "boolean"},

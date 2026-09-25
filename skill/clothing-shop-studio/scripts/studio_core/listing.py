@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 
 from .errors import ValidationError
+from .paths import area_relative, project_area, resolve_stored
 from .presentation import (
     PRESENTATION_FOLDERS,
     file_index,
@@ -72,13 +73,13 @@ def build_listing(project: Path, payload: dict, now: str | None = None) -> dict:
     files = file_index(state)
     slots = _pick(state, version)
     number = 1 + len(state.get("presentation", {}).get("listings", []))
-    folder = f"{FOLDER}v{number:03d}"
-    out = project / folder
+    folder = area_relative(project, FOLDER, f"v{number:03d}")
+    out = project_area(project, FOLDER) / f"v{number:03d}"
     name = html.escape(state["project_name"], quote=True)
 
     def src(slot: str) -> str | None:
         entry = files.get(slots[slot]) if slots[slot] else None
-        return html.escape(os.path.relpath(project / entry["path"], out), quote=True) if entry else None
+        return html.escape(os.path.relpath(resolve_stored(project, entry["path"]), out), quote=True) if entry else None
 
     def frame(slot: str, size: str) -> str:
         image = src(slot)

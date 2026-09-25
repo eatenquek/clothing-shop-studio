@@ -8,6 +8,7 @@ from pathlib import Path
 from .config import resolve_inside
 from .errors import ValidationError
 from .interview import APPROVAL_CUES, decision_problem
+from .paths import StudioPaths
 from .store import append_event, load_state
 
 PRESENTATION_FOLDERS = {
@@ -168,7 +169,7 @@ def require_round(value, recovery: str) -> int:
 
 
 def library_root(project: Path) -> Path:
-    return Path(project).parent / MODELS_DIRNAME
+    return StudioPaths.for_project(project).root / "generated" / MODELS_DIRNAME
 
 
 def next_round(state: dict, origin: str, group_key: str, group: str) -> int:

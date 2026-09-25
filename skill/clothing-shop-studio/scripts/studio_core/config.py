@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 from .errors import StorageError, UnsafePathError, ValidationError
+from .paths import project_area, project_paths
 
 ENV_HOME = "CLOTHING_SHOP_STUDIO_HOME"
 
@@ -31,7 +32,7 @@ def ensure_external(path: Path, skill_dir: Path) -> Path:
 
 
 def resolve_inside(project: Path, relative, folder: str, field: str = "path") -> tuple[Path, str]:
-    """Resolve a project-relative file and require it to exist inside `folder`.
+    """Resolve a studio-relative file and require it to exist inside a project area.
 
     Returns the absolute path and the normalised POSIX path relative to the project.
     Symlinks and `..` segments are resolved first, so they cannot escape the folder.
@@ -42,9 +43,23 @@ def resolve_inside(project: Path, relative, folder: str, field: str = "path") ->
             field=field,
             recovery=f"Save the file under {folder} and send its relative path.",
         )
-    project = Path(project).resolve()
-    root = (project / folder).resolve()
-    candidate = (project / relative).resolve()
+    paths, project, slug = project_paths(project)
+    root = project_area(project, folder).resolve(strict=False)
+    path = Path(relative)
+    # Layout-v2 callers use studio-root-relative paths. Accept area-relative
+    # inputs as a convenience at the command boundary, but always return the
+    # canonical stored form.
+    if len(path.parts) >= 2 and path.parts[0] in {
+        "references", "generated", "approved", "production", "exports"
+    } and path.parts[1] == slug:
+        candidate = paths.from_relative(path.as_posix(), slug=slug)
+    else:
+        legacy_prefix = Path(folder.strip("/"))
+        try:
+            tail = path.relative_to(legacy_prefix)
+        except ValueError:
+            tail = path
+        candidate = (root / tail).resolve(strict=False)
     if not _is_within(candidate, root):
         raise UnsafePathError(
             f"This file must stay inside {folder}.",
@@ -59,7 +74,7 @@ def resolve_inside(project: Path, relative, folder: str, field: str = "path") ->
             path=relative,
             recovery="Create or copy the file before registering it.",
         )
-    return candidate, candidate.relative_to(project).as_posix()
+    return candidate, paths.to_relative(candidate, slug=slug)
 
 
 def resolve_storage_root(

@@ -13,12 +13,40 @@ def make_project(root: Path, name: str = "Test project") -> Path:
     skill_dir = root / "installed-skill"
     skill_dir.mkdir(parents=True, exist_ok=True)
     state = create_project(root / "projects", name, skill_dir, FIXED_NOW)
-    return root / "projects" / state["project_slug"]
+    project = root / "projects" / state["project_slug"]
+    # Legacy-looking fixture links keep older behavioural tests concise while
+    # production projects remain metadata-only. Core code resolves every path
+    # through the canonical studio-root boundary.
+    links = {
+        "generated": root / "generated",
+        "approved": root / "approved",
+        "exports": root / "exports",
+        "references/user": root / "references" / state["project_slug"] / "user",
+        "references/online": root / "references" / state["project_slug"] / "online",
+        f"references/{state['project_slug']}": root / "references" / state["project_slug"],
+        "concepts/generated": root / "generated" / state["project_slug"] / "concepts",
+        "designs/approved": root / "approved" / state["project_slug"],
+        "production/masters": root / "production" / state["project_slug"] / "masters",
+        "production/packs": root / "production" / state["project_slug"] / "packs",
+        f"production/{state['project_slug']}": root / "production" / state["project_slug"],
+        "presentation/extracted": root / "generated" / state["project_slug"] / "extracted",
+        "presentation/models": root / "generated" / state["project_slug"] / "models",
+        "presentation/tryon": root / "generated" / state["project_slug"] / "tryon",
+        "presentation/listing": root / "exports" / state["project_slug"] / "listings",
+    }
+    for relative, target in links.items():
+        link = project / relative
+        link.parent.mkdir(parents=True, exist_ok=True)
+        if not link.exists():
+            link.symlink_to(target, target_is_directory=True)
+    return project
 
 
 def blank_state(name: str = "Test project") -> dict:
     return {
-        "schema_version": 1,
+        "schema_version": 2,
+        "layout_version": 2,
+        "path_base": "studio_root",
         "project_name": name,
         "project_slug": "test-project",
         "created_at": FIXED_NOW,
@@ -113,10 +141,23 @@ def register_file(
     """
     from scripts.studio_core.store import append_event
 
-    path = project / relative
+    from scripts.studio_core.paths import AREA_PARTS, project_area, stored_relative
+
+    original = Path(relative)
+    path = None
+    for area in sorted(AREA_PARTS, key=len, reverse=True):
+        try:
+            tail = original.relative_to(Path(area))
+        except ValueError:
+            continue
+        path = project_area(project, area) / tail
+        break
+    if path is None:
+        path = project / relative
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(content)
-    entry = {"path": relative, "sha256": hashlib.sha256(content).hexdigest()}
+    stored = stored_relative(project, path) if path != project / relative else relative
+    entry = {"path": stored, "sha256": hashlib.sha256(content).hexdigest()}
     if origin is None:
         return entry
     entry.update(

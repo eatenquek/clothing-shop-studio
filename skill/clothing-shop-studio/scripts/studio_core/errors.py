@@ -50,3 +50,7 @@ class UnsafePathError(StudioError):
 class StorageError(StudioError):
     code = "storage_error"
     exit_code = 4
+
+
+class MigrationRequiredError(ValidationError):
+    code = "migration_required"

@@ -10,7 +10,12 @@ def render_project_yaml(state: dict) -> str:
 
 def render_manifest(state: dict) -> str:
     """Render metadata/manifest.json from the canonical file records in state."""
-    payload = {"schema_version": state.get("schema_version", 1), "files": state.get("files", [])}
+    payload = {
+        "schema_version": state.get("schema_version", 1),
+        "layout_version": state.get("layout_version", 1),
+        "path_base": state.get("path_base", "project_dir"),
+        "files": state.get("files", []),
+    }
     return json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 

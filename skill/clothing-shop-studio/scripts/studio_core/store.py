@@ -10,22 +10,14 @@ import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .config import ensure_external
-from .errors import StorageError, ValidationError
+from .errors import MigrationRequiredError, StorageError, ValidationError
 from .interview import pending_assumptions, record_answer
+from .paths import ASSET_CATEGORIES, StudioPaths
 from .presentation_state import PRESENTATION_EVENTS, apply_presentation_event
 from .views import render_decisions_md, render_manifest, render_project_yaml
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 GENESIS_HASH = "0" * 64
-PROJECT_DIRS = (
-    "metadata",
-    "references/user",
-    "references/online",
-    "concepts/generated",
-    "designs/approved",
-    "production",
-)
 
 
 def _utc_now() -> str:
@@ -69,9 +61,9 @@ def write_atomic(path: Path, data: bytes) -> None:
         ) from exc
 
 
-def _state_template(name: str, slug: str, now: str) -> dict:
-    return {
-        "schema_version": SCHEMA_VERSION,
+def _state_template(name: str, slug: str, now: str, layout_version: int = 2) -> dict:
+    state = {
+        "schema_version": SCHEMA_VERSION if layout_version == 2 else 1,
         "project_name": name,
         "project_slug": slug,
         "created_at": now,
@@ -87,6 +79,9 @@ def _state_template(name: str, slug: str, now: str) -> dict:
         "events_count": 1,
         "last_event_hash": None,
     }
+    if layout_version == 2:
+        state.update({"layout_version": 2, "path_base": "studio_root"})
+    return state
 
 
 def canonical_json(value) -> str:
@@ -125,7 +120,10 @@ def replay_state(events: list[dict]) -> dict:
             recovery="Restore metadata/decisions.jsonl from backup.",
         )
     first = events[0]
-    state = _state_template(first["name"], first.get("slug") or _slugify(first["name"]), first["timestamp"])
+    layout_version = 2 if first.get("layout_version") == 2 else 1
+    state = _state_template(
+        first["name"], first.get("slug") or _slugify(first["name"]), first["timestamp"], layout_version
+    )
     state["last_event_hash"] = first.get("event_hash")
     for event in events[1:]:
         state = _apply_event(state, event, allow_legacy_confirmations=True)
@@ -139,7 +137,16 @@ def create_project(root: Path, name: str, skill_dir: Path, now: str) -> dict:
             field="name",
             recovery="Provide a short project name.",
         )
-    resolved_root = ensure_external(Path(root), Path(skill_dir))
+    resolved_root = Path(root).expanduser().resolve(strict=False)
+    if resolved_root.name != "projects":
+        raise ValidationError(
+            "Project root must be the canonical Clothing Studio projects folder.",
+            field="root",
+            path=str(resolved_root),
+            recovery="Use $HOME/Documents/Clothing-Shop-Studio/projects.",
+        )
+    paths = StudioPaths(resolved_root.parent).ensure_layout()
+    resolved_root = paths.projects_dir
     slug = _slugify(name)
     project = resolved_root / slug
     if project.exists():
@@ -150,8 +157,19 @@ def create_project(root: Path, name: str, skill_dir: Path, now: str) -> dict:
             recovery="Resume the existing project or choose a different name.",
         )
     try:
-        for relative in PROJECT_DIRS:
-            (project / relative).mkdir(parents=True, exist_ok=True)
+        (project / "metadata").mkdir(parents=True, exist_ok=True)
+        for category in ASSET_CATEGORIES:
+            paths.asset_dir(category, slug).mkdir(parents=True, exist_ok=True)
+        (paths.asset_dir("references", slug) / "user").mkdir(parents=True, exist_ok=True)
+        (paths.asset_dir("references", slug) / "online").mkdir(parents=True, exist_ok=True)
+        (paths.asset_dir("generated", slug) / "concepts").mkdir(parents=True, exist_ok=True)
+        (paths.asset_dir("generated", slug) / "extracted").mkdir(parents=True, exist_ok=True)
+        (paths.asset_dir("generated", slug) / "models/pinned").mkdir(parents=True, exist_ok=True)
+        (paths.asset_dir("generated", slug) / "tryon").mkdir(parents=True, exist_ok=True)
+        (paths.asset_dir("production", slug) / "masters").mkdir(parents=True, exist_ok=True)
+        (paths.asset_dir("production", slug) / "packs").mkdir(parents=True, exist_ok=True)
+        for child in ("catalogues", "listings", "deliveries"):
+            (paths.asset_dir("exports", slug) / child).mkdir(parents=True, exist_ok=True)
     except OSError as exc:
         raise StorageError(
             "Could not create the project folders.",
@@ -159,7 +177,8 @@ def create_project(root: Path, name: str, skill_dir: Path, now: str) -> dict:
             recovery="Choose a writable project root and retry.",
         ) from exc
 
-    event = _seal({"type": "project_created", "name": name.strip(), "slug": slug, "timestamp": now}, GENESIS_HASH)
+    event = _seal({"type": "project_created", "name": name.strip(), "slug": slug,
+                   "layout_version": 2, "timestamp": now}, GENESIS_HASH)
     state = _state_template(name.strip(), slug, now)
     state["last_event_hash"] = event["event_hash"]
     try:
@@ -189,7 +208,7 @@ def load_state(project_dir: Path) -> dict:
             path=str(path),
             recovery="Restore metadata/state.json from backup or create a new project.",
         ) from exc
-    if state.get("schema_version") != SCHEMA_VERSION:
+    if state.get("schema_version") not in {1, SCHEMA_VERSION}:
         raise ValidationError(
             "This project uses an unsupported schema version.",
             field="schema_version",
@@ -270,6 +289,18 @@ def _apply_event(
         next_state["phase"] = event.get("phase", next_state.get("phase"))
     elif event_type == "assumption":
         next_state.setdefault("assumptions", []).append(event.get("assumption", {}))
+    elif event_type == "layout_migrated":
+        mapping = event.get("path_mapping") or {}
+        for entry in next_state.get("files", []):
+            if entry.get("path") in mapping:
+                entry["path"] = mapping[entry["path"]]
+        for concept in next_state.get("concepts", []):
+            if concept.get("contact_sheet") in mapping:
+                concept["contact_sheet"] = mapping[concept["contact_sheet"]]
+        for pack in next_state.get("production", {}).get("packs", []):
+            if pack.get("path") in mapping:
+                pack["path"] = mapping[pack["path"]]
+        next_state.update({"schema_version": 2, "layout_version": 2, "path_base": "studio_root"})
     elif event_type in PRESENTATION_EVENTS:
         next_state = apply_presentation_event(next_state, event)
     next_state["updated_at"] = event["timestamp"]
@@ -291,6 +322,13 @@ def append_event(project_dir: Path, event: dict, now: str | None = None) -> dict
     with lock_path.open("a+b") as lock:
         fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
         state = load_state(project)
+        if state.get("layout_version") != 2 and event.get("type") != "layout_migrated":
+            raise MigrationRequiredError(
+                "This legacy project is read-only until its layout is migrated.",
+                field="project_dir",
+                path=str(project),
+                recovery="Run migrate_layout inventory, review the mapping, then apply it with an affirmative quote.",
+            )
         events = _load_events(project)
         if broken_links(events) or replay_state(events) != state:
             # Never build new decisions on a hand-edited state or log.

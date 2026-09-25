@@ -15,6 +15,7 @@ from pathlib import Path
 
 from .config import ensure_external
 from .errors import ValidationError
+from .paths import StudioPaths, area_relative, resolve_stored
 from .presentation import (
     PRESENTATION_FOLDERS,
     check_image,
@@ -145,7 +146,7 @@ def plan_models(project: Path, payload: dict) -> dict:
         identities[label] = identity
         jobs.append({"label": label, "prompt": _model_prompt(identity) + (
             " Vary one visible trait from the other candidates." if label == "W" else ""),
-            "destination": f"{FOLDER}candidates/r{round_number:02d}/model-{label}.png", "aspect": "3:4"})
+            "destination": area_relative(project, FOLDER, "candidates", f"r{round_number:02d}", f"model-{label}.png"), "aspect": "3:4"})
     return {"round": round_number, "jobs": jobs, "identities": identities}
 
 
@@ -155,7 +156,7 @@ def plan_reference(project: Path, payload: dict) -> dict:
         raise presentation_error("model_not_kept", "That model is not in the library.",
                                  "Install defaults or keep a candidate first.", field="model_id")
     return {"jobs": [{"model_id": model["id"], "prompt": _model_prompt(model),
-                      "destination": f"{FOLDER}references/{model['id']}-front.png", "aspect": "3:4"}]}
+                      "destination": area_relative(project, FOLDER, "references", f"{model['id']}-front.png"), "aspect": "3:4"}]}
 
 
 def register_models(project: Path, payload: dict, now: str | None = None) -> list[dict]:
@@ -171,7 +172,7 @@ def register_models(project: Path, payload: dict, now: str | None = None) -> lis
         state = load_state(project)
         for result in results:
             label = result.get("label")
-            expected = f"{FOLDER}candidates/r{round_number:02d}/model-{label}.png"
+            expected = area_relative(project, FOLDER, "candidates", f"r{round_number:02d}", f"model-{label}.png")
             if label not in LABELS or result.get("path") != expected:
                 raise ValidationError("Register candidates at their planned destinations.", field="path",
                                       recovery=f"Save candidate {label} as {expected}.")
@@ -192,7 +193,7 @@ def register_models(project: Path, payload: dict, now: str | None = None) -> lis
         library = library_models(project)
         for result in results:
             model = library.get(result.get("model_id"))
-            expected = f"{FOLDER}references/{result.get('model_id')}-front.png"
+            expected = area_relative(project, FOLDER, "references", f"{result.get('model_id')}-front.png")
             if model is None or result.get("path") != expected:
                 raise ValidationError("Register the reference at its planned destination.", field="path",
                                       recovery=f"Save it as {expected}.")
@@ -219,7 +220,7 @@ def keep_models(project: Path, payload: dict, now: str | None = None) -> dict:
         write_atomic(target / "identity.json",
                      (json.dumps({**entry["identity"], "renderer": entry["renderer"]}, indent=2, sort_keys=True)
                       + "\n").encode("utf-8"))
-        shutil.copyfile(project / entry["path"], target / "front.png")
+        shutil.copyfile(resolve_stored(project, entry["path"]), target / "front.png")
     return {"models": ids, "library": str(root)}
 
 
@@ -235,8 +236,8 @@ def pin_model(project: Path, model_id: str, now: str | None = None) -> dict:
                                  "That model is not in the library or has no reference image yet.",
                                  "Keep a candidate, or run `create_models` mode `plan_reference` for a default.",
                                  field="model_id")
-    relative = f"{FOLDER}pinned/{model_id}-front.png"
-    target = project / relative
+    relative = area_relative(project, FOLDER, "pinned", f"{model_id}-front.png")
+    target = StudioPaths.for_project(project).from_relative(relative, slug=Path(project).name)
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(model["front_image"], target)
     timestamp = now or _utc_now()

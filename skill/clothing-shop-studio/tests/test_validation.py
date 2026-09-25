@@ -316,7 +316,7 @@ class ValidationTests(unittest.TestCase):
                     },
                     FIXED_NOW,
                 )
-                self.assertEqual(entry["path"], f"production/masters/{name}")
+                self.assertEqual(entry["path"], f"production/{self.project.name}/masters/{name}")
 
         for name, content in {
             "text_MASTER.dxf": b"just some notes\n",

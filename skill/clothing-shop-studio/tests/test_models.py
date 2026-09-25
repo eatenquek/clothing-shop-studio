@@ -82,7 +82,7 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(entry["origin"], "synthetic_model")
         self.assertTrue(entry["ai_generated_person"])
         self.assertEqual(pin_model(self.project, "m-kai", FIXED_NOW)["id"], entry["id"])
-        (self.project.parent / "_models/m-kai/front.png").write_bytes(png(99))
+        (self.project.parent.parent / "generated/_models/m-kai/front.png").write_bytes(png(99))
         self.assertEqual(validate_project(self.project)["errors"], [])
         self.assertTrue((self.project / entry["path"]).read_bytes() != png(99))
 

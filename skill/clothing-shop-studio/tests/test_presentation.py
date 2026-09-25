@@ -49,9 +49,12 @@ class PresentationCoreTests(unittest.TestCase):
     def test_check_image_refuses_wrong_folder_signature_and_empty(self):
         folder = PRESENTATION_FOLDERS["extracted_garment"]
         good = write(self.project, f"{folder}src/r01/tee.png", PNG_1PX)
-        self.assertEqual(check_image(self.project, good, folder)[1], good)
+        self.assertEqual(check_image(self.project, good, folder)[1], f"generated/{self.project.name}/extracted/src/r01/tee.png")
+        wrong = self.project.parent.parent / f"generated/{self.project.name}/concepts/x.png"
+        wrong.parent.mkdir(parents=True, exist_ok=True)
+        wrong.write_bytes(PNG_1PX)
         with self.assertRaises(UnsafePathError):
-            check_image(self.project, write(self.project, "concepts/generated/x.png", PNG_1PX), folder)
+            check_image(self.project, f"generated/{self.project.name}/concepts/x.png", folder)
         for name, data in (("fake.png", b"not a png"), ("empty.png", b""), ("doc.txt", b"text")):
             with self.subTest(name=name), self.assertRaises(ValidationError):
                 check_image(self.project, write(self.project, f"{folder}src/r01/{name}", data), folder)
@@ -97,7 +100,7 @@ class PresentationCoreTests(unittest.TestCase):
         self.assertEqual(validate_project(self.project)["errors"], [])
 
     def test_library_root_is_beside_projects(self):
-        self.assertEqual(library_root(self.project), self.project.parent / "_models")
+        self.assertEqual(library_root(self.project), (self.project.parent.parent / "generated/_models").resolve())
 
     def test_image_size_reads_png_jpeg_and_headers(self):
         png_path = self.project / "sample.png"

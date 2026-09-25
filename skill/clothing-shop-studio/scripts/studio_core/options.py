@@ -10,6 +10,7 @@ from pathlib import Path
 
 from .config import resolve_inside
 from .errors import ValidationError
+from .paths import area_relative
 from .store import _utc_now, append_event, load_state, write_atomic
 
 LABELS = ("A", "B", "C", "W")
@@ -48,8 +49,9 @@ def _distinct_axes(axes, field: str = "axes") -> list[str]:
     return cleaned
 
 
-def _destination(decision_id: str, round_number: int, label: str) -> str:
-    return f"{GENERATED_DIR.as_posix()}/{decision_id}/r{round_number:02d}/option-{label}"
+def _destination(decision_id: str, round_number: int, label: str, project: Path | None = None) -> str:
+    tail = f"{decision_id}/r{round_number:02d}/option-{label}"
+    return area_relative(project, GENERATED_DIR.as_posix(), tail) if project else f"{GENERATED_DIR.as_posix()}/{tail}"
 
 
 def plan_options(
@@ -58,6 +60,7 @@ def plan_options(
     constraints: dict,
     briefs: list[str] | None = None,
     round_number: int = 1,
+    project: Path | None = None,
 ) -> dict:
     """Return the A/B/C/W slot plan the agent renders before calling register."""
     decision_id = _decision_id(decision_id)
@@ -74,7 +77,7 @@ def plan_options(
             "label": label,
             "axis": axis,
             "wildcard": label == "W",
-            "destination": _destination(decision_id, round_number, label),
+            "destination": _destination(decision_id, round_number, label, project),
         }
         if briefs is not None:
             slot["brief"] = briefs[index]

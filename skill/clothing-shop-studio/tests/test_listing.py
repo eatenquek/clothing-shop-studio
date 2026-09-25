@@ -71,10 +71,11 @@ class ListingTests(TryOnTests):
 
         from scripts.studio_core.presentation import register_entries
 
-        relative = f"presentation/extracted/{cutout_id}.png"
+        relative = f"generated/{self.project.name}/extracted/{cutout_id}.png"
         data = png(seed)
-        (self.project / relative).parent.mkdir(parents=True, exist_ok=True)
-        (self.project / relative).write_bytes(data)
+        physical = self.project.parent.parent / relative
+        physical.parent.mkdir(parents=True, exist_ok=True)
+        physical.write_bytes(data)
         register_entries(self.project, [{"id": cutout_id, "origin": "extracted_garment", "path": relative,
                                          "sha256": hashlib.sha256(data).hexdigest(), "parents": [parent],
                                          "registered_at": FIXED_NOW, "production_eligible": False}], FIXED_NOW)

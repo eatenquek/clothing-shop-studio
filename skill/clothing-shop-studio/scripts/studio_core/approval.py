@@ -12,6 +12,7 @@ from pathlib import Path
 
 from .errors import StorageError, ValidationError
 from .interview import APPROVAL_CUES, decision_problem, is_delegation
+from .paths import project_area, resolve_stored, stored_relative
 from .store import _utc_now, append_event, canonical_json, load_state, write_atomic
 
 APPROVED_DIR = Path("designs/approved")
@@ -26,7 +27,7 @@ def _sha256(path: Path) -> str:
 def next_version(project_dir: Path, state: dict) -> str:
     """Next vNNN after every version on disk or on record, so a number is never reused."""
     numbers = [int(item["version"][1:]) for item in state.get("approvals", [])]
-    approved = Path(project_dir) / APPROVED_DIR
+    approved = project_area(Path(project_dir), APPROVED_DIR.as_posix())
     if approved.is_dir():
         numbers += [int(match.group(1)) for path in approved.iterdir() if (match := VERSION_PATTERN.match(path.name))]
     return f"v{max(numbers, default=0) + 1:03d}"
@@ -78,7 +79,7 @@ def approve_design(project_dir: Path, concept_ids: list[str], statement: str, no
                 field="concept_ids",
                 recovery="Register the preview through generate_options before approving it.",
             )
-        source = project / entry["path"]
+        source = resolve_stored(project, entry["path"])
         if not source.is_file() or _sha256(source) != entry["sha256"]:
             raise ValidationError(
                 f"`{concept_id}` changed or disappeared after it was shown to the user.",
@@ -94,7 +95,7 @@ def approve_design(project_dir: Path, concept_ids: list[str], statement: str, no
         relative = group.get("contact_sheet")
         if not relative or not set(group.get("ids", [])) & set(concept_ids) or relative in seen_sheets:
             continue
-        source = project / relative
+        source = resolve_stored(project, relative)
         expected = group.get("contact_sheet_sha256")
         if not source.is_file() or not expected or _sha256(source) != expected:
             raise ValidationError(
@@ -107,7 +108,7 @@ def approve_design(project_dir: Path, concept_ids: list[str], statement: str, no
 
     timestamp = now or _utc_now()
     version = next_version(project, state)
-    target = project / APPROVED_DIR / version
+    target = project_area(project, APPROVED_DIR.as_posix()) / version
     try:
         target.mkdir(parents=True, exist_ok=False)
     except FileExistsError as exc:
@@ -121,13 +122,13 @@ def approve_design(project_dir: Path, concept_ids: list[str], statement: str, no
         entries = []
         for concept in concepts:
             copy = target / f"{concept['id']}{Path(concept['path']).suffix}"
-            shutil.copyfile(project / concept["path"], copy)
+            shutil.copyfile(resolve_stored(project, concept["path"]), copy)
             entries.append(
                 {
                     "id": f"{version}-{concept['id']}",
                     "origin": "approved_design",
                     "version": version,
-                    "path": copy.relative_to(project).as_posix(),
+                    "path": stored_relative(project, copy, category="approved"),
                     "sha256": _sha256(copy),
                     "parents": [concept["id"]],
                     "registered_at": timestamp,
@@ -147,7 +148,7 @@ def approve_design(project_dir: Path, concept_ids: list[str], statement: str, no
                     "origin": "approved_design",
                     "role": "review_evidence",
                     "version": version,
-                    "path": copy.relative_to(project).as_posix(),
+                    "path": stored_relative(project, copy, category="approved"),
                     "sha256": _sha256(copy),
                     "parents": [item for item in group.get("ids", []) if item in concept_ids],
                     "registered_at": timestamp,

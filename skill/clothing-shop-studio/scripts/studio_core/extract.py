@@ -13,6 +13,7 @@ from pathlib import Path
 from .errors import ValidationError
 from .interview import CONFIRMATION_CUES, decision_problem
 from .pngcolour import garment_colours
+from .paths import StudioPaths, area_relative, project_area, resolve_stored, stored_relative
 from .presentation import (
     PRESENTATION_FOLDERS,
     check_image,
@@ -163,7 +164,7 @@ def plan_extraction(project: Path, payload: dict) -> dict:
                                  "Ask once and record the reply with `extract` mode `consent`.",
                                  field="source_id")
     round_number = next_round(state, "extracted_garment", "inventory_id", inventory["id"])
-    base = f"{FOLDER}{source['id']}/r{round_number:02d}"
+    base = area_relative(project, FOLDER, source["id"], f"r{round_number:02d}")
     return {
         "inventory_id": inventory["id"],
         "round": round_number,
@@ -197,7 +198,7 @@ def register_extraction(project: Path, payload: dict, now: str | None = None) ->
         if item is None:
             raise ValidationError("Result slug is not in the confirmed inventory.", field="slug",
                                   recovery="Use slugs from the confirmed inventory.")
-        stem = f"{FOLDER}{source['id']}/r{round_number:02d}/{item['slug']}"
+        stem = area_relative(project, FOLDER, source["id"], f"r{round_number:02d}", item["slug"])
         path = result.get("path")
         if path not in (f"{stem}.png", f"{stem}.jpg", f"{stem}.jpeg"):
             raise ValidationError("Register the file at its planned destination.", field="path", path=path,
@@ -240,7 +241,7 @@ def register_extraction(project: Path, payload: dict, now: str | None = None) ->
         entries.append(entry)
     register_entries(project, entries, timestamp)
     catalogue = render_catalogue(project)
-    return {"entries": entries, "catalogue": catalogue.relative_to(project).as_posix()}
+    return {"entries": entries, "catalogue": stored_relative(project, catalogue, category="exports")}
 
 
 def render_catalogue(project: Path) -> Path:
@@ -250,7 +251,10 @@ def render_catalogue(project: Path) -> Path:
     tabs = "".join(f'<a href="#{c}">{c.upper()}</a>' for c in ("all", *CATEGORIES))
     cards = []
     for item in garments:
-        image = Path(item["path"]).relative_to("presentation/extracted").as_posix()
+        image = __import__("os").path.relpath(
+            resolve_stored(project, item["path"]),
+            StudioPaths.for_project(project).asset_dir("exports", Path(project).name) / "catalogues",
+        )
         swatches = "".join(
             f'<span class="swatch" style="background:{colour}"></span><code>{colour}</code>'
             for colour in (item.get("primary_colour"), item.get("secondary_colour"))
@@ -275,7 +279,7 @@ def render_catalogue(project: Path) -> Path:
         f"</style></head><body><p>{len(garments)} PIECES</p><nav>{tabs}</nav>"
         f"<main class=\"grid\">{''.join(cards)}</main></body></html>\n"
     )
-    target = project / FOLDER / "catalogue.html"
+    target = StudioPaths.for_project(project).asset_dir("exports", Path(project).name) / "catalogues/catalogue.html"
     write_atomic(target, page.encode("utf-8"))
     return target
 

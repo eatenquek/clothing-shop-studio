@@ -73,7 +73,7 @@ class OptionTests(unittest.TestCase):
         register_options(self.project, payload)
 
         concept = load_state(self.project)["concepts"][0]
-        self.assertEqual(concept["contact_sheet"], str(sheet.relative_to(self.project)))
+        self.assertEqual(concept["contact_sheet"], f"generated/{self.project.name}/concepts/back_typography/r01/contact-sheet.svg")
         self.assertEqual(concept["contact_sheet_sha256"], hashlib.sha256(sheet.read_bytes()).hexdigest())
 
         sheet.write_text("<svg><text>changed after user review</text></svg>", encoding="utf-8")

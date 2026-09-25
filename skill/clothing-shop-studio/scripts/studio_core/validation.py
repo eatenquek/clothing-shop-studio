@@ -18,6 +18,7 @@ from .config import resolve_inside
 from .errors import StudioError, ValidationError
 from .interview import CRITICAL_FIELDS, is_critical, pending_assumptions
 from .presentation import PRESENTATION_FOLDERS
+from .paths import project_area, resolve_stored, stored_relative
 from .store import (
     _load_events,
     _utc_now,
@@ -415,6 +416,8 @@ def validate_project(project_dir: Path, master_ids: list[str] | None = None, for
         error("state_unreadable", exc.message)
         return {"ok": False, "errors": errors, "warnings": warnings}
 
+    legacy_layout = state.get("layout_version") != 2
+
     # 1. Canonical state must be exactly what the hash-chained log produces.
     broken = broken_links(events)
     if broken:
@@ -440,9 +443,16 @@ def validate_project(project_dir: Path, master_ids: list[str] | None = None, for
     # 3. Every registered file exists, matches its hash, and lives in its origin's folder.
     files = {item["id"]: item for item in state.get("files", [])}
     for entry in state.get("files", []):
-        path = project / entry["path"]
+        try:
+            path = resolve_stored(project, entry["path"])
+        except StudioError:
+            error("origin_folder_mismatch", f"`{entry['id']}` has an unsafe stored path.", id=entry["id"])
+            continue
         folder = ORIGIN_FOLDERS.get(entry.get("origin"))
-        if folder is None or not entry["path"].startswith(folder):
+        expected_prefix = folder if legacy_layout else None
+        if folder is not None and not legacy_layout:
+            expected_prefix = stored_relative(project, project_area(project, folder)).rstrip("/") + "/"
+        if expected_prefix is None or not entry["path"].startswith(expected_prefix):
             error("origin_folder_mismatch", f"`{entry['id']}` ({entry.get('origin')}) is outside {folder}.", id=entry["id"])
         if not path.is_file():
             error("file_missing", f"`{entry['path']}` is missing.", id=entry["id"], path=entry["path"])
@@ -472,7 +482,7 @@ def validate_project(project_dir: Path, master_ids: list[str] | None = None, for
         relative = concept.get("contact_sheet")
         if not relative:
             continue
-        path = project / relative
+        path = resolve_stored(project, relative)
         if "contact_sheet_sha256" not in concept:
             warnings.append(
                 {
@@ -495,7 +505,7 @@ def validate_project(project_dir: Path, master_ids: list[str] | None = None, for
 
     # 4. Approved versions are immutable and fully accounted for.
     recorded = {item["version"]: item for item in state.get("approvals", [])}
-    approved_root = project / APPROVED_DIR
+    approved_root = project / APPROVED_DIR if legacy_layout else project_area(project, APPROVED_DIR.as_posix())
     on_disk = sorted(path.name for path in approved_root.iterdir()) if approved_root.is_dir() else []
     for name in on_disk:
         if name not in recorded:
@@ -523,13 +533,13 @@ def validate_project(project_dir: Path, master_ids: list[str] | None = None, for
 
     # 6. Exported packs are immutable: recorded, hashed, and free of extra files.
     recorded_packs = {pack["version"]: pack for pack in state.get("production", {}).get("packs", [])}
-    production_root = project / "production"
+    production_root = project / "production" if legacy_layout else project_area(project, "production") / "packs"
     if production_root.is_dir():
         for path in sorted(production_root.iterdir()):
             if PACK_PATTERN.match(path.name) and path.name not in recorded_packs:
                 error("unrecorded_pack", f"production/{path.name} was not created by export_production_pack.", path=f"production/{path.name}")
     for version, pack in recorded_packs.items():
-        folder = project / pack["path"]
+        folder = project / pack["path"] if legacy_layout else resolve_stored(project, pack["path"])
         expected = {item["path"]: item["sha256"] for item in pack.get("files", [])}
         manifest = folder / "manifest.json"
         if not manifest.is_file() or _sha256(manifest) != pack.get("manifest_sha256"):

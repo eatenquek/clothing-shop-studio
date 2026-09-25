@@ -84,7 +84,7 @@ class ExtractTests(unittest.TestCase):
         inventory = self.ready()
         plan = plan_extraction(self.project, {"inventory_id": inventory["id"]})
         job = plan["jobs"][0]
-        self.assertEqual(job["destination"], f"presentation/extracted/{self.ref['id']}/r01/navy-tee.png")
+        self.assertEqual(job["destination"], f"generated/{self.project.name}/extracted/{self.ref['id']}/r01/navy-tee.png")
         self.assertEqual((job["background"], job["min_size"]), ("#FFFFFF", 1200))
         for phrase in ("Reconstruct ONLY the complete empty", "Prefer omission over invention", "Omit any"):
             self.assertIn(phrase, job["prompt"])

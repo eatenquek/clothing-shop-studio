@@ -3,13 +3,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 
 from studio_core import SCHEMA_VERSION
-from studio_core.config import resolve_storage_root, save_storage_root
 from studio_core.errors import StudioError, ValidationError
+from studio_core.paths import StudioPaths
 from studio_core.approval import approve_design
 from studio_core.export import export_blockers, export_production_pack
 from studio_core.interview import load_graph, next_question
@@ -20,11 +19,12 @@ from studio_core.extract import (
 )
 from studio_core.listing import build_listing, decide_listing
 from studio_core.models import install_defaults, keep_models, plan_models, plan_reference, register_models
+from studio_core.migration import apply_migration, inventory_migration
 from studio_core.tryon import decide_tryon, plan_tryon, register_tryon
 from studio_core.validation import register_file, validate_project
 
 BUNDLE_DIR = Path(__file__).resolve().parents[1]
-DEFAULT_CONFIG = Path.home() / ".config/clothing-shop-studio/config.json"
+STUDIO = StudioPaths.canonical()
 
 
 class JsonArgumentParser(argparse.ArgumentParser):
@@ -51,6 +51,11 @@ def _required(payload: dict, field: str):
     return value
 
 
+def _project(payload: dict) -> Path:
+    STUDIO.ensure_layout()
+    return STUDIO.require_project(Path(_required(payload, "project_dir")))
+
+
 def command_create_project(payload: dict) -> dict:
     if "config_path" in payload:
         raise ValidationError(
@@ -58,11 +63,15 @@ def command_create_project(payload: dict) -> dict:
             field="config_path",
             recovery="Remove `config_path`; provide `root` to choose this project's storage location.",
         )
-    requested = Path(payload["root"]) if payload.get("root") else None
-    config_path = DEFAULT_CONFIG
-    root = resolve_storage_root(requested, BUNDLE_DIR, os.environ, config_path)
-    if payload.get("remember_root"):
-        save_storage_root(root, config_path)
+    STUDIO.ensure_layout()
+    root = STUDIO.projects_dir
+    if payload.get("root") and Path(payload["root"]).expanduser().resolve(strict=False) != root.resolve():
+        raise ValidationError(
+            "Project root must be the canonical Clothing Studio projects folder.",
+            field="root",
+            path=str(payload["root"]),
+            recovery="Use $HOME/Documents/Clothing-Shop-Studio/projects or omit `root`.",
+        )
     now = payload.get("now") or __import__("datetime").datetime.now(
         __import__("datetime").timezone.utc
     ).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -75,13 +84,13 @@ def command_create_project(payload: dict) -> dict:
 
 
 def command_resume_project(payload: dict) -> dict:
-    state = load_state(Path(_required(payload, "project_dir")))
+    state = load_state(_project(payload))
     return {**state, "next_question": _next_question(state)}
 
 
 def command_record_answer(payload: dict) -> dict:
     """Append one answer event and return the new state plus exactly one next question."""
-    project = Path(_required(payload, "project_dir"))
+    project = _project(payload)
     if "value" not in payload:
         raise ValidationError(
             "Value is required; send null to decline an optional question.",
@@ -104,7 +113,7 @@ def command_record_answer(payload: dict) -> dict:
 
 def command_generate_options(payload: dict) -> dict:
     """`plan` returns A/B/C/W slots; `register` records four renders; `merge` records a combination."""
-    project = Path(_required(payload, "project_dir"))
+    project = _project(payload)
     mode = payload.get("mode")
     if mode == "plan":
         state = load_state(project)
@@ -115,6 +124,7 @@ def command_generate_options(payload: dict) -> dict:
             payload.get("constraints") or {},
             briefs=payload.get("briefs"),
             round_number=next_round(state, decision_id),
+            project=project,
         )
     if mode == "register":
         return {"entries": register_options(project, payload, payload.get("now"))}
@@ -128,25 +138,25 @@ def command_generate_options(payload: dict) -> dict:
 
 
 def command_approve_design(payload: dict) -> dict:
-    project = Path(_required(payload, "project_dir"))
+    project = _project(payload)
     target = approve_design(project, payload.get("concept_ids"), payload.get("statement"), payload.get("now"))
     record = next(item for item in load_state(project)["approvals"] if item["version"] == target.name)
     return {"version": target.name, "path": str(target), "approval": record}
 
 
 def command_register_file(payload: dict) -> dict:
-    return register_file(Path(_required(payload, "project_dir")), payload, payload.get("now"))
+    return register_file(_project(payload), payload, payload.get("now"))
 
 
 def command_export_production_pack(payload: dict) -> dict:
-    project = Path(_required(payload, "project_dir"))
+    project = _project(payload)
     target = export_production_pack(project, payload.get("now"))
     pack = next(item for item in load_state(project)["production"]["packs"] if item["version"] == target.name)
     return {"pack_version": target.name, "path": str(target), "pack": pack}
 
 
 def command_validate(payload: dict) -> dict:
-    project = Path(_required(payload, "project_dir"))
+    project = _project(payload)
     if payload.get("for_export"):
         errors, warnings = export_blockers(project, master_ids=payload.get("master_ids"))
         return {"ok": not errors, "errors": errors, "warnings": warnings}
@@ -154,7 +164,7 @@ def command_validate(payload: dict) -> dict:
 
 
 def command_status(payload: dict) -> dict:
-    project = Path(_required(payload, "project_dir"))
+    project = _project(payload)
     summary = status(project)
     report = validate_project(project)
     return {
@@ -166,7 +176,7 @@ def command_status(payload: dict) -> dict:
 
 
 def _dispatch(payload: dict, modes: dict, command: str) -> dict:
-    project = Path(_required(payload, "project_dir"))
+    project = _project(payload)
     handler = modes.get(payload.get("mode"))
     if handler is None:
         raise ValidationError(
@@ -217,6 +227,23 @@ def command_create_listing(payload: dict) -> dict:
     }, "create_listing")
 
 
+def command_migrate_layout(payload: dict) -> dict:
+    project = _project(payload)
+    mode = payload.get("mode")
+    if mode == "inventory":
+        return inventory_migration(project)
+    if mode == "apply":
+        return apply_migration(
+            project,
+            _required(payload, "inventory_id"),
+            _required(payload, "user_quote"),
+        )
+    raise ValidationError(
+        "Mode must be `inventory` or `apply`.", field="mode",
+        recovery="Inventory first, review the mapping, then apply it with an affirmative quote.",
+    )
+
+
 COMMANDS = {
     "create_project": command_create_project,
     "resume_project": command_resume_project,
@@ -231,6 +258,7 @@ COMMANDS = {
     "create_models": command_create_models,
     "try_on": command_try_on,
     "create_listing": command_create_listing,
+    "migrate_layout": command_migrate_layout,
 }
 
 

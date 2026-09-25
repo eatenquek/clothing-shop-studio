@@ -44,10 +44,10 @@ class TryOnTests(unittest.TestCase):
                                          "poses": ["front", "back"]}, FIXED_NOW)
         self.assertEqual([job["pose"] for job in plan["jobs"]], ["front", "back"])
         job = plan["jobs"][0]
-        self.assertIn("presentation/models/pinned/m-aria-front.png", job["inputs"])
+        self.assertIn(f"generated/{self.project.name}/models/pinned/m-aria-front.png", job["inputs"])
         self.assertIn("exactly as shown", job["prompt"])
         self.assertIn("same person", job["prompt"])
-        self.assertEqual(job["destination"], "presentation/tryon/r01/m-aria-front.png")
+        self.assertEqual(job["destination"], f"generated/{self.project.name}/tryon/r01/m-aria-front.png")
 
     def test_plan_refuses_bad_poses_models_and_ineligible_garments(self):
         with self.assertRaises(ValidationError):
@@ -105,7 +105,7 @@ class TryOnTests(unittest.TestCase):
         tryon = plan_tryon(self.project, {"design_id": self.design, "model_id": model_id, "poses": ["front"]},
                            FIXED_NOW)
         job = tryon["jobs"][0]
-        self.assertEqual(job["destination"], f"presentation/tryon/r01/{model_id}-front.png")
+        self.assertEqual(job["destination"], f"generated/{self.project.name}/tryon/r01/{model_id}-front.png")
         (self.project / job["destination"]).parent.mkdir(parents=True, exist_ok=True)
         (self.project / job["destination"]).write_bytes(png(55))
         entry = register_tryon(self.project, {"round": tryon["round"], "model_id": model_id,
@@ -139,7 +139,7 @@ class TryOnTests(unittest.TestCase):
         plan = plan_tryon(self.project, {"design_id": self.design, "model_id": "m-aria", "poses": ["front"],
                                          "reference_images_supported": True}, FIXED_NOW)
         self.assertEqual(plan["identity_lock"], "reference_image")
-        self.assertIn("presentation/models/pinned/m-aria-front.png", plan["jobs"][0]["inputs"])
+        self.assertIn(f"generated/{self.project.name}/models/pinned/m-aria-front.png", plan["jobs"][0]["inputs"])
 
     def test_description_only_lock_keeps_anchors_and_sends_no_images(self):
         plan = plan_tryon(self.project, {"design_id": self.design, "model_id": "m-aria",
@@ -150,7 +150,7 @@ class TryOnTests(unittest.TestCase):
             self.assertIn("shoulder-length straight dark brown hair", job["prompt"])
             self.assertNotIn("reference image", job["prompt"])
             self.assertNotIn("presentation/", job["prompt"])
-        self.assertEqual(plan["jobs"][0]["destination"], "presentation/tryon/r01/m-aria-front.png")
+        self.assertEqual(plan["jobs"][0]["destination"], f"generated/{self.project.name}/tryon/r01/m-aria-front.png")
 
     def test_reference_images_supported_must_be_a_boolean(self):
         for bad in ("false", 0, 1, None, "true"):

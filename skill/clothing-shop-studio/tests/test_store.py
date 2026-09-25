@@ -36,24 +36,22 @@ class StoreTests(unittest.TestCase):
     def test_create_project_writes_external_canonical_state(self):
         state = create_project(self.root / "projects", "鬼-kiki kaka", self.skill_dir, FIXED_NOW)
         project = self.root / "projects" / "鬼-kiki-kaka"
-        self.assertEqual(state["schema_version"], 1)
+        self.assertEqual(state["schema_version"], 2)
+        self.assertEqual(state["layout_version"], 2)
+        self.assertEqual(state["path_base"], "studio_root")
         self.assertTrue((project / "metadata/state.json").is_file())
         self.assertEqual(load_state(project)["project_name"], "鬼-kiki kaka")
         self.assertTrue((project / "project.yaml").is_file())
         self.assertTrue((project / "decisions.md").is_file())
-        for relative in (
-            "references/user",
-            "references/online",
-            "concepts/generated",
-            "designs/approved",
-            "production",
-        ):
-            self.assertTrue((project / relative).is_dir(), relative)
+        self.assertEqual({path.name for path in project.iterdir()}, {"metadata", "project.yaml", "decisions.md"})
+        for relative in ("references/鬼-kiki-kaka/user", "generated/鬼-kiki-kaka/concepts",
+                         "approved/鬼-kiki-kaka", "production/鬼-kiki-kaka", "exports/鬼-kiki-kaka"):
+            self.assertTrue((self.root / relative).is_dir(), relative)
 
     def test_rejects_symlink_into_skill(self):
         escape = self.root / "escape"
         escape.symlink_to(self.skill_dir, target_is_directory=True)
-        with self.assertRaises(UnsafePathError):
+        with self.assertRaises(ValidationError):
             create_project(escape, "bad", self.skill_dir, FIXED_NOW)
 
     def test_failed_replace_preserves_previous_state(self):

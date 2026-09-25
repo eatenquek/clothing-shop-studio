@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .errors import ValidationError
 from .models import pin_model
+from .paths import area_relative
 from .presentation import (
     PRESENTATION_FOLDERS,
     check_image,
@@ -83,7 +84,7 @@ def plan_tryon(project: Path, payload: dict, now: str | None = None) -> dict:
         "prompt": (f"Show {subject}, wearing {garment_text}, {POSE_TEXT[pose]}, full length. Keep every identity "
                    f"anchor unchanged. {garment_rule}: same colour, print, placement, and scale; no invented "
                    "logos, pockets, or trims. Fictional AI-generated model; not any real person."),
-        "destination": f"{FOLDER}r{round_number:02d}/{identity['id']}-{pose}.png",
+        "destination": area_relative(project, FOLDER, f"r{round_number:02d}", f"{identity['id']}-{pose}.png"),
         "aspect": "3:4",
     } for pose in poses]
     identity_lock = "reference_image" if reference_images else "description_only"
@@ -103,7 +104,7 @@ def register_tryon(project: Path, payload: dict, now: str | None = None) -> list
     entries, seen_hashes = [], set()
     for result in payload.get("results") or []:
         pose = result.get("pose")
-        expected = f"{FOLDER}r{round_number:02d}/{model['library_model_id']}-{pose}.png"
+        expected = area_relative(project, FOLDER, f"r{round_number:02d}", f"{model['library_model_id']}-{pose}.png")
         if pose not in POSES or result.get("path") != expected:
             raise ValidationError("Register each try-on at its planned destination.", field="path",
                                   recovery=f"Save the {pose} image as {expected}.")

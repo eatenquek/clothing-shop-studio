@@ -67,7 +67,8 @@ class KikiKakaAcceptance(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
-        self.env = {**os.environ, "CLOTHING_SHOP_STUDIO_HOME": str(self.root / "projects")}
+        self.studio = self.root / "Documents/Clothing-Shop-Studio"
+        self.env = {**os.environ, "HOME": str(self.root)}
 
     def tearDown(self):
         for path in self.root.rglob("*"):
@@ -130,7 +131,7 @@ class KikiKakaAcceptance(unittest.TestCase):
              "axes": ["letter density", "baseline irregularity", "distress depth", "scale"],
              "constraints": {"colours": 1, "method": "plastisol screen print"}},
         )
-        out_dir = Path(project) / plan["slots"][0]["destination"].rsplit("/", 1)[0]
+        out_dir = self.studio / plan["slots"][0]["destination"].rsplit("/", 1)[0]
         briefs = [
             {"label": slot["label"], "axis": slot["axis"], "title": f"Treatment {slot['label']}",
              "brief": "KIKI KAKA condensed distressed type", "garment": "long_sleeve",
@@ -143,10 +144,10 @@ class KikiKakaAcceptance(unittest.TestCase):
         entries = self.cli(
             "generate_options",
             {"project_dir": project, "mode": "register", "decision_id": "back_typography",
-             "contact_sheet": str(Path(rendered["contact_sheet"]).relative_to(project)),
+             "contact_sheet": str(Path(rendered["contact_sheet"]).resolve().relative_to(self.studio.resolve())),
              "results": [
                  {"label": slot["label"], "axis": slot["axis"], "renderer": "svg-fallback",
-                  "path": str(Path(rendered["cards"][slot["label"]]).relative_to(project)),
+                  "path": str(Path(rendered["cards"][slot["label"]]).resolve().relative_to(self.studio.resolve())),
                   "prompt": "KIKI KAKA condensed distressed type",
                   "convention_broken": "Type crosses the shoulder seams" if slot["wildcard"] else None}
                  for slot in plan["slots"]
@@ -161,7 +162,7 @@ class KikiKakaAcceptance(unittest.TestCase):
         self.assertEqual(approval["version"], "v001")
 
         # The screen-print master is typeset vector artwork with deterministic distress.
-        master = Path(project) / "production/masters/kiki-kaka-back_MASTER.svg"
+        master = self.studio / f"production/{Path(project).name}/masters/kiki-kaka-back_MASTER.svg"
         master.parent.mkdir(parents=True, exist_ok=True)
         master.write_text(
             '<svg xmlns="http://www.w3.org/2000/svg" width="300mm" height="120mm" viewBox="0 0 300 120">'
@@ -172,7 +173,8 @@ class KikiKakaAcceptance(unittest.TestCase):
         registered = self.cli(
             "register_file",
             {"project_dir": project, "origin": "production_master",
-             "path": "production/masters/kiki-kaka-back_MASTER.svg", "construction": "typeset",
+             "path": f"production/{Path(project).name}/masters/kiki-kaka-back_MASTER.svg",
+             "construction": "typeset",
              "approved_version": "v001", "placement": "upper_back",
              "reference_point": "centre back, below the back neck seam", "offset_mm": 80,
              "print_width_mm": 300, "print_height_mm": 120,

@@ -23,7 +23,8 @@
         "extract",
         "create_models",
         "try_on",
-        "create_listing"
+        "create_listing",
+        "migrate_layout"
       ]
     },
     "schema_version": {"const": 1},
@@ -32,7 +33,7 @@
       "type": "object",
       "required": ["code", "message", "recovery"],
       "properties": {
-        "code": {"enum": ["validation_error", "unsafe_path", "storage_error", "internal_error"]},
+        "code": {"enum": ["validation_error", "migration_required", "unsafe_path", "storage_error", "internal_error"]},
         "message": {"type": "string"},
         "recovery": {"type": "string"},
         "field": {"type": "string"},

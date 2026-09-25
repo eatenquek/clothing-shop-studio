@@ -17,6 +17,7 @@ from pathlib import Path
 
 from studio_core import SCHEMA_VERSION
 from studio_core.config import ensure_external
+from studio_core.paths import project_area
 from studio_core.errors import StudioError, UnsafePathError, ValidationError
 from studio_core.options import render_option_cards, render_svg
 from studio_core.store import load_state
@@ -63,7 +64,7 @@ def main(argv=None) -> int:
         project = ensure_external(Path(os.path.expanduser(payload["project_dir"])), BUNDLE_DIR)
         load_state(project)
         output_dir = Path(os.path.expanduser(payload["output_dir"])).resolve(strict=False)
-        generated_root = (project / "concepts/generated").resolve(strict=False)
+        generated_root = project_area(project, "concepts/generated").resolve(strict=False)
         try:
             output_dir.relative_to(generated_root)
         except ValueError as exc:
