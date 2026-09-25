@@ -14,6 +14,13 @@ import sys
 import uuid
 from pathlib import Path
 
+try:
+    from tools import build_wrappers
+    from tools.family_manifest import load_manifest, ordered_members
+except ModuleNotFoundError:  # Direct `python3 tools/install_skill.py` execution.
+    import build_wrappers
+    from family_manifest import load_manifest, ordered_members
+
 IGNORED_NAMES = {"__pycache__", ".DS_Store", "INSTALLED_FROM.json"}
 IGNORED_SUFFIXES = {".pyc", ".pyo"}
 
@@ -33,6 +40,81 @@ def tree_hash(root: Path) -> str:
         digest.update(relative.as_posix().encode("utf-8") + b"\0")
         digest.update(hashlib.sha256(path.read_bytes()).digest())
     return digest.hexdigest()
+
+
+def member_marker(member: dict, source_hash: str, source_commit: str, manifest: dict) -> dict:
+    marker = {
+        "bundle_tree_sha256": source_hash,
+        "family": manifest["family"],
+        "family_version": manifest["family_version"],
+        "role": member["role"],
+        "source_commit": source_commit,
+    }
+    if member["role"] == "core":
+        marker["family_interface"] = manifest["family_interface"]
+    else:
+        marker["core_interface_min"] = member["core_interface_min"]
+        marker["core_interface_max"] = member["core_interface_max"]
+    return marker
+
+
+def is_legacy_core_marker(name: str, marker: dict) -> bool:
+    return name == "clothing-shop-studio" and set(marker) == {
+        "source_commit", "bundle_tree_sha256"
+    }
+
+
+def _read_marker(path: Path) -> dict | None:
+    try:
+        value = json.loads((Path(path) / "INSTALLED_FROM.json").read_text("utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def family_drift(repo: Path, skills_dir: Path, manifest: dict) -> list[str]:
+    """Return deterministic family drift descriptions without changing the filesystem."""
+    repo, skills_dir = Path(repo).resolve(), Path(skills_dir).expanduser().resolve(strict=False)
+    drift = []
+    expected_names = {member["name"] for member in ordered_members(repo, manifest)}
+    journal = skills_dir.parent / ".clothing-shop-studio-install/journal.json"
+    if journal.is_file():
+        try:
+            content = json.loads(journal.read_text("utf-8"))
+            if not content.get("committed"):
+                drift.append("family: uncommitted journal")
+        except (OSError, json.JSONDecodeError):
+            drift.append("family: unreadable install journal")
+
+    for member in ordered_members(repo, manifest):
+        name = member["name"]
+        target = skills_dir / name
+        if not target.is_dir():
+            drift.append(f"{name}: missing")
+            continue
+        source_hash = tree_hash(member["source"])
+        target_hash = tree_hash(target)
+        if target_hash != source_hash:
+            drift.append(f"{name}: content hash differs")
+        marker = _read_marker(target)
+        if marker is None:
+            drift.append(f"{name}: marker missing or invalid")
+            continue
+        expected = member_marker(member, source_hash, marker.get("source_commit", ""), manifest)
+        for field, value in expected.items():
+            if field == "source_commit":
+                continue
+            if marker.get(field) != value:
+                drift.append(f"{name}: marker {field} differs")
+
+    if skills_dir.is_dir():
+        for target in sorted(skills_dir.iterdir(), key=lambda path: path.name):
+            if not target.is_dir() or target.name in expected_names:
+                continue
+            marker = _read_marker(target)
+            if marker and marker.get("family") == manifest["family"]:
+                drift.append(f"{target.name}: obsolete family member")
+    return sorted(set(drift))
 
 
 def copy_bundle(source: Path, destination: Path) -> None:
@@ -118,6 +200,27 @@ def require_clean_source(repo: Path, source: Path) -> None:
         raise RuntimeError("source bundle has uncommitted or untracked files")
 
 
+def require_clean_paths(repo: Path, paths: list[Path]) -> None:
+    repo = Path(repo).resolve()
+    relative = []
+    for path in paths:
+        try:
+            relative.append(str(Path(path).resolve().relative_to(repo)))
+        except ValueError as exc:
+            raise RuntimeError("family source must be inside its Git repository") from exc
+    completed = subprocess.run(
+        ["git", "status", "--porcelain", "--", *relative],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if completed.returncode:
+        raise RuntimeError(f"could not inspect family source status\n{completed.stderr.strip()}")
+    if completed.stdout.strip():
+        raise RuntimeError("family source has uncommitted or untracked files")
+
+
 def validate_skill_without_pyyaml(source: Path) -> None:
     """Mirror quick_validate's release-critical checks without a YAML dependency."""
     skill_md = Path(source) / "SKILL.md"
@@ -154,16 +257,45 @@ def validate_skill_without_pyyaml(source: Path) -> None:
         raise RuntimeError("fallback skill validation failed: unfinished TODO placeholder")
 
 
-def verify_source(repo: Path, source: Path, validator: Path) -> str:
+def verify_source(repo: Path, source: Path, validator: Path | str) -> str:
     require_clean_source(repo, source)
     _run([sys.executable, "-m", "unittest", "discover", "-s", str(source / "tests"), "-p", "test_*.py"], repo)
     _run([sys.executable, "-m", "unittest", "discover", "-s", "tools", "-p", "test_*.py"], repo)
-    try:
-        _run([sys.executable, str(validator), str(source)], repo)
-    except RuntimeError as exc:
-        if "No module named 'yaml'" not in str(exc):
-            raise
+    if str(validator) == "fallback":
         validate_skill_without_pyyaml(source)
+    else:
+        try:
+            _run([sys.executable, str(validator), str(source)], repo)
+        except RuntimeError as exc:
+            if "No module named 'yaml'" not in str(exc):
+                raise
+            validate_skill_without_pyyaml(source)
+    return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
+
+
+def verify_family_source(repo: Path, manifest: dict, validator: Path | str) -> str:
+    repo = Path(repo).resolve()
+    members = ordered_members(repo, manifest)
+    require_clean_paths(
+        repo,
+        [member["source"] for member in members]
+        + [repo / "tools/wrappers.json", repo / "tools/family_manifest.py", repo / "tools/build_wrappers.py"],
+    )
+    _run([sys.executable, "-m", "unittest", "discover", "-s", "skill/clothing-shop-studio/tests", "-p", "test_*.py"], repo)
+    _run([sys.executable, "-m", "unittest", "discover", "-s", "tools", "-p", "test_*.py"], repo)
+    drift = build_wrappers.build(repo, check=True)
+    if drift:
+        raise RuntimeError("generated wrapper drift: " + ", ".join(drift))
+    for member in members:
+        if str(validator) == "fallback":
+            validate_skill_without_pyyaml(member["source"])
+        else:
+            try:
+                _run([sys.executable, str(validator), str(member["source"])], repo)
+            except RuntimeError as exc:
+                if "No module named 'yaml'" not in str(exc):
+                    raise
+                validate_skill_without_pyyaml(member["source"])
     return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
 
 
@@ -171,15 +303,28 @@ def main(argv=None) -> int:
     repo = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, default=repo / "skill/clothing-shop-studio")
-    parser.add_argument("--target", type=Path, default=Path.home() / ".codex/skills/clothing-shop-studio")
+    parser.add_argument("--target", type=Path)
+    parser.add_argument("--skills-dir", type=Path, default=Path.home() / ".codex/skills")
+    parser.add_argument("--core-only", action="store_true")
+    parser.add_argument("--check", action="store_true")
+    parser.add_argument("--adopt-unmarked", action="store_true")
     parser.add_argument("--work-root", type=Path,
                         default=Path.home() / "Documents/Clothing-Shop-Studio/.work")
-    parser.add_argument("--validator", type=Path,
-                        default=Path.home() / ".codex/skills/.system/skill-creator/scripts/quick_validate.py")
+    parser.add_argument("--validator",
+                        default=str(Path.home() / ".codex/skills/.system/skill-creator/scripts/quick_validate.py"))
     args = parser.parse_args(argv)
     try:
+        manifest = load_manifest(repo)
+        if args.check:
+            if args.target or args.core_only or args.adopt_unmarked:
+                raise RuntimeError("--check cannot be combined with install modes")
+            drift = family_drift(repo, args.skills_dir, manifest)
+            for item in drift:
+                print(f"DRIFT {item}")
+            return 1 if drift else 0
+        target = args.target or (args.skills_dir / "clothing-shop-studio")
         commit = verify_source(repo, args.source, args.validator)
-        print(json.dumps(install_verified(args.source, args.target, args.work_root, commit), sort_keys=True))
+        print(json.dumps(install_verified(args.source, target, args.work_root, commit), sort_keys=True))
         return 0
     except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
         print(f"install failed: {exc}", file=sys.stderr)

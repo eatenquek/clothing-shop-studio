@@ -83,6 +83,13 @@ class InstallSkillTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "invalid skill"):
                 install_skill.verify_source(repo, source, validator)
 
+    def test_verification_can_select_the_fallback_validator_explicitly(self):
+        with tempfile.TemporaryDirectory() as folder:
+            repo, source, _ = self.make_repo(Path(folder), validator_body="raise SystemExit(1)\n")
+            commit = install_skill.verify_source(repo, source, "fallback")
+            expected = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
+            self.assertEqual(commit, expected)
+
     def test_failed_post_install_hash_check_restores_previous_target(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
