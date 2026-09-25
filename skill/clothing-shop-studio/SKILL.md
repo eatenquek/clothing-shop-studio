@@ -23,7 +23,7 @@ Take a garment from brief or reference image to approved visuals and a validated
 
 ## Start, resume, and flow
 
-New design: `create_project` with a `name`; if it needs a root, ask once where to keep projects and retry with `root` and `"remember_root": true`. Existing design: `resume_project` with `project_dir`. If the project is not in the current workspace or the remembered project root, ask the user for `project_dir`; do not search the user's home directory or unrelated folders. Then `record_answer` → `generate_options` → `approve_design` (only on clear user approval) → `register_file` for masters → `validate` → `export_production_pack`.
+All data lives in one studio root, `~/Documents/Clothing-Shop-Studio`; never ask the user to choose or move it. New design: `create_project` with a `name`. Existing design: `resume_project` with `project_dir` (a folder under `projects/`). If you lack it, ask the user for `project_dir`; do not search the user's home directory or unrelated folders. `create_project`, `resume_project`, and `status` return absolute `asset_folders`: save every file there and never derive a location. Send `asset_folders_relative` paths in later payloads. A legacy (layout v1) project fails writes with `migration_required`: follow the migration steps in `references/workflow.md` (`migrate_layout`: inventory, show the mapping, apply only with the user's own affirmative words as `user_quote`). Then `record_answer` → `generate_options` → `approve_design` (only on clear user approval) → `register_file` for masters → `validate` → `export_production_pack`.
 
 ## Read when needed
 

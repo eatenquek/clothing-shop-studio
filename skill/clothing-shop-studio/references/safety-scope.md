@@ -8,7 +8,7 @@ Register a user reference with `register_file` (`origin: user_reference`). Put a
 
 ## Privacy and external services
 
-Keep a user's reference image inside the project's `references/user/` folder. Never copy it into the installed skill. Before sending a user's image to any external service, including an image-generation tool that uploads it, ask the user and wait for a clear yes. Consent applies to that transmission only. Flag references that show a recognisable person, and do not reproduce that person's likeness in concepts without the user's explicit confirmation that they have the right to use it.
+Keep a user's reference image inside the project's `asset_folders.references_user` folder (`references/<slug>/user/` in the studio root). Never copy it into the installed skill. Before sending a user's image to any external service, including an image-generation tool that uploads it, ask the user and wait for a clear yes. Consent applies to that transmission only. Flag references that show a recognisable person, and do not reproduce that person's likeness in concepts without the user's explicit confirmation that they have the right to use it.
 
 Sending a user's photo to the host image tool for extraction counts as external transmission; `extract` refuses to plan until consent is recorded.
 

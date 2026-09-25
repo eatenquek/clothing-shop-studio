@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -83,19 +84,79 @@ def install_verified(source: Path, target: Path, work_root: Path, source_commit:
     return {"target": str(target), "source_commit": source_commit, "bundle_tree_sha256": bundle_hash}
 
 
-def _run(command: list[str], cwd: Path) -> None:
+def _run(command: list[str], cwd: Path) -> subprocess.CompletedProcess:
     completed = subprocess.run(command, cwd=cwd, text=True, capture_output=True, check=False)
     if completed.returncode:
         details = (completed.stdout + completed.stderr).strip()
         raise RuntimeError(f"verification failed: {' '.join(command)}\n{details}")
+    return completed
+
+
+def require_clean_source(repo: Path, source: Path) -> None:
+    repo, source = Path(repo).resolve(), Path(source).resolve()
+    try:
+        relative = source.relative_to(repo)
+    except ValueError as exc:
+        raise RuntimeError("source bundle must be inside its Git repository") from exc
+    completed = subprocess.run(
+        ["git", "status", "--porcelain", "--", str(relative)],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if completed.returncode:
+        raise RuntimeError(f"could not inspect source bundle status\n{completed.stderr.strip()}")
+    if completed.stdout.strip():
+        raise RuntimeError("source bundle has uncommitted or untracked files")
+
+
+def validate_skill_without_pyyaml(source: Path) -> None:
+    """Mirror quick_validate's release-critical checks without a YAML dependency."""
+    skill_md = Path(source) / "SKILL.md"
+    if not skill_md.is_file():
+        raise RuntimeError("fallback skill validation failed: SKILL.md not found")
+    content = skill_md.read_text("utf-8")
+    match = re.match(r"^---\n(.*?)\n---", content, re.DOTALL)
+    if match is None:
+        raise RuntimeError("fallback skill validation failed: invalid YAML frontmatter format")
+    values: dict[str, str] = {}
+    top_level_keys: set[str] = set()
+    for line in match.group(1).splitlines():
+        if not line or line[0].isspace() or line.lstrip().startswith("#"):
+            continue
+        field = re.match(r"^([A-Za-z][A-Za-z0-9-]*):(?:[ \t]*(.*))$", line)
+        if field is None:
+            raise RuntimeError("fallback skill validation failed: invalid YAML frontmatter")
+        key, value = field.groups()
+        top_level_keys.add(key)
+        values[key] = value.strip().strip("'\"")
+    allowed = {"name", "description", "license", "allowed-tools", "metadata"}
+    unexpected = top_level_keys - allowed
+    if unexpected:
+        raise RuntimeError(f"fallback skill validation failed: unexpected keys {sorted(unexpected)}")
+    name, description = values.get("name", ""), values.get("description", "")
+    if not name or not description:
+        raise RuntimeError("fallback skill validation failed: name and description are required")
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name) or len(name) > 64:
+        raise RuntimeError("fallback skill validation failed: name must be valid hyphen-case")
+    if len(description) > 1024 or "<" in description or ">" in description or description.startswith("[TODO:"):
+        raise RuntimeError("fallback skill validation failed: description is invalid")
+    body = content[match.end():]
+    if any(re.fullmatch(r"[ ]{0,3}\[TODO:[^\n]*\][ \t]*", line) for line in body.splitlines()):
+        raise RuntimeError("fallback skill validation failed: unfinished TODO placeholder")
 
 
 def verify_source(repo: Path, source: Path, validator: Path) -> str:
-    _run(["git", "diff", "--quiet"], repo)
-    _run(["git", "diff", "--cached", "--quiet"], repo)
+    require_clean_source(repo, source)
     _run([sys.executable, "-m", "unittest", "discover", "-s", str(source / "tests"), "-p", "test_*.py"], repo)
     _run([sys.executable, "-m", "unittest", "discover", "-s", "tools", "-p", "test_*.py"], repo)
-    _run([sys.executable, str(validator), str(source)], repo)
+    try:
+        _run([sys.executable, str(validator), str(source)], repo)
+    except RuntimeError as exc:
+        if "No module named 'yaml'" not in str(exc):
+            raise
+        validate_skill_without_pyyaml(source)
     return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
 
 

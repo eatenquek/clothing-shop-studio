@@ -41,7 +41,7 @@ Artwork width relative to the garment, and how it behaves across the size range:
 
 ## Workflow
 
-1. **Plan.** Run `studio.py generate_options` with `"mode": "plan"`, a `decision_id` (for example `back_typography`), four `axes`, and the hard `constraints`. The response gives each slot's label, axis, and destination under `concepts/generated/<decision_id>/rNN/`.
+1. **Plan.** Run `studio.py generate_options` with `"mode": "plan"`, a `decision_id` (for example `back_typography`), four `axes`, and the hard `constraints`. The response gives each slot's label, axis, and destination (studio-relative, for example `generated/<slug>/concepts/<decision_id>/rNN/option-A`), which lies inside `asset_folders.concepts`.
 2. **Render.** Create one image per slot with the available image tool and save it at its destination. Put the slot label visibly inside every image, or deliver a labelled contact sheet as well. Brand artwork and exact text must be composited from the user's files, never redrawn by an image model.
 3. **Register.** Run `generate_options` with `"mode": "register"`, the `decision_id`, and four `results`. Each result has `label`, `axis`, relative `path`, `renderer`, and `prompt`; W also has `convention_broken`. Registration hashes each file and records it as a `generated_concept` with `production_eligible: false`.
 4. **Show.** Present all four images together with their labels and one-line differences, then ask the user to choose, combine, revise, or regenerate. If you cannot display images inline, give the path to the contact sheet (or open it with an available viewer) and still ask only which option they choose. Do not ask whether to publish, upload, or retry a preview page; that would be a second question.
@@ -56,27 +56,27 @@ Payload examples (axes are plain strings):
 
 ```json
 {"project_dir": "/path/to/project", "mode": "register", "decision_id": "back_typography",
- "contact_sheet": "concepts/generated/back_typography/r01/contact-sheet.svg",
+ "contact_sheet": "generated/<slug>/concepts/back_typography/r01/contact-sheet.svg",
  "results": [
-   {"label": "A", "axis": "letter density", "path": "concepts/generated/back_typography/r01/option-A.svg",
+   {"label": "A", "axis": "letter density", "path": "generated/<slug>/concepts/back_typography/r01/option-A.svg",
     "renderer": "svg-fallback", "prompt": "Tight condensed stack"},
-   {"label": "B", "axis": "baseline irregularity", "path": "concepts/generated/back_typography/r01/option-B.svg",
+   {"label": "B", "axis": "baseline irregularity", "path": "generated/<slug>/concepts/back_typography/r01/option-B.svg",
     "renderer": "svg-fallback", "prompt": "Offset baseline"},
-   {"label": "C", "axis": "distress depth", "path": "concepts/generated/back_typography/r01/option-C.svg",
+   {"label": "C", "axis": "distress depth", "path": "generated/<slug>/concepts/back_typography/r01/option-C.svg",
     "renderer": "svg-fallback", "prompt": "Heavy halftone erosion"},
-   {"label": "W", "axis": "scale", "path": "concepts/generated/back_typography/r01/option-W.svg",
+   {"label": "W", "axis": "scale", "path": "generated/<slug>/concepts/back_typography/r01/option-W.svg",
     "renderer": "svg-fallback", "prompt": "Oversized type", "convention_broken": "Type crosses the shoulder seams"}
  ]}
 ```
 
 ## No image tool
 
-When no raster image tool is available, run `scripts/render-options.py` with `project_dir`, the planned `output_dir` (the absolute folder of the slot destinations, for example `<project_dir>/concepts/generated/back_typography/r01`), and four briefs (`label`, `axis`, `title`, `brief`, `garment`, `placement`, `colors` as `#RRGGBB`). It writes `option-A.svg` through `option-W.svg` and `contact-sheet.svg`. It refuses destinations outside that project's `concepts/generated/` and will not overwrite an existing round unless `overwrite: true` is explicit. Register the four option files with `"renderer": "svg-fallback"` and show the contact sheet.
+When no raster image tool is available, run `scripts/render-options.py` with `project_dir`, the planned `output_dir` (the absolute folder of the slot destinations, for example `<asset_folders.concepts>/back_typography/r01`), and four briefs (`label`, `axis`, `title`, `brief`, `garment`, `placement`, `colors` as `#RRGGBB`). It writes `option-A.svg` through `option-W.svg` and `contact-sheet.svg`. It refuses destinations outside that project's `asset_folders.concepts` folder and will not overwrite an existing round unless `overwrite: true` is explicit. Register the four option files with `"renderer": "svg-fallback"` and show the contact sheet.
 
 Registration hashes every option and refuses byte-identical previews. Free-text or missing placement still receives a visible default artwork area, so all four fallback cards remain visually distinct.
 
 ## Combining and revising
 
-When the user combines elements, for example "A's palette with C's placement", render the combined preview into `concepts/generated/<decision_id>/` and run `generate_options` with `"mode": "merge"`, the `path`, `renderer`, a short `description`, and `parents` naming the source concept ids. Revising or regenerating creates a new round (`r02`, `r03`, …); earlier rounds stay on record.
+When the user combines elements, for example "A's palette with C's placement", render the combined preview into `<asset_folders.concepts>/<decision_id>/` and run `generate_options` with `"mode": "merge"`, the `path`, `renderer`, a short `description`, and `parents` naming the source concept ids. Revising or regenerating creates a new round (`r02`, `r03`, …); earlier rounds stay on record.
 
 A generated preview is never approval and never production artwork. Approval happens only through `approve_design`, and production masters come from user-supplied, typeset, or vector artwork.

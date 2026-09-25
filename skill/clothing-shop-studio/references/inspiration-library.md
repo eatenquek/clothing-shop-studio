@@ -22,6 +22,6 @@ Show a reference by linking or embedding its `remote_image_url`, which loads fro
 
 Online references, the user's own references, and generated concepts stay apart:
 
-- Register a library item you use in a project as `online_reference` with `register_file`, pointing to a short note in `references/online/` that records its `id`, `source_page`, and what it teaches.
-- Never place an online reference in `concepts/generated/` or present it as a generated option.
+- Register a library item you use in a project as `online_reference` with `register_file`, pointing to a short note in the returned `asset_folders.references_online` folder that records its `id`, `source_page`, and what it teaches.
+- Never place an online reference in `asset_folders.concepts` or present it as a generated option.
 - Never present a generated concept as a real product or an online reference.

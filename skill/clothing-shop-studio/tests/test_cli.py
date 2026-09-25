@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # discoverable from any cwd
 
-from tests.helpers import ready_project
+from tests.helpers import make_project, ready_project
 
 
 class CliTests(unittest.TestCase):
@@ -157,6 +157,7 @@ class CliTests(unittest.TestCase):
         rendered = subprocess.run(
             [sys.executable, str(self.bundle / "scripts/render-options.py"), "--input", str(brief_file)],
             text=True, capture_output=True, check=False, cwd=self.root,
+            env={**os.environ, "HOME": str(self.root)},
         )
         self.assertEqual(rendered.returncode, 0, rendered.stderr)
         cards = json.loads(rendered.stdout)["data"]["cards"]
@@ -196,6 +197,25 @@ class CliTests(unittest.TestCase):
         response = json.loads(completed.stdout)
         self.assertEqual(response["error"]["code"], "unsafe_path")
 
+    def test_render_options_rejects_a_valid_project_outside_the_canonical_studio(self):
+        project = make_project(self.root / "outside-studio")
+        output = project.parent.parent / f"generated/{project.name}/concepts/front/r01"
+        briefs = [
+            {"label": label, "axis": axis, "title": label, "brief": axis, "garment": "tee",
+             "placement": "centre_chest", "colors": ["#111111", "#EEEEEE"]}
+            for label, axis in zip("ABCW", ("density", "alignment", "distress", "scale"))
+        ]
+        completed = subprocess.run(
+            [sys.executable, str(self.bundle / "scripts/render-options.py")],
+            input=json.dumps({"project_dir": str(project), "output_dir": str(output), "briefs": briefs}),
+            text=True, capture_output=True, check=False, cwd=self.root,
+            env={**os.environ, "HOME": str(self.root)},
+        )
+        self.assertEqual(completed.returncode, 3, completed.stderr)
+        response = json.loads(completed.stdout)
+        self.assertEqual(response["error"]["code"], "unsafe_path")
+        self.assertEqual(response["error"]["field"], "project_dir")
+
     def test_render_options_refuses_implicit_overwrite(self):
         project = self.create()
         output = self.asset_dir(project, "generated", "concepts/front_art/r01")
@@ -208,11 +228,13 @@ class CliTests(unittest.TestCase):
         first = subprocess.run(
             [sys.executable, str(self.bundle / "scripts/render-options.py")], input=json.dumps(payload),
             text=True, capture_output=True, check=False, cwd=self.root,
+            env={**os.environ, "HOME": str(self.root)},
         )
         self.assertEqual(first.returncode, 0, first.stderr)
         second = subprocess.run(
             [sys.executable, str(self.bundle / "scripts/render-options.py")], input=json.dumps(payload),
             text=True, capture_output=True, check=False, cwd=self.root,
+            env={**os.environ, "HOME": str(self.root)},
         )
         self.assertEqual(second.returncode, 2, second.stderr)
         self.assertEqual(json.loads(second.stdout)["error"]["field"], "overwrite")

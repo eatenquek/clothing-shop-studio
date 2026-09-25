@@ -12,10 +12,10 @@ A production master is the artwork that gets printed or stitched. It must be one
 
 A generated preview, an AI raster, or a mockup can never be a master, even if it is renamed or traced. Build the master from the approved direction; do not derive it from the preview's pixels. Name files with the `MASTER` token and keep presentation images labelled `MOCKUP`.
 
-Save masters in `production/masters/` and register each one:
+Save masters in the returned `asset_folders.production_masters` and register each one, using the studio-relative path `<asset_folders_relative.production_masters>/<file name>` (for example `production/<slug>/masters/…`):
 
 ```json
-{"project_dir": "...", "origin": "production_master", "path": "production/masters/back-typography_MASTER.svg",
+{"project_dir": "...", "origin": "production_master", "path": "production/<slug>/masters/back-typography_MASTER.svg",
  "construction": "typeset", "approved_version": "v001", "placement": "upper_back",
  "reference_point": "centre back, below the back neck seam", "offset_mm": 80,
  "print_width_mm": 300, "print_height_mm": 120,
@@ -76,4 +76,4 @@ Run `studio.py validate` with `"for_export": true` to see blockers early, then `
 | `incompatible_production_method` | Choose one of the listed alternatives with the user. |
 | `*_hash_mismatch`, `state_tampered`, `event_chain_broken`, `generated_view_tampered` | Stop. A file changed outside the tools; restore it from backup. |
 
-Each export creates a new read-only `production/pack-vNNN/` containing `masters/` (versioned copies), `production-spec.md`, `handoff-checklist.md`, and `manifest.json` with every file's SHA-256. Earlier packs are never changed. Show the user the spec and checklist, point out every open item, and tell them which details still need the producer's confirmation.
+Each export creates a new read-only `pack-vNNN/` folder inside `<asset_folders.production>/packs/` containing `masters/` (versioned copies), `production-spec.md`, `handoff-checklist.md`, and `manifest.json` with every file's SHA-256. Earlier packs are never changed. Show the user the spec and checklist, point out every open item, and tell them which details still need the producer's confirmation.

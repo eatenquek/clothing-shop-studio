@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Render four labelled A/B/C/W SVG previews when no raster image tool is available.
 
-Input JSON (stdin or --input): {"project_dir": "<project>",
-"output_dir": "<project>/concepts/generated/<decision>/rNN",
+Input JSON (stdin or --input): {"project_dir": "<studio>/projects/<slug>",
+"output_dir": "<studio>/generated/<slug>/concepts/<decision>/rNN",
 "briefs": [{"label", "axis", "title", "brief", "garment", "placement", "colors"}, ...]}.
 Writes option-A.svg ... option-W.svg plus contact-sheet.svg and prints their paths as JSON.
 """
@@ -11,18 +11,15 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 
 from studio_core import SCHEMA_VERSION
-from studio_core.config import ensure_external
-from studio_core.paths import project_area
+from studio_core.paths import StudioPaths, project_area
 from studio_core.errors import StudioError, UnsafePathError, ValidationError
 from studio_core.options import render_option_cards, render_svg
 from studio_core.store import load_state
 
-BUNDLE_DIR = Path(__file__).resolve().parents[1]
 COMMAND = "render_options"
 
 
@@ -61,9 +58,9 @@ def main(argv=None) -> int:
                 field="project_dir",
                 recovery="Use the destination folder from the generate_options plan.",
             )
-        project = ensure_external(Path(os.path.expanduser(payload["project_dir"])), BUNDLE_DIR)
+        project = StudioPaths.canonical().ensure_layout().require_project(Path(payload["project_dir"]))
         load_state(project)
-        output_dir = Path(os.path.expanduser(payload["output_dir"])).resolve(strict=False)
+        output_dir = Path(payload["output_dir"]).expanduser().resolve(strict=False)
         generated_root = project_area(project, "concepts/generated").resolve(strict=False)
         try:
             output_dir.relative_to(generated_root)

@@ -17,16 +17,38 @@ Pricing, inventory, orders, and storefront operations are out of scope; listing 
 
 ## Install
 
-Sync the bundle into your agent's skills directory without local Python caches:
+Install with the installer, not by copying files. Commit the skill bundle first: it refuses uncommitted or untracked files under `skill/clothing-shop-studio/`. From the repository root:
 
 ```bash
-# Codex
-rsync -a --delete --exclude '__pycache__/' --exclude '*.pyc' skill/clothing-shop-studio/ ~/.codex/skills/clothing-shop-studio/
+# Codex (default target: ~/.codex/skills/clothing-shop-studio)
+python3 tools/install_skill.py
 # Claude Code
-rsync -a --delete --exclude '__pycache__/' --exclude '*.pyc' skill/clothing-shop-studio/ ~/.claude/skills/clothing-shop-studio/
+python3 tools/install_skill.py --target ~/.claude/skills/clothing-shop-studio
 ```
 
-Requires Python 3.9+. No third-party packages.
+`tools/install_skill.py` runs the test suites and the skill validator, stages a copy without Python caches, compares tree hashes of the source, the stage, and the target, keeps a backup with rollback, and writes `INSTALLED_FROM.json` recording the commit it installed. Start a new agent session afterwards so the updated skill loads.
+
+Requires Python 3.9+. No third-party packages at run time.
+
+## Where your data lives
+
+Everything the skill creates lives in one canonical studio root, `~/Documents/Clothing-Shop-Studio`. It is created on first use and cannot be moved or renamed through the skill: any other root, `..` traversal, symlink escape, or project outside `projects/` is refused. Fixed top-level folders:
+
+| Folder | Contents |
+|---|---|
+| `projects/<slug>/` | Project memory only: state and decision log |
+| `references/<slug>/` | The user's own and online references |
+| `generated/<slug>/` | Concepts, cut-outs, and try-ons; `generated/_models/` holds the shared model library |
+| `approved/<slug>/` | Immutable approved design versions |
+| `production/<slug>/` | Masters and exported production packs |
+| `exports/<slug>/` | Catalogue pages and listing concepts |
+| `source/`, `.work/` | Working area for the skill and tooling |
+
+`create_project`, `resume_project`, and `status` return the absolute folder for each category, so the agent never has to work out a location.
+
+### Migrating older projects
+
+Projects created before this layout (layout v1, with assets inside the project folder) still open and validate, but every write is refused with `migration_required` until they are migrated. The agent runs `migrate_layout` for you: `inventory` writes a hash-verified plan and changes nothing, the agent shows you which files will move where, and `apply` runs only after you clearly say yes (your words are recorded as `user_quote`). Each file is copied and verified before any old file is removed, and an interrupted migration can be rerun safely.
 
 ## Usage
 
@@ -46,7 +68,7 @@ See [`skill/clothing-shop-studio/SKILL.md`](skill/clothing-shop-studio/SKILL.md)
 |---|---|
 | `skill/clothing-shop-studio/` | The installable skill: instructions, scripts, data, schemas, tests |
 | `evals/` | Behavioural scenarios, no-skill baselines, and with-skill transcripts |
-| `tools/` | Evaluation runner and reference-library importer |
+| `tools/` | Installer, evaluation runner, and reference-library importer |
 
 ## Tests
 

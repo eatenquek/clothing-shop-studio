@@ -11,12 +11,30 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 
 SKILL_NAME = "clothing-shop-studio"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def create_eval_workspace(studio_root: Path) -> Path:
+    eval_root = Path(studio_root).resolve() / ".work/evals"
+    eval_root.mkdir(parents=True, exist_ok=True)
+    return Path(tempfile.mkdtemp(prefix="css-eval-", dir=eval_root))
+
+
+def evaluation_environment(workspace: Path, base_env: dict | None = None) -> tuple[dict, Path]:
+    home = Path(workspace).resolve() / "home"
+    home.mkdir(parents=True, exist_ok=True)
+    env = dict(os.environ if base_env is None else base_env)
+    env.pop("CLOTHING_SHOP_STUDIO_HOME", None)
+    env["HOME"] = str(home)
+    projects = home / "Documents/Clothing-Shop-Studio/projects"
+    return env, projects
 
 
 def allowed_tools(skill_dir: Path) -> list[str]:
@@ -78,10 +96,10 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
 
     scenario = json.loads(args.scenario.read_text("utf-8"))
-    workspace = Path(tempfile.mkdtemp(prefix="css-eval-"))
+    workspace = create_eval_workspace(REPO_ROOT.parent)
     skill_dir = workspace / ".claude/skills" / SKILL_NAME
     shutil.copytree(args.bundle, skill_dir, ignore=shutil.ignore_patterns("__pycache__", "tests", "evals"))
-    env = {**__import__("os").environ, "CLOTHING_SHOP_STUDIO_HOME": str(workspace / "projects")}
+    env, projects = evaluation_environment(workspace)
 
     prompts = [scenario["query"]]
     if scenario.get("fixture"):
@@ -103,7 +121,6 @@ def main(argv=None) -> int:
         lines += [f"- `{describe_tool(tool)}`" for tool in turn["tools"]] or ["- none"]
         lines += ["", "**Assistant (verbatim):**", "", *[f"> {row}" if row else ">" for row in turn["text"].splitlines()], ""]
 
-    projects = workspace / "projects"
     lines += ["## Project state after the session", ""]
     for state_file in sorted(projects.glob("*/metadata/state.json")):
         state = json.loads(state_file.read_text("utf-8"))

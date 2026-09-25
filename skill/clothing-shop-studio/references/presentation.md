@@ -2,7 +2,7 @@
 
 These commands turn the user's own garment designs into selling visuals. They never produce prices, sizes, fabric claims, stock, orders, or storefront work, and none of their images can become a production master.
 
-Every command takes one JSON object on stdin with `project_dir` and `mode`, for example:
+Every command takes one JSON object on stdin with `project_dir` and `mode`, for example (all outputs land in the `asset_folders` returned by `resume_project`, never inside `projects/<slug>/`):
 
 ```bash
 echo '{"project_dir": "/path/to/project", "mode": "install_defaults"}' | python3 scripts/studio.py create_models
@@ -30,13 +30,13 @@ Before `extract` mode `plan` on a user reference, ask once: "May I send this pho
 4. `plan`: returns one job per garment with the prompt, source crop, destination, `#FFFFFF` background, and a square minimum size of 1200 px.
 5. Render each job with the host image tool at its destination, then `register`: `inventory_id`, `round`, and `results` with `slug`, `path`, `renderer`, `prompt`, and `estimated_colours` (`{"primary": "#RRGGBB"}`) for JPEG files.
 
-Then open `presentation/extracted/catalogue.html`, show the grid, add the seller notice, and ask one question. Record the answer with `decide` (`ids`, `decision`: keep, regenerate, or drop, `user_quote`).
+Then open `exports/<slug>/catalogues/catalogue.html` under `studio_root`, show the grid, add the seller notice, and ask one question. Record the answer with `decide` (`ids`, `decision`: keep, regenerate, or drop, `user_quote`).
 
 Cut-outs from a third-party or unconfirmed reference are inspiration only. They never reach try-on or a listing.
 
 ## AI models
 
-- On first use, run `install_defaults`. It installs four fictional models into the shared library beside the projects folder.
+- On first use, run `install_defaults`. It installs four fictional models into the shared model library, `generated/_models/` in the studio root.
 - For a default with a missing image, run `plan_reference` (`model_id`), render the job, then `register` with `kind: reference`.
 - Custom candidates: `plan` with `range` (`gender_presentation`, `age_range`, `build`, `skin_tone`, `hair`), render the four A/B/C/W jobs, then `register` (`kind: candidates`, `round`, `identities` exactly as planned, `results`). Show the contact sheet, then `keep` (`ids`, `user_quote`).
 - Never describe or use a real person, celebrity, influencer, or a lookalike, and never use a photo of a real person as a model.

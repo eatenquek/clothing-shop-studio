@@ -8,7 +8,7 @@ from pathlib import Path
 
 from studio_core import SCHEMA_VERSION
 from studio_core.errors import StudioError, ValidationError
-from studio_core.paths import StudioPaths
+from studio_core.paths import StudioPaths, project_area
 from studio_core.approval import approve_design
 from studio_core.export import export_blockers, export_production_pack
 from studio_core.interview import load_graph, next_question
@@ -56,6 +56,34 @@ def _project(payload: dict) -> Path:
     return STUDIO.require_project(Path(_required(payload, "project_dir")))
 
 
+# Response name -> logical project area (see studio_core.paths.AREA_PARTS).
+ASSET_FOLDER_AREAS = {
+    "references_user": "references/user",
+    "references_online": "references/online",
+    "concepts": "concepts/generated",
+    "approved": "designs/approved",
+    "production": "production",
+    "production_masters": "production/masters",
+    "extracted": "presentation/extracted",
+    "models": "presentation/models",
+    "tryon": "presentation/tryon",
+    "listings": "presentation/listing",
+}
+
+
+def _asset_folders(project: Path) -> dict:
+    """Where this project's files live, so an agent never derives a location itself."""
+    folders = {name: project_area(project, area) for name, area in ASSET_FOLDER_AREAS.items()}
+    return {
+        "studio_root": str(STUDIO.root),
+        "asset_folders": {name: str(path) for name, path in folders.items()},
+        # register_file and generate_options payloads take these studio-relative forms.
+        "asset_folders_relative": {
+            name: path.relative_to(STUDIO.root).as_posix() for name, path in folders.items()
+        },
+    }
+
+
 def command_create_project(payload: dict) -> dict:
     if "config_path" in payload:
         raise ValidationError(
@@ -76,16 +104,19 @@ def command_create_project(payload: dict) -> dict:
         __import__("datetime").timezone.utc
     ).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     state = create_project(root, _required(payload, "name"), BUNDLE_DIR, now)
+    project = root / state["project_slug"]
     return {
         **state,
-        "project_dir": str(root / state["project_slug"]),
+        "project_dir": str(project),
+        **_asset_folders(project),
         "next_question": _next_question(state),
     }
 
 
 def command_resume_project(payload: dict) -> dict:
-    state = load_state(_project(payload))
-    return {**state, "next_question": _next_question(state)}
+    project = _project(payload)
+    state = load_state(project)
+    return {**state, **_asset_folders(project), "next_question": _next_question(state)}
 
 
 def command_record_answer(payload: dict) -> dict:
@@ -169,6 +200,7 @@ def command_status(payload: dict) -> dict:
     report = validate_project(project)
     return {
         **summary,
+        **_asset_folders(project),
         "next_question": _next_question(load_state(project)),
         "blockers": report["errors"],
         "warnings": report["warnings"],
